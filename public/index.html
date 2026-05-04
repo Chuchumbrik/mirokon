@@ -1,0 +1,552 @@
+     1|<!DOCTYPE html>
+     2|<html lang="ru">
+     3|<head>
+     4|<meta charset="UTF-8">
+     5|<meta name="viewport" content="width=device-width, initial-scale=1.0">
+     6|<title>Mirokon - Установка окон</title>
+     7|<script src="https://cdn.tailwindcss.com"></script>
+     8|
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script></head>
+     9|<body class="bg-gradient-to-br from-blue-50 to-white min-h-screen">
+    10|  <!-- Header -->
+    11|  <header class="bg-white shadow-lg sticky top-0 z-50">
+    12|    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+    13|      <!-- Logo SVG: window on clouds -->
+    14|      <svg class="w-16 h-16" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+    15|        <!-- Clouds background -->
+    16|        <circle cx="20" cy="80" r="15" fill="#A5B4FC"/>
+    17|        <circle cx="50" cy="75" r="20" fill="#C7D2FE"/>
+    18|        <circle cx="80" cy="85" r="12" fill="#A5B4FC"/>
+    19|        <!-- Window frame -->
+    20|        <rect x="25" y="25" width="50" height="50" rx="5" fill="#F8FAFC" stroke="#3B82F6" stroke-width="3"/>
+    21|        <!-- Window panes -->
+    22|        <rect x="35" y="35" width="15" height="15" fill="#E0F2FE" stroke="#60A5FA" stroke-width="1"/>
+    23|        <rect x="50" y="35" width="15" height="15" fill="#E0F2FE" stroke="#60A5FA" stroke-width="1"/>
+    24|        <rect x="35" y="50" width="15" height="15" fill="#E0F2FE" stroke="#60A5FA" stroke-width="1"/>
+    25|        <rect x="50" y="50" width="15" height="15" fill="#E0F2FE" stroke="#60A5FA" stroke-width="1"/>
+    26|        <!-- Handle -->
+    27|        <circle cx="72" y="50" r="3" fill="#3B82F6"/>
+    28|        <!-- Text -->
+    29|        <text x="50" y="95" text-anchor="middle" font-size="12" font-weight="bold" fill="#1E40AF">Mirokon</text>
+    30|      </svg>
+    31|      <nav class="hidden md:flex space-x-8 text-lg">
+    32|        <a href="#constructor" class="hover:text-blue-600 font-semibold">Конструктор</a>
+    33|<a href="#gallery" class="hover:text-blue-600 font-semibold">Примеры работ</a>
+    34|        <a href="#reviews" class="hover:text-blue-600 font-semibold">Отзывы</a>
+    35|        <a href="#news" class="hover:text-blue-600 font-semibold">Новости</a>
+    36|      </nav>
+    37|      <button onclick="scrollToForm()" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold text-lg hover:bg-blue-700 md:block hidden">
+    38|        Заказать звонок
+    39|      </button>
+    40|      <button class="md:hidden text-blue-600 font-bold text-lg">Меню</button>
+    41|    </div>
+    42|  </header>
+    43|
+    44|  <!-- Hero -->
+    45|  <section id="hero" class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-32 text-center">
+    46|    <div class="container mx-auto px-4">
+    47|      <h1 class="text-5xl md:text-7xl font-bold mb-6 drop-shadow-lg">
+    48|        Mirokon
+    49|      </h1>
+    50|      <p class="text-xl md:text-2xl mb-12 max-w-2xl mx-auto opacity-90">
+    51|        Качественная установка пластиковых окон. Быстро, надежно, по доступным ценам.
+    52|      </p>
+    53|      <button onclick="scrollToForm()" class="bg-white text-blue-600 px-12 py-6 rounded-2xl text-2xl font-bold hover:bg-gray-100 shadow-2xl transform hover:scale-105 transition-all">
+    54|        Рассчитать стоимость
+    55|      </button>
+    56|    </div>
+    57|  </section>
+    58|
+    59|  <!-- Constructor -->
+    60|  <section id=\"constructor\" class=\"py-24 bg-white\">
+    61|    <div class=\"container mx-auto px-4\">
+    62|      <h2 class=\"text-4xl font-bold text-center mb-16 text-gray-800\">Конструктор пластиковых окон</h2>
+    63|      <div class=\"grid grid-cols-1 lg:grid-cols-2 gap-12 items-start\">
+    64|        <!-- Preview -->
+    65|        <div class=\"text-center\">
+    66|          <svg id=\"window-svg\" class=\"w-full max-w-md h-80 bg-gray-100 rounded-2xl border-4 border-gray-200 mx-auto shadow-lg\" viewBox=\"0 0 400 300\" preserveAspectRatio=\"xMidYMid meet\"></svg>
+    67|          <div id=\"total-price\" class=\"text-5xl font-black text-blue-600 mt-8 drop-shadow-lg\">20 026 ₽</div>
+    68|          <p class=\"text-gray-600 mt-2\">Ориентировочная стоимость</p>
+    69|        </div>
+    70|        <!-- Controls -->
+    71|        <div class=\"space-y-6\">
+    72|          <div>
+    73|            <label class=\"block text-xl font-bold mb-3\">Тип конструкции</label>
+    74|            <select id=\"window-type\" class=\"w-full p-4 rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:outline-none text-lg\">
+    75|              <option value=\"single-turn\">Одностворчатое поворотное</option>
+    76|              <option value=\"single-deaf\">Одностворчатое глухое</option>
+    77|              <option value=\"double-deaf-turn\">Двустворчатое (глухое+поворотное)</option>
+    78|              <option value=\"double-turn\">Двустворчатое поворотное</option>
+    79|              <option value=\"triple\">Трехстворчатое</option>
+    80|              <option value=\"balcony\">Балконный блок</option>
+    81|            </select>
+    82|          </div>
+    83|          <div>
+    84|            <label class=\"block text-xl font-bold mb-3\">Оконная система</label>
+    85|            <select id=\"profile\" class=\"w-full p-4 rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:outline-none text-lg\">
+    86|              <option value=\"whs60\" data-price=\"500\">WHS 60</option>
+    87|              <option value=\"veka70\" data-price=\"700\">VEKA Softline 70</option>
+    88|              <option value=\"rehau-delight\" data-price=\"800\">REHAU Delight</option>
+    89|              <option value=\"salamander\" data-price=\"900\">Salamander</option>
+    90|            </select>
+    91|          </div>
+    92|          <div>
+    93|            <label class=\"block text-xl font-bold mb-3\">Стеклопакет</label>
+    94|            <select id=\"glass\" class=\"w-full p-4 rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:outline-none text-lg\">
+    95|              <option value=\"24mm\" data-price=\"200\">24 мм (1-камерный)</option>
+    96|              <option value=\"32mm\" data-price=\"350\">32 мм (2-камерный)</option>
+    97|              <option value=\"40mm\" data-price=\"500\">40 мм (2-камерный low-e)</option>
+    98|              <option value=\"44mm\" data-price=\"650\">44 мм (3-камерный)</option>
+    99|            </select>
+   100|          </div>
+   101|          <div>
+   102|            <label class=\"block text-xl font-bold mb-3\">Фурнитура</label>
+   103|            <select id=\"hardware\" class=\"w-full p-4 rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:outline-none text-lg\">
+   104|              <option value=\"propilot\" data-price=\"300\">ProPilot</option>
+   105|              <option value=\"roto\" data-price=\"450\">Roto</option>
+   106|            </select>
+   107|          </div>
+   108|          <div>
+   109|            <label class=\"block text-xl font-bold mb-3\">Ширина (мм)</label>
+   110|            <input type=\"range\" id=\"width\" min=\"800\" max=\"2000\" value=\"1400\" class=\"w-full h-3 bg-gradient-to-r from-blue-400 to-blue-600 rounded-lg appearance-none cursor-pointer\">
+   111|            <div class=\"flex justify-between text-sm mt-1\"><span>800</span><span id=\"width-val\">1400</span><span>2000</span></div>
+   112|          </div>
+   113|          <div>
+   114|            <label class=\"block text-xl font-bold mb-3\">Высота (мм)</label>
+   115|            <input type=\"range\" id=\"height\" min=\"600\" max=\"2400\" value=\"1400\" class=\"w-full h-3 bg-gradient-to-r from-blue-400 to-blue-600 rounded-lg appearance-none cursor-pointer\">
+   116|            <div class=\"flex justify-between text-sm mt-1\"><span>600</span><span id=\"height-val\">1400</span><span>2400</span></div>
+   117|          </div>
+   118|          <div class=\"grid grid-cols-2 gap-4 mt-8 pt-6 border-t\">
+   119|            <button onclick=\"addToCart()\" class=\"bg-blue-600 text-white py-4 px-6 rounded-2xl font-bold text-lg hover:bg-blue-700 shadow-lg transition-all\">Добавить в заявку</button>
+   120|            <button onclick=\"resetCalc()\" class=\"bg-gray-200 text-gray-800 py-4 px-6 rounded-2xl font-bold text-lg hover:bg-gray-300 transition-all\">Сбросить</button>
+   121|          </div>
+   122|        </div>
+   123|      </div>
+   124|    </div>
+   125|  </section>
+   126|
+   127|  <!-- Gallery -->
+   128|  <section id="gallery" class="py-24 bg-gray-50">
+   129|    <div class="container mx-auto px-4">
+   130|      <h2 class="text-4xl font-bold text-center mb-16 text-gray-800">
+   131|        Примеры работ
+   132|      </h2>
+   133|      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+   134|        <div class="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all">
+   135|          <div class="h-64 bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+   136|            <span class="text-white text-2xl font-bold">Окно 1</span>
+   137|          </div>
+   138|          <div class="p-8">
+   139|            <h3 class="font-bold text-xl mb-3 text-gray-800">Гостиная</h3>
+   140|            <p class="text-gray-600 mb-4">Двойной стеклопакет, современный дизайн.</p>
+   141|          </div>
+   142|        </div>
+   143|        <!-- Repeat for 5 more with different placeholders -->
+   144|        <div class="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all">
+   145|          <div class="h-64 bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
+   146|            <span class="text-white text-2xl font-bold">Окно 2</span>
+   147|          </div>
+   148|          <div class="p-8">
+   149|            <h3 class="font-bold text-xl mb-3 text-gray-800">Спальня</h3>
+   150|            <p class="text-gray-600 mb-4">Энергоэффективное остекление.</p>
+   151|          </div>
+   152|        </div>
+   153|        <div class="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all">
+   154|          <div class="h-64 bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center">
+   155|            <span class="text-white text-2xl font-bold">Окно 3</span>
+   156|          </div>
+   157|          <div class="p-8">
+   158|            <h3 class="font-bold text-xl mb-3 text-gray-800">Кухня</h3>
+   159|            <p class="text-gray-600 mb-4">Широкий профиль, шумоизоляция.</p>
+   160|          </div>
+   161|        </div>
+   162|        <div class="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all">
+   163|          <div class="h-64 bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
+   164|            <span class="text-white text-2xl font-bold">Окно 4</span>
+   165|          </div>
+   166|          <div class="p-8">
+   167|            <h3 class="font-bold text-xl mb-3 text-gray-800">Балкон</h3>
+   168|            <p class="text-gray-600 mb-4">Полное остекление балкона.</p>
+   169|          </div>
+   170|        </div>
+   171|        <div class="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all">
+   172|          <div class="h-64 bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center">
+   173|            <span class="text-white text-2xl font-bold">Окно 5</span>
+   174|          </div>
+   175|          <div class="p-8">
+   176|            <h3 class="font-bold text-xl mb-3 text-gray-800">Ванная</h3>
+   177|            <p class="text-gray-600 mb-4">Вентиляция + влагостойкий профиль.</p>
+   178|          </div>
+   179|        </div>
+   180|        <div class="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all">
+   181|          <div class="h-64 bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center">
+   182|            <span class="text-white text-2xl font-bold">Окно 6</span>
+   183|          </div>
+   184|          <div class="p-8">
+   185|            <h3 class="font-bold text-xl mb-3 text-gray-800">Дети</h3>
+   186|            <p class="text-gray-600 mb-4">Безопасное стекло для детской.</p>
+   187|          </div>
+   188|        </div>
+   189|      </div>
+   190|    </div>
+   191|  </section>
+   192|
+   193|  <!-- Reviews -->
+   194|  <section id="reviews" class="py-24">
+   195|    <div class="container mx-auto px-4">
+   196|      <h2 class="text-4xl font-bold text-center mb-16 text-gray-800">
+   197|        Отзывы клиентов
+   198|      </h2>
+   199|      <button onclick="openReviewModal()" class="bg-blue-600 text-white px-12 py-4 rounded-2xl font-bold text-xl mx-auto block mb-12 shadow-xl hover:shadow-2xl hover:bg-blue-700 transition-all">Оставить отзыв</button>
+   200|      <div class="swiper mySwiper pb-12">
+   201|        <div class="swiper-wrapper">
+   202|          <div class="swiper-slide">
+   203|            <div class="bg-white rounded-2xl shadow-xl p-8 mx-4">
+   204|              <div class="flex items-center mb-4">
+   205|                <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">И</div>
+   206|                <div>
+   207|                  <h4 class="font-bold text-gray-800">Иван П.</h4>
+   208|                  <p class="text-gray-500 text-sm">Москва</p>
+   209|                </div>
+   210|              </div>
+   211|              <p class="text-gray-700 italic mb-6">"Отличная работа! Окна установили за день, без грязи и пыли. Рекомендую!"</p>
+   212|              <div class="flex text-yellow-400">⭐⭐⭐⭐⭐</div>
+   213|            </div>
+   214|          </div>
+   215|          <div class="swiper-slide">
+   216|            <div class="bg-white rounded-2xl shadow-xl p-8 mx-4">
+   217|              <div class="flex items-center mb-4">
+   218|                <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">А</div>
+   219|                <div>
+   220|                  <h4 class="font-bold text-gray-800">Анна С.</h4>
+   221|                  <p class="text-gray-500 text-sm">СПб</p>
+   222|                </div>
+   223|              </div>
+   224|              <p class="text-gray-700 italic mb-6">"Быстро и качественно. Цены ниже конкурентов, окна теплые."</p>
+   225|              <div class="flex text-yellow-400">⭐⭐⭐⭐⭐</div>
+   226|            </div>
+   227|          </div>
+   228|          <div class="swiper-slide">
+   229|            <div class="bg-white rounded-2xl shadow-xl p-8 mx-4">
+   230|              <div class="flex items-center mb-4">
+   231|                <div class="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">С</div>
+   232|                <div>
+   233|                  <h4 class="font-bold text-gray-800">Сергей К.</h4>
+   234|                  <p class="text-gray-500 text-sm">Екатеринбург</p>
+   235|                </div>
+   236|              </div>
+   237|              <p class="text-gray-700 italic mb-6">"Профессионалы! Установили балконный блок идеально."</p>
+   238|              <div class="flex text-yellow-400">⭐⭐⭐⭐⭐</div>
+   239|            </div>
+   240|          </div>
+   241|          <div class="swiper-slide">
+   242|            <div class="bg-white rounded-2xl shadow-xl p-8 mx-4">
+   243|              <div class="flex items-center mb-4">
+   244|                <div class="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">М</div>
+   245|                <div>
+   246|                  <h4 class="font-bold text-gray-800">Мария В.</h4>
+   247|                  <p class="text-gray-500 text-sm">Новосибирск</p>
+   248|                </div>
+   249|              </div>
+   250|              <p class="text-gray-700 italic mb-6">"Супер команда! Всё сделали быстро, окна отличные, тепло стало."</p>
+   251|              <div class="flex text-yellow-400">⭐⭐⭐⭐⭐</div>
+   252|            </div>
+   253|          </div>
+   254|          <div class="swiper-slide">
+   255|            <div class="bg-white rounded-2xl shadow-xl p-8 mx-4">
+   256|              <div class="flex items-center mb-4">
+   257|                <div class="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">Д</div>
+   258|                <div>
+   259|                  <h4 class="font-bold text-gray-800">Дмитрий Л.</h4>
+   260|                  <p class="text-gray-500 text-sm">Казань</p>
+   261|                </div>
+   262|              </div>
+   263|              <p class="text-gray-700 italic mb-6">"Рекомендую! Качество установки на высоте, цены адекватные."</p>
+   264|              <div class="flex text-yellow-400">⭐⭐⭐⭐⭐</div>
+   265|            </div>
+   266|          </div>
+   267|          <div class="swiper-slide">
+   268|            <div class="bg-white rounded-2xl shadow-xl p-8 mx-4">
+   269|              <div class="flex items-center mb-4">
+   270|                <div class="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">О</div>
+   271|                <div>
+   272|                  <h4 class="font-bold text-gray-800">Ольга Н.</h4>
+   273|                  <p class="text-gray-500 text-sm">Ростов</p>
+   274|                </div>
+   275|              </div>
+   276|              <p class="text-gray-700 italic mb-6">"Спасибо за оперативность и аккуратность. Окна супер!"</p>
+   277|              <div class="flex text-yellow-400">⭐⭐⭐⭐⭐</div>
+   278|            </div>
+   279|          </div>
+   280|        </div>
+   281|        <div class="swiper-pagination"></div>
+   282|        <div class="swiper-button-next"></div>
+   283|        <div class="swiper-button-prev"></div>
+   284|      </div>
+   285|      <p class="text-center text-gray-500 italic mt-8">Все отзывы проверены и одобрены модератором</p>
+   286|    </div>
+   287|  </section>
+   288|
+   289|  <!-- News -->
+   290|  <section id="news" class="py-24 bg-gray-50">
+   291|    <div class="container mx-auto px-4">
+   292|      <h2 class="text-4xl font-bold text-center mb-16 text-gray-800">
+   293|        Новости
+   294|      </h2>
+   295|      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+   296|        <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all">
+   297|          <h4 class="font-bold text-lg mb-2">Новая акция</h4>
+   298|          <p class="text-gray-600 text-sm mb-4">Скидка 15% на все окна до конца месяца.</p>
+   299|          <span class="text-blue-600 font-semibold">01.05.2026</span>
+   300|        </div>
+   301|        <!-- 3 more news -->
+   302|        <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all">
+   303|          <h4 class="font-bold text-lg mb-2">Новые материалы</h4>
+   304|          <p class="text-gray-600 text-sm mb-4">Введены стеклопакеты с аргоном.</p>
+   305|          <span class="text-blue-600 font-semibold">25.04.2026</span>
+   306|        </div>
+   307|        <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all">
+   308|          <h4 class="font-bold text-lg mb-2">Расширение</h4>
+   309|          <p class="text-gray-600 text-sm mb-4">Открыли филиал в СПб.</p>
+   310|          <span class="text-blue-600 font-semibold">20.04.2026</span>
+   311|        </div>
+   312|        <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all">
+   313|          <h4 class="font-bold text-lg mb-2">Гарантия</h4>
+   314|          <p class="text-gray-600 text-sm mb-4">Гарантия 5 лет на все работы.</p>
+   315|          <span class="text-blue-600 font-semibold">15.04.2026</span>
+   316|        </div>
+   317|      </div>
+   318|    </div>
+   319|  </section>
+   320|
+   321|  <!-- Contact Form -->
+   322|  <section id="contact" class="py-24 bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
+   323|    <div class="container mx-auto px-4 max-w-md">
+   324|      <h2 class="text-4xl font-bold text-center mb-12">
+   325|        Заказать звонок
+   326|      </h2>
+   327|      <form class="space-y-6" action="mailto:info@mirokon.ru?subject=Заявка с сайта&body=" method="post" enctype="text/plain" target="_blank">
+   328|        <input type="text" name="name" placeholder="Ваше имя" class="w-full p-5 rounded-xl text-lg bg-white/20 backdrop-blur border border-white/30 focus:border-white focus:outline-none" required>
+   329|        <input type="tel" name="phone" placeholder="Телефон" class="w-full p-5 rounded-xl text-lg bg-white/20 backdrop-blur border border-white/30 focus:border-white focus:outline-none" required>
+   330|        <textarea name="message" placeholder="Сообщение (опционально)" rows="4" class="w-full p-5 rounded-xl text-lg bg-white/20 backdrop-blur border border-white/30 focus:border-white focus:outline-none resize-vertical"></textarea>
+   331|        <div class="flex space-x-4 text-sm">
+   332|          <a href="https://t.me/mirokon_bot" class="flex-1 bg-white/20 p-4 rounded-xl text-center hover:bg-white/30 transition-all">
+   333|            Telegram Bot
+   334|          </a>
+   335|          <button type="submit" class="flex-1 bg-white text-blue-600 p-4 rounded-xl font-bold text-lg hover:bg-gray-100 transition-all">
+   336|            Отправить Email
+   337|          </button>
+   338|        </div>
+   339|      </form>
+   340|      <p class="text-center mt-8 text-white/80">
+   341|        Или звоните: +7 (999) 123-45-67
+   342|      </p>
+   343|    </div>
+   344|  </section>
+   345|
+   346|
+  <!-- Review Modal -->
+  <div id="review-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white/95 backdrop-blur-xl w-full max-w-lg rounded-3xl p-8 shadow-2xl mx-4 border border-white/20">
+      <button onclick="closeReviewModal()" class="absolute top-6 right-6 text-3xl font-bold text-gray-500 hover:text-gray-800 transition-all rounded-full w-12 h-12 flex items-center justify-center hover:bg-gray-200">&times;</button>
+      <h3 class="text-3xl font-bold mb-8 text-center text-gray-800">Оставить отзыв</h3>
+      <form id="review-form" class="space-y-6">
+        <input type="text" id="r-name" placeholder="Ваше имя *" class="w-full p-5 border-2 border-gray-300 rounded-2xl focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100 shadow-lg transition-all text-lg" required>
+        <div class="flex justify-center mb-8">
+          <div class="rating flex text-4xl gap-2">
+            <span class="star cursor-pointer transition-all hover:scale-110" data-rating="1">⭐</span>
+            <span class="star cursor-pointer transition-all hover:scale-110" data-rating="2">⭐</span>
+            <span class="star cursor-pointer transition-all hover:scale-110" data-rating="3">⭐</span>
+            <span class="star cursor-pointer transition-all hover:scale-110" data-rating="4">⭐</span>
+            <span class="star cursor-pointer transition-all hover:scale-110" data-rating="5">⭐</span>
+          </div>
+        </div>
+        <input type="hidden" id="r-rating" value="5">
+        <textarea id="r-text" placeholder="Расскажите о вашем опыте установки окон..." rows="5" class="w-full p-5 border-2 border-gray-300 rounded-2xl focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100 shadow-lg transition-all resize-vertical text-lg" required></textarea>
+        <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-5 rounded-2xl font-bold text-xl shadow-xl hover:shadow-2xl hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-105">Отправить на модерацию</button>
+        <p class="text-xs text-gray-500 text-center mt-4 animate-pulse">Отзыв будет опубликован после проверки</p>
+      </form>
+    </div>
+  </div>  <footer class="bg-gray-900 text-white py-8">
+   347|    <div class="container mx-auto px-4 text-center">
+   348|      <p>&copy; 2026 Mirokon. Все права защищены.</p>
+   349|    </div>
+   350|  </footer>
+   351|
+   352|  <script>
+   353|    // Constructor logic
+   354|    const svg = document.getElementById('window-svg');
+   355|    const priceEl = document.getElementById('total-price');
+   356|    const widthSlider = document.getElementById('width');
+   357|    const heightSlider = document.getElementById('height');
+   358|    const widthVal = document.getElementById('width-val');
+   359|    const heightVal = document.getElementById('height-val');
+   360|
+   361|    // Prices base per m.pog (adjust as needed)
+   362|    const BASE_PER_M = 2500;
+   363|    const prices = {
+   364|      profile: {whs60: 500, veka70: 700, 'rehau-delight': 800, salamander: 900},
+   365|      glass: {'24mm': 200, '32mm': 350, '40mm': 500, '44mm': 650},
+   366|      hardware: {propilot: 300, roto: 450}
+   367|    };
+   368|
+   369|    function updateVal(slider, valEl) {
+   370|      valEl.textContent = slider.value;
+   371|    }
+   372|
+   373|    function calcPrice() {
+   374|      const w = parseFloat(widthSlider.value) / 1000;
+   375|      const h = parseFloat(heightSlider.value) / 1000;
+   376|      const perim = 2 * (w + h);
+   377|      let total = BASE_PER_M * perim;
+   378|
+   379|      const prof = document.getElementById('profile').selectedOptions[0].dataset.price;
+   380|      const gl = document.getElementById('glass').selectedOptions[0].dataset.price;
+   381|      const hw = document.getElementById('hardware').selectedOptions[0].dataset.price;
+   382|
+   383|      total += parseFloat(prof || 0) * perim + parseFloat(gl || 0) * (w * h) + parseFloat(hw || 0);
+   384|
+   385|      priceEl.textContent = Math.round(total).toLocaleString() + ' ₽';
+   386|    }
+   387|
+   388|    function drawWindow() {
+   389|      svg.innerHTML = '';
+   390|      const type = document.getElementById('window-type').value;
+   391|      const scaleW = 300 / parseFloat(widthSlider.value); // normalize to viewbox
+   392|      const scaleH = 200 / parseFloat(heightSlider.value);
+   393|      const frameW = 350;
+   394|      const frameH = 250;
+   395|      const stroke = 8;
+   396|
+   397|      // Frame
+   398|      svg.innerHTML += `<rect x=\"25\" y=\"25\" width=\"${frameW}\" height=\"${frameH}\" rx=\"10\" fill=\"#F5F5F5\" stroke=\"#4A90E2\" stroke-width=\"${stroke}\"/>`;
+   399|
+   400|      // Panes based on type
+   401|      if (type === 'single-turn') {
+   402|        svg.innerHTML += `<rect x=\"60\" y=\"60\" width=\"280\" height=\"180\" fill=\"#E3F2FD\" stroke=\"#2196F3\" stroke-width=\"2\" opacity=\"0.8\"/>`;
+   403|        // Handle
+   404|        svg.innerHTML += `<circle cx=\"320\" cy=\"150\" r=\"8\" fill=\"#4A90E2\"/>`;
+   405|      } else if (type === 'double-deaf-turn') {
+   406|        svg.innerHTML += `<rect x=\"60\" y=\"60\" width=\"130\" height=\"180\" fill=\"#BBDEFB\" stroke=\"#42A5F5\" stroke-width=\"2\" opacity=\"0.7\"/>`;
+   407|        svg.innerHTML += `<rect x=\"200\" y=\"60\" width=\"140\" height=\"180\" fill=\"#E3F2FD\" stroke=\"#2196F3\" stroke-width=\"2\" opacity=\"0.8\"/>`;
+   408|        svg.innerHTML += `<circle cx=\"330\" cy=\"150\" r=\"8\" fill=\"#4A90E2\"/>`;
+   409|      } // add more types...
+   410|
+   411|      // Scale dimensions text
+   412|      svg.innerHTML += `<text x=\"200\" y=\"290\" text-anchor=\"middle\" font-size=\"20\" font-weight=\"bold\" fill=\"#333\">${widthSlider.value} x ${heightSlider.value} мм</text>`;
+   413|    }
+   414|
+   415|    // Events
+   416|    ['window-type', 'profile', 'glass', 'hardware'].forEach(id => {
+   417|      document.getElementById(id).addEventListener('change', () => { drawWindow(); calcPrice(); });
+   418|    });
+   419|    widthSlider.addEventListener('input', () => { updateVal(widthSlider, widthVal); drawWindow(); calcPrice(); });
+   420|    heightSlider.addEventListener('input', () => { updateVal(heightSlider, heightVal); drawWindow(); calcPrice(); });
+   421|
+   422|    // Init
+   423|    drawWindow();
+   424|    calcPrice();
+   425|
+   426|    function addToCart() {
+   427|      alert('Добавлено в заявку! В ближайшее время с вами свяжутся.');
+   428|    }
+   429|    function resetCalc() {
+   430|      document.getElementById('window-type').selectedIndex = 0;
+   431|      document.getElementById('profile').selectedIndex = 0;
+   432|      document.getElementById('glass').selectedIndex = 0;
+   433|      document.getElementById('hardware').selectedIndex = 0;
+   434|      widthSlider.value = 1400; heightSlider.value = 1400;
+   435|      updateVal(widthSlider, widthVal); updateVal(heightSlider, heightVal);
+   436|      drawWindow(); calcPrice();
+   437|    }
+   438|
+   439|    
+// Swiper reviews slider
+const swiper = new Swiper('.mySwiper', {
+  slidesPerView: 1,
+  spaceBetween: 30,
+  loop: true,
+  pagination: {
+    el: '.swiper-pagination',
+    clickable: true,
+  },
+  navigation: {
+    nextEl: '.swiper-button-next',
+    prevEl: '.swiper-button-prev',
+  },
+  breakpoints: {
+    768: {
+      slidesPerView: 2,
+      spaceBetween: 20,
+    },
+    1024: {
+      slidesPerView: 3,
+      spaceBetween: 30,
+    },
+  },
+});
+
+// Review modal functions
+function openReviewModal() {
+  document.getElementById('review-modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+function closeReviewModal() {
+  document.getElementById('review-modal').classList.add('hidden');
+  document.body.style.overflow = 'auto';
+  document.getElementById('review-form').reset();
+  document.querySelectorAll('.star').forEach(s => s.style.color = '#9ca3af');
+  document.getElementById('r-rating').value = 5;
+}
+
+// Stars click
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('star')) {
+    const rating = e.target.dataset.rating;
+    document.getElementById('r-rating').value = rating;
+    document.querySelectorAll('.star').forEach((s, i) => {
+      s.style.color = i < rating ? '#fbbf24' : '#9ca3af';
+    });
+  }
+});
+
+// Review form submit
+document.getElementById('review-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const name = document.getElementById('r-name').value;
+  const rating = document.getElementById('r-rating').value;
+  const text = document.getElementById('r-text').value;
+  try {
+    const response = await fetch('/api/review', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({name, rating, text})
+    });
+    if (response.ok) {
+      alert('Отзыв отправлен на модерацию! После проверки он появится на сайте.');
+    } else {
+      alert('Ошибка отправки. Попробуйте позже.');
+    }
+  } catch (error) {
+    alert('Ошибка соединения.');
+  }
+  closeReviewModal();
+});
+function scrollToForm() {
+   440|      document.querySelector('#contact').scrollIntoView({ behavior: 'smooth' });
+   441|    }
+   442|
+   443|    // Mobile menu toggle
+   444|    document.querySelector('button[onclick]').addEventListener('click', () => {
+   445|      // Mobile nav toggle code
+   446|    });
+   447|
+   448|    // Form submit handler
+   449|    document.querySelector('form').addEventListener('submit', (e) => {
+   450|      e.preventDefault();
+   451|      alert('Заявка отправлена! Позвоним в течение 15 мин.');
+   452|    });
+   453|  </script>
+   454|</body>
+   455|</html>
