@@ -7,7 +7,68 @@
 7|<script src="https://cdn.tailwindcss.com"></script>
 8|
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script></head>
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+      <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    
+<style>
+.constructor-section {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  padding: 4rem 0;
+}
+.constructor-preview {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border-radius: 2rem;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  background: linear-gradient(145deg, #f8fafc, #f1f5f9);
+}
+#window-svg {
+  filter: drop-shadow(0 20px 40px rgba(59, 130, 246, 0.3));
+}
+.constructor-select {
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  border-radius: 1.5rem;
+  border: 2px solid #e5e7eb;
+  background: white;
+  transition: all 0.3s ease;
+}
+.constructor-select:focus {
+  box-shadow: 0 25px 50px -12px rgba(59, 130, 246, 0.4), 0 0 0 4px rgba(59, 130, 246, 0.2);
+  border-color: #3b82f6;
+}
+.constructor-slider {
+  accent-color: #3b82f6;
+  height: 8px;
+  border-radius: 9999px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+#total-price {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+  box-shadow: 0 25px 50px -12px rgba(59, 130, 246, 0.4);
+  border-radius: 2rem;
+  padding: 1rem 2rem;
+}
+.constructor-button {
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+.constructor-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+#review-modal {
+  backdrop-filter: blur(20px);
+}
+#review-modal .bg-white {
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+.swiper-button-next, .swiper-button-prev {
+  color: #3b82f6;
+}
+</style></head>
 9|<body class="bg-gradient-to-br from-blue-50 to-white min-h-screen">
 10|  <!-- Header -->
 11|  <header class="bg-white shadow-lg sticky top-0 z-50">
