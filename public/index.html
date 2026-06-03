@@ -104,6 +104,36 @@ h1,h2,h3,h4{font-family:'Montserrat',sans-serif;letter-spacing:-.02em}
 .lightbox-body p{color:var(--muted)}
 @media(max-width:900px){.gallery-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:600px){.gallery-grid{grid-template-columns:1fr}}
+/* news */
+.news-sec{background:#fff}
+.news-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+.news-card{background:#fff;border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--sh-sm);padding:26px;transition:box-shadow .25s,transform .25s;display:flex;flex-direction:column}
+.news-card:hover{box-shadow:var(--sh-md);transform:translateY(-3px)}
+.news-date{font-size:.78rem;font-weight:600;color:var(--primary);background:var(--ice);padding:5px 10px;border-radius:var(--r-full);margin-bottom:14px;align-self:flex-start}
+.news-card h4{font-weight:700;font-size:1.1rem;color:var(--ink);margin-bottom:8px}
+.news-card p{color:var(--muted);font-size:.92rem;flex:1}
+@media(max-width:1024px){.news-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.news-grid{grid-template-columns:1fr}}
+/* footer */
+.site-footer{background:#0F172A;color:#cbd5e1}
+.footer-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:40px;padding:56px 0 32px}
+.site-footer .brand{color:#fff;font-size:1.5rem}
+.site-footer .brand b{color:#60a5fa}
+.footer-about p{color:#94a3b8;font-size:.95rem;margin-top:14px;max-width:36ch}
+.footer-phone{color:#fff;font-family:'Montserrat';font-weight:700;font-size:1.3rem;text-decoration:none;display:inline-block;margin-top:16px}
+.footer-col h5{color:#fff;font-family:'Montserrat';font-weight:700;font-size:1rem;margin-bottom:14px}
+.footer-col a{display:block;color:#cbd5e1;text-decoration:none;margin-bottom:10px;font-size:.95rem;transition:.2s}
+.footer-col a:hover{color:#fff}
+.footer-bottom{border-top:1px solid #1e293b;padding:20px 0;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:#64748b;font-size:.85rem}
+.footer-bottom a{color:#94a3b8;text-decoration:underline}
+@media(max-width:780px){.footer-grid{grid-template-columns:1fr;gap:28px}}
+/* mobile nav */
+.mobile-nav{display:none}
+@media(max-width:767px){
+  .mobile-nav.open{display:block;position:absolute;top:76px;left:0;right:0;background:#fff;border-bottom:1px solid var(--border);box-shadow:var(--sh-md);padding:8px 24px 20px}
+  .mobile-nav.open a.nav-link{display:block;padding:13px 0;border-bottom:1px solid var(--border);font-size:1.05rem}
+  .mobile-nav.open .btn-ds{width:100%;justify-content:center;margin-top:14px}
+}
 /* ===== /design system ===== */
 /* constructor */
 .ctor{background:var(--ice)}
@@ -151,7 +181,7 @@ h1,h2,h3,h4{font-family:'Montserrat',sans-serif;letter-spacing:-.02em}
 <body class="min-h-screen">
   <!-- Header -->
   <header class="site-header">
-    <div class="container mx-auto px-4 flex justify-between items-center" style="height:76px">
+    <div class="container mx-auto px-4 flex justify-between items-center" style="height:76px;position:relative">
       <a href="#hero" class="brand">MIRO<b>KON</b></a>
       <nav class="hidden md:flex" style="gap:36px">
         <a href="#constructor" class="nav-link">Конструктор</a>
@@ -160,7 +190,16 @@ h1,h2,h3,h4{font-family:'Montserrat',sans-serif;letter-spacing:-.02em}
         <a href="#news" class="nav-link">Новости</a>
       </nav>
       <a href="#contact" onclick="scrollToForm()" class="btn-ds btn-ds-primary hidden md:inline-flex">Заказать звонок</a>
-      <button class="md:hidden btn-ds btn-ds-secondary" style="padding:10px 16px">Меню</button>
+      <button id="menu-btn" onclick="toggleMenu()" aria-label="Меню" aria-expanded="false" aria-controls="mobile-nav" class="md:hidden btn-ds btn-ds-secondary" style="padding:10px 14px">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+      </button>
+      <div id="mobile-nav" class="mobile-nav">
+        <a href="#constructor" class="nav-link" onclick="closeMenu()">Конструктор</a>
+        <a href="#gallery" class="nav-link" onclick="closeMenu()">Примеры работ</a>
+        <a href="#reviews" class="nav-link" onclick="closeMenu()">Отзывы</a>
+        <a href="#news" class="nav-link" onclick="closeMenu()">Новости</a>
+        <a href="#contact" class="btn-ds btn-ds-primary" onclick="closeMenu();scrollToForm()">Заказать звонок</a>
+      </div>
     </div>
   </header>
 
@@ -418,34 +457,19 @@ h1,h2,h3,h4{font-family:'Montserrat',sans-serif;letter-spacing:-.02em}
   </section>
 
   <!-- News -->
-  <section id="news" class="py-24 bg-gray-50">
+  <section id="news" class="news-sec py-24">
     <div class="container mx-auto px-4">
-      <h2 class="text-4xl font-bold text-center mb-16 text-gray-800">
-        Новости
-      </h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all">
-          <h4 class="font-bold text-lg mb-2">Новая акция</h4>
-          <p class="text-gray-600 text-sm mb-4">Скидка 15% на все окна до конца месяца.</p>
-          <span class="text-blue-600 font-semibold">01.05.2026</span>
-        </div>
-        <!-- 3 more news -->
-        <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all">
-          <h4 class="font-bold text-lg mb-2">Новые материалы</h4>
-          <p class="text-gray-600 text-sm mb-4">Введены стеклопакеты с аргоном.</p>
-          <span class="text-blue-600 font-semibold">25.04.2026</span>
-        </div>
-        <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all">
-          <h4 class="font-bold text-lg mb-2">Расширение</h4>
-          <p class="text-gray-600 text-sm mb-4">Открыли филиал в СПб.</p>
-          <span class="text-blue-600 font-semibold">20.04.2026</span>
-        </div>
-        <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all">
-          <h4 class="font-bold text-lg mb-2">Гарантия</h4>
-          <p class="text-gray-600 text-sm mb-4">Гарантия 5 лет на все работы.</p>
-          <span class="text-blue-600 font-semibold">15.04.2026</span>
-        </div>
+      <div class="text-center" style="max-width:640px;margin:0 auto 48px">
+        <h2 class="text-4xl font-bold" style="color:var(--ink)">Новости</h2>
+        <p style="margin-top:12px;font-size:1.1rem;color:var(--muted)">Коротко о компании, материалах и сервисе.</p>
       </div>
+      <div class="news-grid">
+        <article class="news-card"><span class="news-date">15 мая 2026</span><h4>Гарантия 5 лет</h4><p>Расширили гарантию на монтажные работы до 5 лет по договору.</p></article>
+        <article class="news-card"><span class="news-date">28 апр 2026</span><h4>Новые стеклопакеты</h4><p>Добавили энергоэффективные пакеты с аргоном и i-стеклом.</p></article>
+        <article class="news-card"><span class="news-date">20 апр 2026</span><h4>Работаем по всей МО</h4><p>Бесплатный выезд на замер в любой город Московской области.</p></article>
+        <article class="news-card"><span class="news-date">10 апр 2026</span><h4>Только официально</h4><p>Договор, гарантийный талон и закрывающие документы на каждый заказ.</p></article>
+      </div>
+      <p class="text-center" style="color:var(--muted);font-size:.85rem;margin-top:24px">Демо-новости. Управление лентой появится в админке.</p>
     </div>
   </section>
 
@@ -523,9 +547,33 @@ h1,h2,h3,h4{font-family:'Montserrat',sans-serif;letter-spacing:-.02em}
       <div class="form-status" id="review-status" role="status" aria-live="polite"></div>
     </form>
   </div>
-</div>  <footer class="bg-gray-900 text-white py-8">
-    <div class="container mx-auto px-4 text-center">
-      <p>&copy; 2026 Mirokon &middot; v1.2 Hermes clean 2026-05-04 no line nums. Все права защищены.</p>
+</div>  <footer class="site-footer">
+    <div class="container mx-auto px-4">
+      <div class="footer-grid">
+        <div class="footer-about">
+          <a href="#hero" class="brand">MIRO<b>KON</b></a>
+          <p>Премиальные пластиковые окна и аккуратный монтаж под ключ в Москве и Московской области.</p>
+          <a href="tel:+79991234567" class="footer-phone">+7 (999) 123-45-67</a>
+        </div>
+        <div class="footer-col">
+          <h5>Разделы</h5>
+          <a href="#constructor">Конструктор</a>
+          <a href="#gallery">Примеры работ</a>
+          <a href="#reviews">Отзывы</a>
+          <a href="#news">Новости</a>
+        </div>
+        <div class="footer-col">
+          <h5>Контакты</h5>
+          <a href="tel:+79991234567">+7 (999) 123-45-67</a>
+          <a href="https://t.me/mirokon_bot" target="_blank" rel="noopener">Telegram</a>
+          <a href="#contact">Заказать звонок</a>
+          <a href="/privacy.html" target="_blank" rel="noopener">Политика конфиденциальности</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 Mirokon · Москва и МО</span>
+        <a href="/privacy.html" target="_blank" rel="noopener">Обработка персональных данных</a>
+      </div>
     </div>
   </footer>
 
@@ -631,6 +679,16 @@ h1,h2,h3,h4{font-family:'Montserrat',sans-serif;letter-spacing:-.02em}
 
     function scrollToForm() {
       document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Мобильное меню
+    function toggleMenu() {
+      const open = document.getElementById('mobile-nav').classList.toggle('open');
+      document.getElementById('menu-btn').setAttribute('aria-expanded', open);
+    }
+    function closeMenu() {
+      document.getElementById('mobile-nav').classList.remove('open');
+      document.getElementById('menu-btn').setAttribute('aria-expanded', 'false');
     }
 
     function addToCart() {
