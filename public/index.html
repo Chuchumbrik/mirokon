@@ -8,9 +8,6 @@
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-      <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    
 <style>
 .constructor-section {
   background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
@@ -87,7 +84,7 @@
         <rect x="35" y="50" width="15" height="15" fill="#E0F2FE" stroke="#60A5FA" stroke-width="1"/>
         <rect x="50" y="50" width="15" height="15" fill="#E0F2FE" stroke="#60A5FA" stroke-width="1"/>
         <!-- Handle -->
-        <circle cx="72" y="50" r="3" fill="#3B82F6"/>
+        <circle cx="72" cy="50" r="3" fill="#3B82F6"/>
         <!-- Text -->
         <text x="50" y="95" text-anchor="middle" font-size="12" font-weight="bold" fill="#1E40AF">Mirokon</text>
       </svg>
@@ -120,67 +117,67 @@
   </section>
 
   <!-- Constructor -->
-  <section id=\"constructor\" class=\"py-24 bg-white\">
-    <div class=\"container mx-auto px-4\">
-      <h2 class=\"text-4xl font-bold text-center mb-16 text-gray-800\">Конструктор пластиковых окон</h2>
-      <div class=\"grid grid-cols-1 lg:grid-cols-2 gap-12 items-start\">
+  <section id="constructor" class="py-24 bg-white">
+    <div class="container mx-auto px-4">
+      <h2 class="text-4xl font-bold text-center mb-16 text-gray-800">Конструктор пластиковых окон</h2>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
         <!-- Preview -->
-        <div class=\"text-center\">
-          <svg id=\"window-svg\" class=\"w-full max-w-md h-80 bg-gray-100 rounded-2xl border-4 border-gray-200 mx-auto shadow-lg\" viewBox=\"0 0 400 300\" preserveAspectRatio=\"xMidYMid meet\"></svg>
-          <div id=\"total-price\" class=\"text-5xl font-black text-blue-600 mt-8 drop-shadow-lg\">20 026 ₽</div>
-          <p class=\"text-gray-600 mt-2\">Ориентировочная стоимость</p>
+        <div class="text-center">
+          <svg id="window-svg" class="w-full max-w-md h-80 bg-gray-100 rounded-2xl border-4 border-gray-200 mx-auto shadow-lg" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet"></svg>
+          <div id="total-price" class="text-5xl font-black text-blue-600 mt-8 drop-shadow-lg">20 026 ₽</div>
+          <p class="text-gray-600 mt-2">Ориентировочная стоимость</p>
         </div>
         <!-- Controls -->
-        <div class=\"space-y-6\">
+        <div class="space-y-6">
           <div>
-            <label class=\"block text-xl font-bold mb-3\">Тип конструкции</label>
-            <select id=\"window-type\" class=\"w-full p-4 rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:outline-none text-lg\">
-              <option value=\"single-turn\">Одностворчатое поворотное</option>
-              <option value=\"single-deaf\">Одностворчатое глухое</option>
-              <option value=\"double-deaf-turn\">Двустворчатое (глухое+поворотное)</option>
-              <option value=\"double-turn\">Двустворчатое поворотное</option>
-              <option value=\"triple\">Трехстворчатое</option>
-              <option value=\"balcony\">Балконный блок</option>
+            <label class="block text-xl font-bold mb-3">Тип конструкции</label>
+            <select id="window-type" class="w-full p-4 rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:outline-none text-lg">
+              <option value="single-turn">Одностворчатое поворотное</option>
+              <option value="single-deaf">Одностворчатое глухое</option>
+              <option value="double-deaf-turn">Двустворчатое (глухое+поворотное)</option>
+              <option value="double-turn">Двустворчатое поворотное</option>
+              <option value="triple">Трехстворчатое</option>
+              <option value="balcony">Балконный блок</option>
             </select>
           </div>
           <div>
-            <label class=\"block text-xl font-bold mb-3\">Оконная система</label>
-            <select id=\"profile\" class=\"w-full p-4 rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:outline-none text-lg\">
-              <option value=\"whs60\" data-price=\"500\">WHS 60</option>
-              <option value=\"veka70\" data-price=\"700\">VEKA Softline 70</option>
-              <option value=\"rehau-delight\" data-price=\"800\">REHAU Delight</option>
-              <option value=\"salamander\" data-price=\"900\">Salamander</option>
+            <label class="block text-xl font-bold mb-3">Оконная система</label>
+            <select id="profile" class="w-full p-4 rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:outline-none text-lg">
+              <option value="whs60" data-price="500">WHS 60</option>
+              <option value="veka70" data-price="700">VEKA Softline 70</option>
+              <option value="rehau-delight" data-price="800">REHAU Delight</option>
+              <option value="salamander" data-price="900">Salamander</option>
             </select>
           </div>
           <div>
-            <label class=\"block text-xl font-bold mb-3\">Стеклопакет</label>
-            <select id=\"glass\" class=\"w-full p-4 rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:outline-none text-lg\">
-              <option value=\"24mm\" data-price=\"200\">24 мм (1-камерный)</option>
-              <option value=\"32mm\" data-price=\"350\">32 мм (2-камерный)</option>
-              <option value=\"40mm\" data-price=\"500\">40 мм (2-камерный low-e)</option>
-              <option value=\"44mm\" data-price=\"650\">44 мм (3-камерный)</option>
+            <label class="block text-xl font-bold mb-3">Стеклопакет</label>
+            <select id="glass" class="w-full p-4 rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:outline-none text-lg">
+              <option value="24mm" data-price="200">24 мм (1-камерный)</option>
+              <option value="32mm" data-price="350">32 мм (2-камерный)</option>
+              <option value="40mm" data-price="500">40 мм (2-камерный low-e)</option>
+              <option value="44mm" data-price="650">44 мм (3-камерный)</option>
             </select>
           </div>
           <div>
-            <label class=\"block text-xl font-bold mb-3\">Фурнитура</label>
-            <select id=\"hardware\" class=\"w-full p-4 rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:outline-none text-lg\">
-              <option value=\"propilot\" data-price=\"300\">ProPilot</option>
-              <option value=\"roto\" data-price=\"450\">Roto</option>
+            <label class="block text-xl font-bold mb-3">Фурнитура</label>
+            <select id="hardware" class="w-full p-4 rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:outline-none text-lg">
+              <option value="propilot" data-price="300">ProPilot</option>
+              <option value="roto" data-price="450">Roto</option>
             </select>
           </div>
           <div>
-            <label class=\"block text-xl font-bold mb-3\">Ширина (мм)</label>
-            <input type=\"range\" id=\"width\" min=\"800\" max=\"2000\" value=\"1400\" class=\"w-full h-3 bg-gradient-to-r from-blue-400 to-blue-600 rounded-lg appearance-none cursor-pointer\">
-            <div class=\"flex justify-between text-sm mt-1\"><span>800</span><span id=\"width-val\">1400</span><span>2000</span></div>
+            <label class="block text-xl font-bold mb-3">Ширина (мм)</label>
+            <input type="range" id="width" min="800" max="2000" value="1400" class="w-full h-3 bg-gradient-to-r from-blue-400 to-blue-600 rounded-lg appearance-none cursor-pointer">
+            <div class="flex justify-between text-sm mt-1"><span>800</span><span id="width-val">1400</span><span>2000</span></div>
           </div>
           <div>
-            <label class=\"block text-xl font-bold mb-3\">Высота (мм)</label>
-            <input type=\"range\" id=\"height\" min=\"600\" max=\"2400\" value=\"1400\" class=\"w-full h-3 bg-gradient-to-r from-blue-400 to-blue-600 rounded-lg appearance-none cursor-pointer\">
-            <div class=\"flex justify-between text-sm mt-1\"><span>600</span><span id=\"height-val\">1400</span><span>2400</span></div>
+            <label class="block text-xl font-bold mb-3">Высота (мм)</label>
+            <input type="range" id="height" min="600" max="2400" value="1400" class="w-full h-3 bg-gradient-to-r from-blue-400 to-blue-600 rounded-lg appearance-none cursor-pointer">
+            <div class="flex justify-between text-sm mt-1"><span>600</span><span id="height-val">1400</span><span>2400</span></div>
           </div>
-          <div class=\"grid grid-cols-2 gap-4 mt-8 pt-6 border-t\">
-            <button onclick=\"addToCart()\" class=\"bg-blue-600 text-white py-4 px-6 rounded-2xl font-bold text-lg hover:bg-blue-700 shadow-lg transition-all\">Добавить в заявку</button>
-            <button onclick=\"resetCalc()\" class=\"bg-gray-200 text-gray-800 py-4 px-6 rounded-2xl font-bold text-lg hover:bg-gray-300 transition-all\">Сбросить</button>
+          <div class="grid grid-cols-2 gap-4 mt-8 pt-6 border-t">
+            <button onclick="addToCart()" class="bg-blue-600 text-white py-4 px-6 rounded-2xl font-bold text-lg hover:bg-blue-700 shadow-lg transition-all">Добавить в заявку</button>
+            <button onclick="resetCalc()" class="bg-gray-200 text-gray-800 py-4 px-6 rounded-2xl font-bold text-lg hover:bg-gray-300 transition-all">Сбросить</button>
           </div>
         </div>
       </div>
@@ -468,7 +465,7 @@
 
       total += parseFloat(prof || 0) * perim + parseFloat(gl || 0) * (w * h) + parseFloat(hw || 0);
 
-      priceEl.textContent = Math.round(total).toLocaleString() + ' ₽';
+      priceEl.textContent = Math.round(total).toLocaleString('ru-RU') + ' ₽';
     }
 
     function drawWindow() {
@@ -481,21 +478,21 @@
       const stroke = 8;
 
       // Frame
-      svg.innerHTML += `<rect x=\"25\" y=\"25\" width=\"${frameW}\" height=\"${frameH}\" rx=\"10\" fill=\"#F5F5F5\" stroke=\"#4A90E2\" stroke-width=\"${stroke}\"/>`;
+      svg.innerHTML += `<rect x="25" y="25" width="${frameW}" height="${frameH}" rx="10" fill="#F5F5F5" stroke="#4A90E2" stroke-width="${stroke}"/>`;
 
       // Panes based on type
       if (type === 'single-turn') {
-        svg.innerHTML += `<rect x=\"60\" y=\"60\" width=\"280\" height=\"180\" fill=\"#E3F2FD\" stroke=\"#2196F3\" stroke-width=\"2\" opacity=\"0.8\"/>`;
+        svg.innerHTML += `<rect x="60" y="60" width="280" height="180" fill="#E3F2FD" stroke="#2196F3" stroke-width="2" opacity="0.8"/>`;
         // Handle
-        svg.innerHTML += `<circle cx=\"320\" cy=\"150\" r=\"8\" fill=\"#4A90E2\"/>`;
+        svg.innerHTML += `<circle cx="320" cy="150" r="8" fill="#4A90E2"/>`;
       } else if (type === 'double-deaf-turn') {
-        svg.innerHTML += `<rect x=\"60\" y=\"60\" width=\"130\" height=\"180\" fill=\"#BBDEFB\" stroke=\"#42A5F5\" stroke-width=\"2\" opacity=\"0.7\"/>`;
-        svg.innerHTML += `<rect x=\"200\" y=\"60\" width=\"140\" height=\"180\" fill=\"#E3F2FD\" stroke=\"#2196F3\" stroke-width=\"2\" opacity=\"0.8\"/>`;
-        svg.innerHTML += `<circle cx=\"330\" cy=\"150\" r=\"8\" fill=\"#4A90E2\"/>`;
+        svg.innerHTML += `<rect x="60" y="60" width="130" height="180" fill="#BBDEFB" stroke="#42A5F5" stroke-width="2" opacity="0.7"/>`;
+        svg.innerHTML += `<rect x="200" y="60" width="140" height="180" fill="#E3F2FD" stroke="#2196F3" stroke-width="2" opacity="0.8"/>`;
+        svg.innerHTML += `<circle cx="330" cy="150" r="8" fill="#4A90E2"/>`;
       } // add more types...
 
       // Scale dimensions text
-      svg.innerHTML += `<text x=\"200\" y=\"290\" text-anchor=\"middle\" font-size=\"20\" font-weight=\"bold\" fill=\"#333\">${widthSlider.value} x ${heightSlider.value} мм</text>`;
+      svg.innerHTML += `<text x="200" y="290" text-anchor="middle" font-size="20" font-weight="bold" fill="#333">${widthSlider.value} x ${heightSlider.value} мм</text>`;
     }
 
     // Events
@@ -552,10 +549,65 @@ spaceBetween: 30,
 function openReviewModal() {
 document.getElementById('review-modal').classList.remove('hidden');
 document.body.style.overflow = 'hidden';
+highlightStars(parseInt(document.getElementById('r-rating').value) || 5);
 }
 function closeReviewModal() {
 document.getElementById('review-modal').classList.add('hidden');
 document.body.style.overflow = 'auto';
 document.getElementById('review-form').reset();
-document.querySelectorAll('.star').forEach(s => s.style.color = '#9ca3af');
 document.getElementById('r-rating').value = 5;
+highlightStars(5);
+}
+
+// Star rating interaction
+const stars = document.querySelectorAll('.star');
+const ratingInput = document.getElementById('r-rating');
+function highlightStars(n) {
+  stars.forEach(s => {
+    s.style.color = (parseInt(s.dataset.rating) <= n) ? '#fbbf24' : '#d1d5db';
+  });
+}
+stars.forEach(star => {
+  star.addEventListener('click', () => {
+    const val = parseInt(star.dataset.rating);
+    ratingInput.value = val;
+    highlightStars(val);
+  });
+  star.addEventListener('mouseenter', () => highlightStars(parseInt(star.dataset.rating)));
+});
+const ratingRow = document.querySelector('.rating');
+if (ratingRow) ratingRow.addEventListener('mouseleave', () => highlightStars(parseInt(ratingInput.value) || 5));
+highlightStars(parseInt(ratingInput.value) || 5);
+
+// Review form submit -> /api/review (модерация в Telegram)
+document.getElementById('review-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const name = document.getElementById('r-name').value.trim();
+  const rating = parseInt(document.getElementById('r-rating').value);
+  const text = document.getElementById('r-text').value.trim();
+  if (!name || !text) { alert('Пожалуйста, заполните имя и текст отзыва'); return; }
+  const btn = e.target.querySelector('button[type="submit"]');
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Отправка...';
+  try {
+    const res = await fetch('/api/review', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, rating, text })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) {
+      alert(data.message || 'Спасибо! Ваш отзыв отправлен на модерацию.');
+      closeReviewModal();
+    } else {
+      alert('Ошибка: ' + (data.error || ('код ' + res.status)));
+    }
+  } catch (err) {
+    alert('Ошибка отправки: ' + err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = orig;
+  }
+});
+  </script>
+</body>
+</html>

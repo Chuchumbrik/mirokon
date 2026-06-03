@@ -1,10 +1,10 @@
-&lt;!DOCTYPE html&gt;
-&lt;html lang="en"&gt;
-&lt;head&gt;
-  &lt;meta charset="UTF-8"&gt;
-  &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
-  &lt;title&gt;Mirokon - Login&lt;/title&gt;
-  &lt;style&gt;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mirokon - Login</title>
+  <style>
     body { 
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
@@ -47,16 +47,16 @@
       transition: background 0.3s; 
     }
     button:hover { background: #00f2fe; }
-  &lt;/style&gt;
-&lt;/head&gt;
-&lt;body&gt;
-  &lt;div class="login-form"&gt;
-    &lt;h1&gt;Mirokon Admin&lt;/h1&gt;
-    &lt;input type="text" id="username" placeholder="Username"&gt;
-    &lt;input type="password" id="password" placeholder="Password"&gt;
-    &lt;button onclick="login()"&gt;Login&lt;/button&gt;
-  &lt;/div&gt;
-  &lt;script&gt;
+  </style>
+</head>
+<body>
+  <div class="login-form">
+    <h1>Mirokon Admin</h1>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+  </div>
+  <script>
     async function login() {
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
@@ -77,6 +77,6 @@
         alert('Error: ' + e.message);
       }
     }
-  &lt;/script&gt;
-&lt;/body&gt;
-&lt;/html&gt;
+  </script>
+</body>
+</html>
