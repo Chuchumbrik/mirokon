@@ -93,17 +93,34 @@ h1,h2,h3,h4{font-family:'Montserrat',sans-serif;letter-spacing:-.02em}
 .ctor-range::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--accent);border:3px solid #fff;box-shadow:var(--sh-md);cursor:pointer}
 .ctor-range:focus-visible{box-shadow:0 0 0 4px rgba(59,130,246,.2)}
 .range-scale{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted);margin-top:6px}
-#review-modal {
-  backdrop-filter: blur(20px);
-}
-#review-modal .bg-white {
-  background: rgba(255,255,255,0.95);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.2);
-}
-.swiper-button-next, .swiper-button-prev {
-  color: #3b82f6;
-}
+/* reviews */
+.reviews-sec{background:#fff}
+.review-card{background:#fff;border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--sh-md);padding:30px;margin:0 12px 8px;height:calc(100% - 8px);display:flex;flex-direction:column}
+.review-stars{color:#fbbf24;font-size:1.05rem;letter-spacing:3px;margin-bottom:16px}
+.review-card .quote{color:#334155;font-size:1.05rem;line-height:1.6;flex:1}
+.review-author{display:flex;align-items:center;gap:14px;margin-top:22px}
+.review-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Montserrat';font-weight:700;font-size:1.15rem;flex:none;background:linear-gradient(135deg,var(--primary),var(--accent))}
+.review-author h4{font-weight:700;color:var(--ink);font-size:1rem}
+.review-author p{color:var(--muted);font-size:.85rem}
+.mySwiper{padding-bottom:56px!important}
+.mySwiper .swiper-slide{height:auto}
+.swiper-button-next,.swiper-button-prev{color:var(--accent)}
+.swiper-button-next:after,.swiper-button-prev:after{font-size:22px!important;font-weight:700}
+.swiper-pagination-bullet-active{background:var(--primary)}
+/* review modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.6);backdrop-filter:blur(6px);z-index:60;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.hidden{display:none}
+.modal-card{background:#fff;border-radius:var(--r-lg);box-shadow:var(--sh-lg);width:100%;max-width:520px;padding:36px;position:relative}
+.modal-close{position:absolute;top:18px;right:18px;width:40px;height:40px;border:none;background:#f1f5f9;border-radius:50%;font-size:1.4rem;color:var(--muted);cursor:pointer;line-height:1;transition:.2s}
+.modal-close:hover{background:#e2e8f0;color:var(--ink)}
+.modal-card h3{font-size:1.6rem;font-weight:800;text-align:center;margin-bottom:8px;color:var(--ink)}
+.modal-card .sub{text-align:center;color:var(--muted);margin-bottom:22px;font-size:.95rem}
+.rating{display:flex;justify-content:center;gap:8px;font-size:2.2rem;margin:6px 0 16px}
+.star{cursor:pointer;transition:transform .15s;color:#d1d5db;line-height:1}
+.star:hover{transform:scale(1.15)}
+.modal-card .field input,.modal-card .field textarea{width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:var(--r-md);font-family:'Inter';font-size:1rem;color:var(--ink);transition:.2s}
+.modal-card .field input:focus,.modal-card .field textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px rgba(59,130,246,.15)}
+.modal-card .field input.invalid,.modal-card .field textarea.invalid{border-color:#ef4444;box-shadow:0 0 0 4px rgba(239,68,68,.12)}
 </style></head>
 <body class="min-h-screen">
   <!-- Header -->
@@ -320,90 +337,57 @@ h1,h2,h3,h4{font-family:'Montserrat',sans-serif;letter-spacing:-.02em}
   </section>
 
   <!-- Reviews -->
-  <section id="reviews" class="py-24">
+  <section id="reviews" class="reviews-sec py-24">
     <div class="container mx-auto px-4">
-      <h2 class="text-4xl font-bold text-center mb-16 text-gray-800">
-        Отзывы клиентов
-      </h2>
-      <button onclick="openReviewModal()" class="bg-blue-600 text-white px-12 py-4 rounded-2xl font-bold text-xl mx-auto block mb-12 shadow-xl hover:shadow-2xl hover:bg-blue-700 transition-all">Оставить отзыв</button>
-      <div class="swiper mySwiper pb-12">
+      <div class="text-center" style="max-width:640px;margin:0 auto 18px">
+        <h2 class="text-4xl font-bold" style="color:var(--ink)">Отзывы клиентов</h2>
+        <p style="margin-top:12px;font-size:1.1rem;color:var(--muted)">Нам доверяют остекление квартир, домов и балконов в Москве и области.</p>
+      </div>
+      <div style="text-align:center;margin:0 0 40px">
+        <button onclick="openReviewModal()" class="btn-ds btn-ds-secondary">Оставить отзыв</button>
+      </div>
+      <div class="swiper mySwiper">
         <div class="swiper-wrapper">
           <div class="swiper-slide">
-            <div class="bg-white rounded-2xl shadow-xl p-8 mx-4">
-              <div class="flex items-center mb-4">
-                <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">И</div>
-                <div>
-                  <h4 class="font-bold text-gray-800">Иван П.</h4>
-                  <p class="text-gray-500 text-sm">Москва</p>
-                </div>
-              </div>
-              <p class="text-gray-700 italic mb-6">"Отличная работа! Окна установили за день, без грязи и пыли. Рекомендую!"</p>
-              <div class="flex text-yellow-400">⭐⭐⭐⭐⭐</div>
+            <div class="review-card">
+              <div class="review-stars" aria-label="5 из 5">★★★★★</div>
+              <p class="quote">«Отличная работа! Окна установили за день, без грязи и пыли. Рекомендую!»</p>
+              <div class="review-author"><div class="review-avatar">И</div><div><h4>Иван П.</h4><p>Москва</p></div></div>
             </div>
           </div>
           <div class="swiper-slide">
-            <div class="bg-white rounded-2xl shadow-xl p-8 mx-4">
-              <div class="flex items-center mb-4">
-                <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">А</div>
-                <div>
-                  <h4 class="font-bold text-gray-800">Анна С.</h4>
-                  <p class="text-gray-500 text-sm">СПб</p>
-                </div>
-              </div>
-              <p class="text-gray-700 italic mb-6">"Быстро и качественно. Цены ниже конкурентов, окна теплые."</p>
-              <div class="flex text-yellow-400">⭐⭐⭐⭐⭐</div>
+            <div class="review-card">
+              <div class="review-stars" aria-label="5 из 5">★★★★★</div>
+              <p class="quote">«Быстро и аккуратно. Менеджер всё подробно рассчитал, окна тёплые.»</p>
+              <div class="review-author"><div class="review-avatar">А</div><div><h4>Анна С.</h4><p>Химки</p></div></div>
             </div>
           </div>
           <div class="swiper-slide">
-            <div class="bg-white rounded-2xl shadow-xl p-8 mx-4">
-              <div class="flex items-center mb-4">
-                <div class="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">С</div>
-                <div>
-                  <h4 class="font-bold text-gray-800">Сергей К.</h4>
-                  <p class="text-gray-500 text-sm">Екатеринбург</p>
-                </div>
-              </div>
-              <p class="text-gray-700 italic mb-6">"Профессионалы! Установили балконный блок идеально."</p>
-              <div class="flex text-yellow-400">⭐⭐⭐⭐⭐</div>
+            <div class="review-card">
+              <div class="review-stars" aria-label="5 из 5">★★★★★</div>
+              <p class="quote">«Профессионалы! Установили балконный блок идеально, всё ровно.»</p>
+              <div class="review-author"><div class="review-avatar">С</div><div><h4>Сергей К.</h4><p>Подольск</p></div></div>
             </div>
           </div>
           <div class="swiper-slide">
-            <div class="bg-white rounded-2xl shadow-xl p-8 mx-4">
-              <div class="flex items-center mb-4">
-                <div class="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">М</div>
-                <div>
-                  <h4 class="font-bold text-gray-800">Мария В.</h4>
-                  <p class="text-gray-500 text-sm">Новосибирск</p>
-                </div>
-              </div>
-              <p class="text-gray-700 italic mb-6">"Супер команда! Всё сделали быстро, окна отличные, тепло стало."</p>
-              <div class="flex text-yellow-400">⭐⭐⭐⭐⭐</div>
+            <div class="review-card">
+              <div class="review-stars" aria-label="5 из 5">★★★★★</div>
+              <p class="quote">«Супер команда! Сделали быстро, окна отличные, в квартире стало тихо.»</p>
+              <div class="review-author"><div class="review-avatar">М</div><div><h4>Мария В.</h4><p>Мытищи</p></div></div>
             </div>
           </div>
           <div class="swiper-slide">
-            <div class="bg-white rounded-2xl shadow-xl p-8 mx-4">
-              <div class="flex items-center mb-4">
-                <div class="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">Д</div>
-                <div>
-                  <h4 class="font-bold text-gray-800">Дмитрий Л.</h4>
-                  <p class="text-gray-500 text-sm">Казань</p>
-                </div>
-              </div>
-              <p class="text-gray-700 italic mb-6">"Рекомендую! Качество установки на высоте, цены адекватные."</p>
-              <div class="flex text-yellow-400">⭐⭐⭐⭐⭐</div>
+            <div class="review-card">
+              <div class="review-stars" aria-label="5 из 5">★★★★★</div>
+              <p class="quote">«Качество монтажа на высоте, договор и гарантия — всё как обещали.»</p>
+              <div class="review-author"><div class="review-avatar">Д</div><div><h4>Дмитрий Л.</h4><p>Балашиха</p></div></div>
             </div>
           </div>
           <div class="swiper-slide">
-            <div class="bg-white rounded-2xl shadow-xl p-8 mx-4">
-              <div class="flex items-center mb-4">
-                <div class="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">О</div>
-                <div>
-                  <h4 class="font-bold text-gray-800">Ольга Н.</h4>
-                  <p class="text-gray-500 text-sm">Ростов</p>
-                </div>
-              </div>
-              <p class="text-gray-700 italic mb-6">"Спасибо за оперативность и аккуратность. Окна супер!"</p>
-              <div class="flex text-yellow-400">⭐⭐⭐⭐⭐</div>
+            <div class="review-card">
+              <div class="review-stars" aria-label="5 из 5">★★★★★</div>
+              <p class="quote">«Спасибо за оперативность и аккуратность. Окна супер, чисто убрали за собой.»</p>
+              <div class="review-author"><div class="review-avatar">О</div><div><h4>Ольга Н.</h4><p>Красногорск</p></div></div>
             </div>
           </div>
         </div>
@@ -411,7 +395,7 @@ h1,h2,h3,h4{font-family:'Montserrat',sans-serif;letter-spacing:-.02em}
         <div class="swiper-button-next"></div>
         <div class="swiper-button-prev"></div>
       </div>
-      <p class="text-center text-gray-500 italic mt-8">Все отзывы проверены и одобрены модератором</p>
+      <p class="text-center" style="color:var(--muted);font-size:.9rem;margin-top:8px">Публикуем только проверенные отзывы после модерации.</p>
     </div>
   </section>
 
@@ -497,27 +481,30 @@ h1,h2,h3,h4{font-family:'Montserrat',sans-serif;letter-spacing:-.02em}
 
 
 <!-- Review Modal -->
-<div id="review-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-<div class="bg-white/95 backdrop-blur-xl w-full max-w-lg rounded-3xl p-8 shadow-2xl mx-4 border border-white/20">
-<button onclick="closeReviewModal()" class="absolute top-6 right-6 text-3xl font-bold text-gray-500 hover:text-gray-800 transition-all rounded-full w-12 h-12 flex items-center justify-center hover:bg-gray-200">&times;</button>
-<h3 class="text-3xl font-bold mb-8 text-center text-gray-800">Оставить отзыв</h3>
-<form id="review-form" class="space-y-6">
-<input type="text" id="r-name" placeholder="Ваше имя *" class="w-full p-5 border-2 border-gray-300 rounded-2xl focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100 shadow-lg transition-all text-lg" required>
-<div class="flex justify-center mb-8">
-<div class="rating flex text-4xl gap-2">
-<span class="star cursor-pointer transition-all hover:scale-110" data-rating="1">⭐</span>
-<span class="star cursor-pointer transition-all hover:scale-110" data-rating="2">⭐</span>
-<span class="star cursor-pointer transition-all hover:scale-110" data-rating="3">⭐</span>
-<span class="star cursor-pointer transition-all hover:scale-110" data-rating="4">⭐</span>
-<span class="star cursor-pointer transition-all hover:scale-110" data-rating="5">⭐</span>
-</div>
-</div>
-<input type="hidden" id="r-rating" value="5">
-<textarea id="r-text" placeholder="Расскажите о вашем опыте установки окон..." rows="5" class="w-full p-5 border-2 border-gray-300 rounded-2xl focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100 shadow-lg transition-all resize-vertical text-lg" required></textarea>
-<button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-5 rounded-2xl font-bold text-xl shadow-xl hover:shadow-2xl hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-105">Отправить на модерацию</button>
-<p class="text-xs text-gray-500 text-center mt-4 animate-pulse">Отзыв будет опубликован после проверки</p>
-</form>
-</div>
+<div id="review-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="review-modal-title">
+  <div class="modal-card">
+    <button onclick="closeReviewModal()" class="modal-close" aria-label="Закрыть">&times;</button>
+    <h3 id="review-modal-title">Оставить отзыв</h3>
+    <p class="sub">Поделитесь опытом — после модерации отзыв появится на сайте.</p>
+    <form id="review-form" class="space-y-4" novalidate>
+      <div class="field">
+        <input type="text" id="r-name" placeholder="Ваше имя" autocomplete="name" required>
+      </div>
+      <div class="rating" role="radiogroup" aria-label="Оценка">
+        <span class="star" data-rating="1" role="radio" aria-label="1 звезда" tabindex="0">★</span>
+        <span class="star" data-rating="2" role="radio" aria-label="2 звезды" tabindex="0">★</span>
+        <span class="star" data-rating="3" role="radio" aria-label="3 звезды" tabindex="0">★</span>
+        <span class="star" data-rating="4" role="radio" aria-label="4 звезды" tabindex="0">★</span>
+        <span class="star" data-rating="5" role="radio" aria-label="5 звёзд" tabindex="0">★</span>
+      </div>
+      <input type="hidden" id="r-rating" value="5">
+      <div class="field">
+        <textarea id="r-text" rows="4" placeholder="Расскажите о вашем опыте установки окон…" required></textarea>
+      </div>
+      <button type="submit" class="btn-ds btn-ds-primary" style="width:100%;justify-content:center">Отправить на модерацию</button>
+      <div class="form-status" id="review-status" role="status" aria-live="polite"></div>
+    </form>
+  </div>
 </div>  <footer class="bg-gray-900 text-white py-8">
     <div class="container mx-auto px-4 text-center">
       <p>&copy; 2026 Mirokon &middot; v1.2 Hermes clean 2026-05-04 no line nums. Все права защищены.</p>
@@ -663,6 +650,9 @@ const swiper = new Swiper('.mySwiper', {
 slidesPerView: 1,
 spaceBetween: 30,
 loop: true,
+grabCursor: true,
+keyboard: { enabled: true },
+a11y: { enabled: true },
 pagination: {
 el: '.swiper-pagination',
 clickable: true,
@@ -683,50 +673,81 @@ spaceBetween: 30,
 },
 });
 
-// Review modal functions
-function openReviewModal() {
-document.getElementById('review-modal').classList.remove('hidden');
-document.body.style.overflow = 'hidden';
-highlightStars(parseInt(document.getElementById('r-rating').value) || 5);
-}
-function closeReviewModal() {
-document.getElementById('review-modal').classList.add('hidden');
-document.body.style.overflow = 'auto';
-document.getElementById('review-form').reset();
-document.getElementById('r-rating').value = 5;
-highlightStars(5);
-}
-
-// Star rating interaction
+// ===== Review modal =====
+const reviewModal = document.getElementById('review-modal');
+const reviewStatusEl = document.getElementById('review-status');
 const stars = document.querySelectorAll('.star');
 const ratingInput = document.getElementById('r-rating');
+let lastFocused = null;
+
 function highlightStars(n) {
-  stars.forEach(s => {
-    s.style.color = (parseInt(s.dataset.rating) <= n) ? '#fbbf24' : '#d1d5db';
-  });
+  stars.forEach(s => { s.style.color = (parseInt(s.dataset.rating) <= n) ? '#fbbf24' : '#d1d5db'; });
+}
+
+function trapFocus(e) {
+  if (e.key === 'Escape') { closeReviewModal(); return; }
+  if (e.key !== 'Tab') return;
+  const f = reviewModal.querySelectorAll('button, input, textarea, [tabindex]:not([tabindex="-1"])');
+  if (!f.length) return;
+  const first = f[0], last = f[f.length - 1];
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+}
+
+function openReviewModal() {
+  lastFocused = document.activeElement;
+  reviewModal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  reviewStatusEl.className = 'form-status';
+  highlightStars(parseInt(ratingInput.value) || 5);
+  document.addEventListener('keydown', trapFocus);
+  document.getElementById('r-name').focus();
+}
+
+function closeReviewModal() {
+  reviewModal.classList.add('hidden');
+  document.body.style.overflow = '';
+  document.getElementById('review-form').reset();
+  ratingInput.value = 5;
+  highlightStars(5);
+  reviewStatusEl.className = 'form-status';
+  document.removeEventListener('keydown', trapFocus);
+  if (lastFocused) lastFocused.focus();
+}
+
+// клик по затемнению вне карточки закрывает модалку
+reviewModal.addEventListener('click', (e) => { if (e.target === reviewModal) closeReviewModal(); });
+
+// выбор рейтинга: клик, клавиатура, ховер
+function pickStar(star) {
+  ratingInput.value = parseInt(star.dataset.rating);
+  highlightStars(parseInt(star.dataset.rating));
 }
 stars.forEach(star => {
-  star.addEventListener('click', () => {
-    const val = parseInt(star.dataset.rating);
-    ratingInput.value = val;
-    highlightStars(val);
-  });
+  star.addEventListener('click', () => pickStar(star));
+  star.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pickStar(star); } });
   star.addEventListener('mouseenter', () => highlightStars(parseInt(star.dataset.rating)));
 });
 const ratingRow = document.querySelector('.rating');
 if (ratingRow) ratingRow.addEventListener('mouseleave', () => highlightStars(parseInt(ratingInput.value) || 5));
 highlightStars(parseInt(ratingInput.value) || 5);
 
-// Review form submit -> /api/review (модерация в Telegram)
+// отправка отзыва -> /api/review (модерация в Telegram)
 document.getElementById('review-form').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const name = document.getElementById('r-name').value.trim();
-  const rating = parseInt(document.getElementById('r-rating').value);
-  const text = document.getElementById('r-text').value.trim();
-  if (!name || !text) { alert('Пожалуйста, заполните имя и текст отзыва'); return; }
+  const nameEl = document.getElementById('r-name');
+  const textEl = document.getElementById('r-text');
+  const name = nameEl.value.trim();
+  const text = textEl.value.trim();
+  const rating = parseInt(ratingInput.value);
+  const setStatus = (type, msg) => { reviewStatusEl.className = 'form-status ' + type; reviewStatusEl.textContent = msg; };
+  nameEl.classList.toggle('invalid', !name);
+  textEl.classList.toggle('invalid', !text);
+  if (!name || !text) { setStatus('err', 'Заполните имя и текст отзыва'); return; }
   const btn = e.target.querySelector('button[type="submit"]');
   const orig = btn.textContent;
   btn.disabled = true; btn.textContent = 'Отправка...';
+  setStatus('', '');
   try {
     const res = await fetch('/api/review', {
       method: 'POST',
@@ -735,13 +756,14 @@ document.getElementById('review-form').addEventListener('submit', async (e) => {
     });
     const data = await res.json().catch(() => ({}));
     if (res.ok) {
-      alert(data.message || 'Спасибо! Ваш отзыв отправлен на модерацию.');
-      closeReviewModal();
+      setStatus('ok', data.message || 'Спасибо! Ваш отзыв отправлен на модерацию.');
+      document.getElementById('review-form').reset();
+      ratingInput.value = 5; highlightStars(5);
     } else {
-      alert('Ошибка: ' + (data.error || ('код ' + res.status)));
+      setStatus('err', 'Ошибка: ' + (data.error || ('код ' + res.status)));
     }
   } catch (err) {
-    alert('Ошибка отправки: ' + err.message);
+    setStatus('err', 'Ошибка отправки: ' + err.message);
   } finally {
     btn.disabled = false; btn.textContent = orig;
   }
