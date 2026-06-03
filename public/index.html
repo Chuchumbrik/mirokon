@@ -78,6 +78,32 @@ h1,h2,h3,h4{font-family:'Montserrat',sans-serif;letter-spacing:-.02em}
 .form-status.err{display:block;background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
 .hp{position:absolute!important;left:-9999px;width:1px;height:1px;overflow:hidden}
 @media(max-width:860px){.lead-grid{grid-template-columns:1fr;gap:32px}}
+/* gallery */
+.gallery-sec{background:linear-gradient(180deg,#fff,#f8fafc)}
+.gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.gallery-card{background:#fff;border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-sm);transition:box-shadow .25s,transform .25s;cursor:pointer}
+.gallery-card:hover{box-shadow:var(--sh-lg);transform:translateY(-4px)}
+.gallery-card:focus-visible{outline:3px solid rgba(59,130,246,.45);outline-offset:2px}
+.gallery-img{position:relative;height:220px;background:linear-gradient(135deg,#dbeafe,#eff6ff);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.gallery-img svg{width:58%;transition:transform .4s}
+.gallery-card:hover .gallery-img svg{transform:scale(1.07)}
+.gallery-cat{position:absolute;top:14px;left:14px;background:rgba(255,255,255,.92);backdrop-filter:blur(6px);color:var(--primary);font-weight:600;font-size:.8rem;padding:6px 12px;border-radius:var(--r-full);box-shadow:var(--sh-sm)}
+.gallery-overlay{position:absolute;inset:0;background:rgba(15,23,42,.32);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .25s}
+.gallery-card:hover .gallery-overlay,.gallery-card:focus-visible .gallery-overlay{opacity:1}
+.gallery-overlay span{background:#fff;color:var(--ink);font-weight:600;padding:10px 18px;border-radius:var(--r-full);box-shadow:var(--sh-md);font-size:.9rem;display:inline-flex;gap:8px;align-items:center}
+.gallery-body{padding:22px 24px}
+.gallery-body h3{font-weight:700;font-size:1.15rem;color:var(--ink);margin-bottom:6px}
+.gallery-body p{color:var(--muted);font-size:.95rem}
+.gallery-empty{text-align:center;padding:64px 20px;color:var(--muted);border:1px dashed var(--border);border-radius:var(--r-lg);background:#fff}
+/* lightbox */
+.lightbox-card{max-width:760px;padding:0;overflow:hidden}
+.lightbox-img{height:360px;background:linear-gradient(135deg,#dbeafe,#eff6ff);display:flex;align-items:center;justify-content:center}
+.lightbox-img svg{width:46%}
+.lightbox-body{padding:24px 28px}
+.lightbox-body h3{font-size:1.4rem;font-weight:800;color:var(--ink);margin-bottom:6px}
+.lightbox-body p{color:var(--muted)}
+@media(max-width:900px){.gallery-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.gallery-grid{grid-template-columns:1fr}}
 /* ===== /design system ===== */
 /* constructor */
 .ctor{background:var(--ice)}
@@ -271,70 +297,62 @@ h1,h2,h3,h4{font-family:'Montserrat',sans-serif;letter-spacing:-.02em}
   </section>
 
   <!-- Gallery -->
-  <section id="gallery" class="py-24 bg-gray-50">
+  <section id="gallery" class="gallery-sec py-24">
     <div class="container mx-auto px-4">
-      <h2 class="text-4xl font-bold text-center mb-16 text-gray-800">
-        Примеры работ
-      </h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-        <div class="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all">
-          <div class="h-64 bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
-            <span class="text-white text-2xl font-bold">Окно 1</span>
-          </div>
-          <div class="p-8">
-            <h3 class="font-bold text-xl mb-3 text-gray-800">Гостиная</h3>
-            <p class="text-gray-600 mb-4">Двойной стеклопакет, современный дизайн.</p>
-          </div>
-        </div>
-        <!-- Repeat for 5 more with different placeholders -->
-        <div class="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all">
-          <div class="h-64 bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
-            <span class="text-white text-2xl font-bold">Окно 2</span>
-          </div>
-          <div class="p-8">
-            <h3 class="font-bold text-xl mb-3 text-gray-800">Спальня</h3>
-            <p class="text-gray-600 mb-4">Энергоэффективное остекление.</p>
-          </div>
-        </div>
-        <div class="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all">
-          <div class="h-64 bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center">
-            <span class="text-white text-2xl font-bold">Окно 3</span>
-          </div>
-          <div class="p-8">
-            <h3 class="font-bold text-xl mb-3 text-gray-800">Кухня</h3>
-            <p class="text-gray-600 mb-4">Широкий профиль, шумоизоляция.</p>
-          </div>
-        </div>
-        <div class="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all">
-          <div class="h-64 bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
-            <span class="text-white text-2xl font-bold">Окно 4</span>
-          </div>
-          <div class="p-8">
-            <h3 class="font-bold text-xl mb-3 text-gray-800">Балкон</h3>
-            <p class="text-gray-600 mb-4">Полное остекление балкона.</p>
-          </div>
-        </div>
-        <div class="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all">
-          <div class="h-64 bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center">
-            <span class="text-white text-2xl font-bold">Окно 5</span>
-          </div>
-          <div class="p-8">
-            <h3 class="font-bold text-xl mb-3 text-gray-800">Ванная</h3>
-            <p class="text-gray-600 mb-4">Вентиляция + влагостойкий профиль.</p>
-          </div>
-        </div>
-        <div class="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all">
-          <div class="h-64 bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center">
-            <span class="text-white text-2xl font-bold">Окно 6</span>
-          </div>
-          <div class="p-8">
-            <h3 class="font-bold text-xl mb-3 text-gray-800">Дети</h3>
-            <p class="text-gray-600 mb-4">Безопасное стекло для детской.</p>
-          </div>
-        </div>
+      <div class="text-center" style="max-width:640px;margin:0 auto 48px">
+        <h2 class="text-4xl font-bold" style="color:var(--ink)">Примеры работ</h2>
+        <p style="margin-top:12px;font-size:1.1rem;color:var(--muted)">Остекление квартир, домов и балконов в Москве и области.</p>
       </div>
+
+      <!-- переиспользуемая иллюстрация окна -->
+      <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="win-illus" viewBox="0 0 200 150">
+        <rect x="20" y="12" width="160" height="118" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="5"/>
+        <rect x="30" y="22" width="68" height="98" rx="3" fill="#cfe4ff" stroke="#94a3b8" stroke-width="3"/>
+        <rect x="102" y="22" width="68" height="98" rx="3" fill="#eaf3ff" stroke="#94a3b8" stroke-width="3"/>
+        <path d="M40 34 L80 108" stroke="#fff" stroke-width="6" opacity="0.6" stroke-linecap="round"/>
+        <path d="M112 32 L150 108" stroke="#fff" stroke-width="8" opacity="0.6" stroke-linecap="round"/>
+        <rect x="96" y="60" width="8" height="26" rx="4" fill="#1E40AF"/>
+        <rect x="20" y="130" width="160" height="9" rx="3" fill="#cbd5e1"/>
+      </symbol></svg>
+
+      <div class="gallery-grid">
+        <article class="gallery-card" tabindex="0" role="button" data-title="Гостиная" data-desc="Панорамное остекление, двухкамерный стеклопакет, тёплый профиль." onclick="openLightbox(this)" onkeydown="if(event.key==='Enter')openLightbox(this)">
+          <div class="gallery-img"><span class="gallery-cat">Гостиная</span><svg><use href="#win-illus"/></svg><div class="gallery-overlay"><span>Смотреть ↗</span></div></div>
+          <div class="gallery-body"><h3>Гостиная</h3><p>Двухкамерный стеклопакет, современный дизайн.</p></div>
+        </article>
+        <article class="gallery-card" tabindex="0" role="button" data-title="Спальня" data-desc="Энергоэффективное остекление с тёплым профилем — тишина и комфорт." onclick="openLightbox(this)" onkeydown="if(event.key==='Enter')openLightbox(this)">
+          <div class="gallery-img"><span class="gallery-cat">Спальня</span><svg><use href="#win-illus"/></svg><div class="gallery-overlay"><span>Смотреть ↗</span></div></div>
+          <div class="gallery-body"><h3>Спальня</h3><p>Энергоэффективное остекление, тёплый профиль.</p></div>
+        </article>
+        <article class="gallery-card" tabindex="0" role="button" data-title="Кухня" data-desc="Широкий профиль и шумоизоляция — комфорт даже у оживлённой улицы." onclick="openLightbox(this)" onkeydown="if(event.key==='Enter')openLightbox(this)">
+          <div class="gallery-img"><span class="gallery-cat">Кухня</span><svg><use href="#win-illus"/></svg><div class="gallery-overlay"><span>Смотреть ↗</span></div></div>
+          <div class="gallery-body"><h3>Кухня</h3><p>Широкий профиль, шумоизоляция.</p></div>
+        </article>
+        <article class="gallery-card" tabindex="0" role="button" data-title="Балкон" data-desc="Полное остекление балкона под ключ с выносом и отделкой." onclick="openLightbox(this)" onkeydown="if(event.key==='Enter')openLightbox(this)">
+          <div class="gallery-img"><span class="gallery-cat">Балкон</span><svg><use href="#win-illus"/></svg><div class="gallery-overlay"><span>Смотреть ↗</span></div></div>
+          <div class="gallery-body"><h3>Балкон</h3><p>Полное остекление балкона под ключ.</p></div>
+        </article>
+        <article class="gallery-card" tabindex="0" role="button" data-title="Лоджия" data-desc="Тёплая лоджия: монтаж, утепление и аккуратная отделка." onclick="openLightbox(this)" onkeydown="if(event.key==='Enter')openLightbox(this)">
+          <div class="gallery-img"><span class="gallery-cat">Лоджия</span><svg><use href="#win-illus"/></svg><div class="gallery-overlay"><span>Смотреть ↗</span></div></div>
+          <div class="gallery-body"><h3>Лоджия</h3><p>Тёплое остекление и отделка.</p></div>
+        </article>
+        <article class="gallery-card" tabindex="0" role="button" data-title="Детская" data-desc="Безопасное стекло и детские замки на фурнитуре." onclick="openLightbox(this)" onkeydown="if(event.key==='Enter')openLightbox(this)">
+          <div class="gallery-img"><span class="gallery-cat">Детская</span><svg><use href="#win-illus"/></svg><div class="gallery-overlay"><span>Смотреть ↗</span></div></div>
+          <div class="gallery-body"><h3>Детская</h3><p>Безопасное стекло, детские замки.</p></div>
+        </article>
+      </div>
+      <p class="text-center" style="color:var(--muted);font-size:.85rem;margin-top:24px">Изображения — иллюстрации. Реальные фото работ добавим после запуска.</p>
     </div>
   </section>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="lb-title">
+    <div class="modal-card lightbox-card">
+      <button onclick="closeLightbox()" class="modal-close" aria-label="Закрыть" style="z-index:1">&times;</button>
+      <div class="lightbox-img"><svg><use href="#win-illus"/></svg></div>
+      <div class="lightbox-body"><h3 id="lb-title">Работа</h3><p id="lb-desc"></p></div>
+    </div>
+  </div>
 
   <!-- Reviews -->
   <section id="reviews" class="reviews-sec py-24">
@@ -768,6 +786,27 @@ document.getElementById('review-form').addEventListener('submit', async (e) => {
     btn.disabled = false; btn.textContent = orig;
   }
 });
+// ===== Gallery lightbox =====
+const lightbox = document.getElementById('lightbox');
+let lbLastFocused = null;
+function lbEsc(e) { if (e.key === 'Escape') closeLightbox(); }
+function openLightbox(card) {
+  lbLastFocused = document.activeElement;
+  document.getElementById('lb-title').textContent = card.dataset.title || 'Работа';
+  document.getElementById('lb-desc').textContent = card.dataset.desc || '';
+  lightbox.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  document.addEventListener('keydown', lbEsc);
+  lightbox.querySelector('.modal-close').focus();
+}
+function closeLightbox() {
+  lightbox.classList.add('hidden');
+  document.body.style.overflow = '';
+  document.removeEventListener('keydown', lbEsc);
+  if (lbLastFocused) lbLastFocused.focus();
+}
+lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+
 // Lead form — маска телефона, валидация, согласие, отправка в /api/lead (Telegram)
 (function () {
   const form = document.getElementById('lead-form');
