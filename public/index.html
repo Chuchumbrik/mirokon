@@ -384,16 +384,16 @@
       <h2 class="text-4xl font-bold text-center mb-12">
         Заказать звонок
       </h2>
-      <form class="space-y-6" action="mailto:info@mirokon.ru?subject=Заявка с сайта&body=" method="post" enctype="text/plain" target="_blank">
-        <input type="text" name="name" placeholder="Ваше имя" class="w-full p-5 rounded-xl text-lg bg-white/20 backdrop-blur border border-white/30 focus:border-white focus:outline-none" required>
-        <input type="tel" name="phone" placeholder="Телефон" class="w-full p-5 rounded-xl text-lg bg-white/20 backdrop-blur border border-white/30 focus:border-white focus:outline-none" required>
-        <textarea name="message" placeholder="Сообщение (опционально)" rows="4" class="w-full p-5 rounded-xl text-lg bg-white/20 backdrop-blur border border-white/30 focus:border-white focus:outline-none resize-vertical"></textarea>
+      <form id="lead-form" class="space-y-6">
+        <input type="text" id="lead-name" name="name" placeholder="Ваше имя" class="w-full p-5 rounded-xl text-lg bg-white/20 backdrop-blur border border-white/30 focus:border-white focus:outline-none" required>
+        <input type="tel" id="lead-phone" name="phone" placeholder="Телефон" class="w-full p-5 rounded-xl text-lg bg-white/20 backdrop-blur border border-white/30 focus:border-white focus:outline-none" required>
+        <textarea id="lead-message" name="message" placeholder="Сообщение (опционально)" rows="4" class="w-full p-5 rounded-xl text-lg bg-white/20 backdrop-blur border border-white/30 focus:border-white focus:outline-none resize-vertical"></textarea>
         <div class="flex space-x-4 text-sm">
           <a href="https://t.me/mirokon_bot" class="flex-1 bg-white/20 p-4 rounded-xl text-center hover:bg-white/30 transition-all">
             Telegram Bot
           </a>
           <button type="submit" class="flex-1 bg-white text-blue-600 p-4 rounded-xl font-bold text-lg hover:bg-gray-100 transition-all">
-            Отправить Email
+            Отправить заявку
           </button>
         </div>
       </form>
@@ -506,8 +506,28 @@
     drawWindow();
     calcPrice();
 
+    function scrollToForm() {
+      document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
+    }
+
     function addToCart() {
-      alert('Добавлено в заявку! В ближайшее время с вами свяжутся.');
+      // Переносим параметры конструктора в заявку (ТЗ C-5)
+      const typeText = document.getElementById('window-type').selectedOptions[0].textContent;
+      const profText = document.getElementById('profile').selectedOptions[0].textContent;
+      const glassText = document.getElementById('glass').selectedOptions[0].textContent;
+      const hwText = document.getElementById('hardware').selectedOptions[0].textContent;
+      const price = priceEl.textContent;
+      const summary =
+        `Заявка из конструктора:\n` +
+        `• Тип: ${typeText}\n` +
+        `• Профиль: ${profText}\n` +
+        `• Стеклопакет: ${glassText}\n` +
+        `• Фурнитура: ${hwText}\n` +
+        `• Размер: ${widthSlider.value}×${heightSlider.value} мм\n` +
+        `• Ориентировочно: ${price}`;
+      const msg = document.getElementById('lead-message');
+      if (msg) msg.value = summary;
+      scrollToForm();
     }
     function resetCalc() {
       document.getElementById('window-type').selectedIndex = 0;
@@ -599,6 +619,35 @@ document.getElementById('review-form').addEventListener('submit', async (e) => {
     if (res.ok) {
       alert(data.message || 'Спасибо! Ваш отзыв отправлен на модерацию.');
       closeReviewModal();
+    } else {
+      alert('Ошибка: ' + (data.error || ('код ' + res.status)));
+    }
+  } catch (err) {
+    alert('Ошибка отправки: ' + err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = orig;
+  }
+});
+// Lead form submit -> /api/lead (Telegram)
+document.getElementById('lead-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const name = document.getElementById('lead-name').value.trim();
+  const phone = document.getElementById('lead-phone').value.trim();
+  const message = document.getElementById('lead-message').value.trim();
+  if (!name || !phone) { alert('Пожалуйста, укажите имя и телефон'); return; }
+  const btn = e.target.querySelector('button[type="submit"]');
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Отправка...';
+  try {
+    const res = await fetch('/api/lead', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, phone, message })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) {
+      alert(data.message || 'Заявка отправлена! Мы свяжемся с вами.');
+      e.target.reset();
     } else {
       alert('Ошибка: ' + (data.error || ('код ' + res.status)));
     }
