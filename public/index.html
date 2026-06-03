@@ -57,51 +57,20 @@ h1,h2,h3,h4{font-family:'Montserrat',sans-serif;letter-spacing:-.02em}
 @media(max-width:860px){.hero-grid{grid-template-columns:1fr;gap:32px;padding:48px 0}.price-tag{right:12px}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 /* ===== /design system ===== */
-.constructor-section {
-  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-  padding: 4rem 0;
-}
-.constructor-preview {
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  border-radius: 2rem;
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  background: linear-gradient(145deg, #f8fafc, #f1f5f9);
-}
-#window-svg {
-  filter: drop-shadow(0 20px 40px rgba(59, 130, 246, 0.3));
-}
-.constructor-select {
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-  border-radius: 1.5rem;
-  border: 2px solid #e5e7eb;
-  background: white;
-  transition: all 0.3s ease;
-}
-.constructor-select:focus {
-  box-shadow: 0 25px 50px -12px rgba(59, 130, 246, 0.4), 0 0 0 4px rgba(59, 130, 246, 0.2);
-  border-color: #3b82f6;
-}
-.constructor-slider {
-  accent-color: #3b82f6;
-  height: 8px;
-  border-radius: 9999px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-#total-price {
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-  color: white;
-  box-shadow: 0 25px 50px -12px rgba(59, 130, 246, 0.4);
-  border-radius: 2rem;
-  padding: 1rem 2rem;
-}
-.constructor-button {
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-  transition: all 0.3s ease;
-}
-.constructor-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-}
+/* constructor */
+.ctor{background:var(--ice)}
+.ctor-card{background:linear-gradient(150deg,#fff,#f3f8ff);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--sh-lg);padding:24px}
+#total-price.ctor-price{font-family:'Montserrat';font-weight:800;font-size:clamp(2rem,4vw,2.7rem);color:var(--ink);line-height:1;margin-top:18px}
+.ctor-disc{color:var(--muted);font-size:.9rem;margin-top:8px;max-width:34ch}
+.field label{display:block;font-weight:600;font-size:.95rem;margin-bottom:8px;color:var(--ink)}
+.field label .val{color:var(--primary)}
+.ctor-select{width:100%;padding:14px 44px 14px 16px;border:1.5px solid var(--border);border-radius:var(--r-md);background:#fff;font-family:'Inter';font-size:1rem;color:var(--ink);transition:.2s;-webkit-appearance:none;appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+.ctor-select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px rgba(59,130,246,.15)}
+.ctor-range{width:100%;height:6px;border-radius:9999px;background:var(--border);appearance:none;-webkit-appearance:none;outline:none;cursor:pointer}
+.ctor-range::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--accent);border:3px solid #fff;box-shadow:var(--sh-md);cursor:pointer}
+.ctor-range::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--accent);border:3px solid #fff;box-shadow:var(--sh-md);cursor:pointer}
+.ctor-range:focus-visible{box-shadow:0 0 0 4px rgba(59,130,246,.2)}
+.range-scale{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted);margin-top:6px}
 #review-modal {
   backdrop-filter: blur(20px);
 }
@@ -187,67 +156,75 @@ h1,h2,h3,h4{font-family:'Montserrat',sans-serif;letter-spacing:-.02em}
   </section>
 
   <!-- Constructor -->
-  <section id="constructor" class="py-24 bg-white">
+  <section id="constructor" class="ctor py-24">
     <div class="container mx-auto px-4">
-      <h2 class="text-4xl font-bold text-center mb-16 text-gray-800">Конструктор пластиковых окон</h2>
+      <div class="text-center" style="max-width:640px;margin:0 auto 48px">
+        <h2 class="text-4xl font-bold" style="color:var(--ink)">Конструктор окон</h2>
+        <p style="margin-top:12px;font-size:1.1rem;color:var(--muted)">Подберите параметры и узнайте ориентировочную стоимость за минуту.</p>
+      </div>
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
         <!-- Preview -->
-        <div class="text-center">
-          <svg id="window-svg" class="w-full max-w-md h-80 bg-gray-100 rounded-2xl border-4 border-gray-200 mx-auto shadow-lg" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet"></svg>
-          <div id="total-price" class="text-5xl font-black text-blue-600 mt-8 drop-shadow-lg">20 026 ₽</div>
-          <p class="text-gray-600 mt-2">Ориентировочная стоимость</p>
+        <div>
+          <div class="ctor-card text-center">
+            <svg id="window-svg" width="100%" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" style="max-height:340px"></svg>
+          </div>
+          <div id="total-price" class="ctor-price">17 490 ₽</div>
+          <p class="ctor-disc">Ориентировочная стоимость. Точный расчёт — бесплатно, за 10 минут.</p>
+          <a href="#contact" onclick="addToCart()" class="btn-ds btn-ds-primary" style="margin-top:18px">Уточнить цену у менеджера
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
         </div>
         <!-- Controls -->
         <div class="space-y-6">
-          <div>
-            <label class="block text-xl font-bold mb-3">Тип конструкции</label>
-            <select id="window-type" class="w-full p-4 rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:outline-none text-lg">
+          <div class="field">
+            <label for="window-type">Тип конструкции</label>
+            <select id="window-type" class="ctor-select">
               <option value="single-turn">Одностворчатое поворотное</option>
               <option value="single-deaf">Одностворчатое глухое</option>
-              <option value="double-deaf-turn">Двустворчатое (глухое+поворотное)</option>
+              <option value="double-deaf-turn">Двустворчатое (глухое + поворотное)</option>
               <option value="double-turn">Двустворчатое поворотное</option>
-              <option value="triple">Трехстворчатое</option>
+              <option value="triple">Трёхстворчатое</option>
               <option value="balcony">Балконный блок</option>
             </select>
           </div>
-          <div>
-            <label class="block text-xl font-bold mb-3">Оконная система</label>
-            <select id="profile" class="w-full p-4 rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:outline-none text-lg">
+          <div class="field">
+            <label for="profile">Оконная система</label>
+            <select id="profile" class="ctor-select">
               <option value="whs60" data-price="500">WHS 60</option>
               <option value="veka70" data-price="700">VEKA Softline 70</option>
               <option value="rehau-delight" data-price="800">REHAU Delight</option>
               <option value="salamander" data-price="900">Salamander</option>
             </select>
           </div>
-          <div>
-            <label class="block text-xl font-bold mb-3">Стеклопакет</label>
-            <select id="glass" class="w-full p-4 rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:outline-none text-lg">
+          <div class="field">
+            <label for="glass">Стеклопакет</label>
+            <select id="glass" class="ctor-select">
               <option value="24mm" data-price="200">24 мм (1-камерный)</option>
               <option value="32mm" data-price="350">32 мм (2-камерный)</option>
               <option value="40mm" data-price="500">40 мм (2-камерный low-e)</option>
               <option value="44mm" data-price="650">44 мм (3-камерный)</option>
             </select>
           </div>
-          <div>
-            <label class="block text-xl font-bold mb-3">Фурнитура</label>
-            <select id="hardware" class="w-full p-4 rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:outline-none text-lg">
+          <div class="field">
+            <label for="hardware">Фурнитура</label>
+            <select id="hardware" class="ctor-select">
               <option value="propilot" data-price="300">ProPilot</option>
               <option value="roto" data-price="450">Roto</option>
             </select>
           </div>
-          <div>
-            <label class="block text-xl font-bold mb-3">Ширина (мм)</label>
-            <input type="range" id="width" min="800" max="2000" value="1400" class="w-full h-3 bg-gradient-to-r from-blue-400 to-blue-600 rounded-lg appearance-none cursor-pointer">
-            <div class="flex justify-between text-sm mt-1"><span>800</span><span id="width-val">1400</span><span>2000</span></div>
+          <div class="field">
+            <label for="width">Ширина — <span class="val" id="width-val">1400</span> мм</label>
+            <input type="range" id="width" min="800" max="2000" value="1400" step="10" class="ctor-range">
+            <div class="range-scale"><span>800 мм</span><span>2000 мм</span></div>
           </div>
-          <div>
-            <label class="block text-xl font-bold mb-3">Высота (мм)</label>
-            <input type="range" id="height" min="600" max="2400" value="1400" class="w-full h-3 bg-gradient-to-r from-blue-400 to-blue-600 rounded-lg appearance-none cursor-pointer">
-            <div class="flex justify-between text-sm mt-1"><span>600</span><span id="height-val">1400</span><span>2400</span></div>
+          <div class="field">
+            <label for="height">Высота — <span class="val" id="height-val">1400</span> мм</label>
+            <input type="range" id="height" min="600" max="2400" value="1400" step="10" class="ctor-range">
+            <div class="range-scale"><span>600 мм</span><span>2400 мм</span></div>
           </div>
-          <div class="grid grid-cols-2 gap-4 mt-8 pt-6 border-t">
-            <button onclick="addToCart()" class="bg-blue-600 text-white py-4 px-6 rounded-2xl font-bold text-lg hover:bg-blue-700 shadow-lg transition-all">Добавить в заявку</button>
-            <button onclick="resetCalc()" class="bg-gray-200 text-gray-800 py-4 px-6 rounded-2xl font-bold text-lg hover:bg-gray-300 transition-all">Сбросить</button>
+          <div class="grid grid-cols-2 gap-4 pt-2">
+            <button onclick="addToCart()" class="btn-ds btn-ds-primary" style="justify-content:center">Добавить в заявку</button>
+            <button onclick="resetCalc()" class="btn-ds btn-ds-secondary" style="justify-content:center">Сбросить</button>
           </div>
         </div>
       </div>
@@ -511,58 +488,84 @@ h1,h2,h3,h4{font-family:'Montserrat',sans-serif;letter-spacing:-.02em}
     const widthVal = document.getElementById('width-val');
     const heightVal = document.getElementById('height-val');
 
-    // Prices base per m.pog (adjust as needed)
-    const BASE_PER_M = 2500;
-    const prices = {
-      profile: {whs60: 500, veka70: 700, 'rehau-delight': 800, salamander: 900},
-      glass: {'24mm': 200, '32mm': 350, '40mm': 500, '44mm': 650},
-      hardware: {propilot: 300, roto: 450}
+    // Prices — ТЕСТОВЫЕ значения (тестовая фаза, см. docs/business-requirements.md)
+    const BASE_PER_M = 2500;                 // базовая цена за метр периметра
+    const TYPE_PRICE = {                     // надбавка за тип конструкции
+      'single-turn': 0, 'single-deaf': -1500, 'double-deaf-turn': 3500,
+      'double-turn': 5000, 'triple': 8000, 'balcony': 12000
     };
 
-    function updateVal(slider, valEl) {
-      valEl.textContent = slider.value;
+    function updateVal(slider, valEl) { valEl.textContent = slider.value; }
+
+    // Плавная анимация числа цены
+    function animatePrice(target) {
+      const from = Number(priceEl.dataset.v || 0);
+      if (from === target) { priceEl.textContent = target.toLocaleString('ru-RU') + ' ₽'; return; }
+      const dur = 350, t0 = performance.now();
+      cancelAnimationFrame(priceEl._raf || 0);
+      const step = (t) => {
+        const k = Math.min(1, (t - t0) / dur);
+        const ease = 0.5 - Math.cos(Math.PI * k) / 2;
+        priceEl.textContent = Math.round(from + (target - from) * ease).toLocaleString('ru-RU') + ' ₽';
+        if (k < 1) priceEl._raf = requestAnimationFrame(step);
+        else priceEl.dataset.v = target;
+      };
+      priceEl._raf = requestAnimationFrame(step);
     }
 
     function calcPrice() {
       const w = parseFloat(widthSlider.value) / 1000;
       const h = parseFloat(heightSlider.value) / 1000;
       const perim = 2 * (w + h);
-      let total = BASE_PER_M * perim;
-
-      const prof = document.getElementById('profile').selectedOptions[0].dataset.price;
-      const gl = document.getElementById('glass').selectedOptions[0].dataset.price;
-      const hw = document.getElementById('hardware').selectedOptions[0].dataset.price;
-
-      total += parseFloat(prof || 0) * perim + parseFloat(gl || 0) * (w * h) + parseFloat(hw || 0);
-
-      priceEl.textContent = Math.round(total).toLocaleString('ru-RU') + ' ₽';
+      const type = document.getElementById('window-type').value;
+      const prof = parseFloat(document.getElementById('profile').selectedOptions[0].dataset.price || 0);
+      const gl = parseFloat(document.getElementById('glass').selectedOptions[0].dataset.price || 0);
+      const hw = parseFloat(document.getElementById('hardware').selectedOptions[0].dataset.price || 0);
+      let total = BASE_PER_M * perim + prof * perim + gl * (w * h) + hw + (TYPE_PRICE[type] || 0);
+      total = Math.max(total, 3000);
+      animatePrice(Math.round(total));
     }
 
+    // SVG-превью окна — все 6 типов конструкций
+    const GLASS_DEFS = '<defs><linearGradient id="cg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#EAF2FF"/><stop offset="0.5" stop-color="#D7E8FF"/><stop offset="1" stop-color="#F4F9FF"/></linearGradient></defs>';
+
+    function sash(x, y, w, h, opts) {
+      opts = opts || {};
+      let s = `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="4" fill="url(#cg)" stroke="#94a3b8" stroke-width="3"/>`;
+      s += `<path d="M${x + w * 0.22} ${y + h * 0.12} L${x + w * 0.6} ${y + h * 0.9}" stroke="#fff" stroke-width="${Math.max(6, w * 0.08)}" opacity="0.5" stroke-linecap="round"/>`;
+      if (opts.tilt) s += `<path d="M${x + 8} ${y + h - 8} L${x + w / 2} ${y + 10} L${x + w - 8} ${y + h - 8}" fill="none" stroke="#93c5fd" stroke-width="2" stroke-dasharray="5 4"/>`;
+      if (opts.handle) {
+        const hx = opts.handle === 'left' ? x + 7 : x + w - 13;
+        s += `<rect x="${hx}" y="${y + h / 2 - 16}" width="6" height="32" rx="3" fill="#1E40AF"/>`;
+      }
+      return s;
+    }
+
+    const LAYOUTS = {
+      'single-turn':      [{ handle: 'right', tilt: true }],
+      'single-deaf':      [{}],
+      'double-deaf-turn': [{}, { handle: 'right', tilt: true }],
+      'double-turn':      [{ handle: 'left', tilt: true }, { handle: 'right', tilt: true }],
+      'triple':           [{ handle: 'left', tilt: true }, {}, { handle: 'right', tilt: true }]
+    };
+
     function drawWindow() {
-      svg.innerHTML = '';
       const type = document.getElementById('window-type').value;
-      const scaleW = 300 / parseFloat(widthSlider.value); // normalize to viewbox
-      const scaleH = 200 / parseFloat(heightSlider.value);
-      const frameW = 350;
-      const frameH = 250;
-      const stroke = 8;
-
-      // Frame
-      svg.innerHTML += `<rect x="25" y="25" width="${frameW}" height="${frameH}" rx="10" fill="#F5F5F5" stroke="#4A90E2" stroke-width="${stroke}"/>`;
-
-      // Panes based on type
-      if (type === 'single-turn') {
-        svg.innerHTML += `<rect x="60" y="60" width="280" height="180" fill="#E3F2FD" stroke="#2196F3" stroke-width="2" opacity="0.8"/>`;
-        // Handle
-        svg.innerHTML += `<circle cx="320" cy="150" r="8" fill="#4A90E2"/>`;
-      } else if (type === 'double-deaf-turn') {
-        svg.innerHTML += `<rect x="60" y="60" width="130" height="180" fill="#BBDEFB" stroke="#42A5F5" stroke-width="2" opacity="0.7"/>`;
-        svg.innerHTML += `<rect x="200" y="60" width="140" height="180" fill="#E3F2FD" stroke="#2196F3" stroke-width="2" opacity="0.8"/>`;
-        svg.innerHTML += `<circle cx="330" cy="150" r="8" fill="#4A90E2"/>`;
-      } // add more types...
-
-      // Scale dimensions text
-      svg.innerHTML += `<text x="200" y="290" text-anchor="middle" font-size="20" font-weight="bold" fill="#333">${widthSlider.value} x ${heightSlider.value} мм</text>`;
+      const x0 = 30, y0 = 30, W = 340, H = 238, gap = 5;
+      const frame = `<rect x="20" y="20" width="360" height="258" rx="12" fill="#fff" stroke="#cbd5e1" stroke-width="8"/>`;
+      let inner = '';
+      if (type === 'balcony') {
+        const winW = W * 0.42, doorW = W * 0.5, winH = H * 0.6;
+        inner += sash(x0, y0 + (H - winH), winW, winH, { handle: 'right', tilt: true });
+        inner += sash(x0 + winW + gap, y0, doorW, H, { handle: 'left' });
+        inner += `<line x1="${x0}" y1="${y0 + (H - winH)}" x2="${x0 + winW}" y2="${y0 + (H - winH)}" stroke="#cbd5e1" stroke-width="4"/>`;
+      } else {
+        const lay = LAYOUTS[type] || LAYOUTS['single-turn'];
+        const n = lay.length, sw = (W - gap * (n - 1)) / n;
+        lay.forEach((sp, i) => { inner += sash(x0 + i * (sw + gap), y0, sw, H, sp); });
+      }
+      const dim = `<text x="200" y="296" text-anchor="middle" font-family="Inter,sans-serif" font-size="15" font-weight="600" fill="#64748B">${widthSlider.value} × ${heightSlider.value} мм</text>`;
+      svg.innerHTML = GLASS_DEFS + frame + inner + dim;
     }
 
     // Events
