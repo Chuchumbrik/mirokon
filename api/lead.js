@@ -1,7 +1,7 @@
 // POST /api/lead — приём заявки: сохранить в БД, уведомить в Telegram (с кнопкой
 // статуса) и продублировать на e-mail.
 const { checkRateLimit, getClientIp } = require('./_ratelimit');
-const { leadText, leadKeyboard } = require('./_leads');
+const { leadText, leadKeyboard, ADMIN_URL } = require('./_leads');
 
 // Дубль лида на e-mail через Resend — активируется, когда заданы ENV
 // RESEND_API_KEY, LEAD_EMAIL_TO, LEAD_EMAIL_FROM (иначе тихо пропускается).
@@ -30,6 +30,7 @@ async function emailDubl({ name, phone, message, cart_items }) {
         from, to,
         subject: `Новая заявка Mirokon: ${name}`,
         text: `Имя: ${name}\nТелефон: ${phone}\n` + (message ? `Сообщение: ${message}\n` : '') + cartText
+          + `\n\nОткрыть админку: ${ADMIN_URL}`
       })
     });
   } catch (e) {

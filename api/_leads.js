@@ -1,6 +1,9 @@
 // Общий рендер сообщения заявки для Telegram (используется в lead.js и tg.js),
 // чтобы текст и кнопка статуса были одинаковыми при создании и при переключении.
 
+// Ссылка на вход в админку (для кнопок в уведомлениях). Публичный URL, не секрет.
+const ADMIN_URL = 'https://mirokon-new.vercel.app/landing.html';
+
 function fmtTime(ts) {
   try { return new Date(ts).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }); }
   catch (e) { return ''; }
@@ -30,9 +33,10 @@ function leadText(lead) {
 }
 
 function leadKeyboard(lead) {
-  return lead.processed
-    ? { inline_keyboard: [[{ text: '↩️ Вернуть в работу', callback_data: `lundo:${lead.id}` }]] }
-    : { inline_keyboard: [[{ text: '✅ Обработана', callback_data: `ldone:${lead.id}` }]] };
+  const statusBtn = lead.processed
+    ? { text: '↩️ Вернуть в работу', callback_data: `lundo:${lead.id}` }
+    : { text: '✅ Обработана', callback_data: `ldone:${lead.id}` };
+  return { inline_keyboard: [[statusBtn], [{ text: '🔧 Открыть админку', url: ADMIN_URL }]] };
 }
 
-module.exports = { leadText, leadKeyboard };
+module.exports = { leadText, leadKeyboard, ADMIN_URL };

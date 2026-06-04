@@ -1,6 +1,7 @@
 // POST /api/review — приём отзыва: сохраняем в Supabase на модерацию (approved=false)
 // и шлём уведомление в Telegram (best-effort).
 const { checkRateLimit, getClientIp } = require('./_ratelimit');
+const { ADMIN_URL } = require('./_leads');
 
 const handler = async (req, res) => {
   if (req.method !== 'POST') {
@@ -52,12 +53,13 @@ const handler = async (req, res) => {
 
     // 2) Уведомление в Telegram с кнопками модерации — best-effort, без parse_mode
     if (botToken) try {
+      const adminRow = [{ text: '🔧 Открыть админку', url: ADMIN_URL }];
       const reply_markup = reviewId ? {
         inline_keyboard: [[
           { text: '✅ Одобрить', callback_data: `appr:${reviewId}` },
           { text: '🗑 Отклонить', callback_data: `rej:${reviewId}` }
-        ]]
-      } : undefined;
+        ], adminRow]
+      } : { inline_keyboard: [adminRow] };
       const tgResp = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
