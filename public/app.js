@@ -112,7 +112,9 @@
     }
 
     // ===== Мульти-корзина позиций =====
-    const cart = [];
+    const _CART_KEY = 'mirokon_cart';
+    const cart = (() => { try { const s = localStorage.getItem(_CART_KEY); return s ? JSON.parse(s) : []; } catch { return []; } })();
+    function _persistCart() { try { localStorage.setItem(_CART_KEY, JSON.stringify(cart)); } catch {} }
 
     function addToCart() {
       const price = parseInt(priceEl.dataset.v || 0) || 3000;
@@ -125,12 +127,14 @@
         height: heightSlider.value,
         price
       });
+      _persistCart();
       renderCart();
       document.getElementById('cart-section').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    function removeFromCart(i) { cart.splice(i, 1); renderCart(); }
-    function clearCart()       { cart.length = 0;   renderCart(); }
+    function removeFromCart(i) { cart.splice(i, 1); _persistCart(); renderCart(); }
+    function clearCart()       { cart.length = 0;   _persistCart(); renderCart(); }
+    renderCart(); // восстановить корзину из localStorage при загрузке
 
     function renderCart() {
       const section = document.getElementById('cart-section');
