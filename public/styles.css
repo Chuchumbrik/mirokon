@@ -68,12 +68,16 @@ h1,h2,h3,h4{font-family:'Montserrat',sans-serif;letter-spacing:-.02em}
 /* gallery */
 .gallery-sec{background:linear-gradient(180deg,#fff,#f8fafc)}
 .gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
-.gallery-card{background:#fff;border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-sm);transition:box-shadow .25s,transform .25s;cursor:pointer}
-.gallery-card:hover{box-shadow:var(--sh-lg);transform:translateY(-4px)}
+.gallery-card{background:#fff;border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:0 1px 2px rgba(15,23,42,.05),0 10px 24px rgba(15,23,42,.08);transition:box-shadow .28s ease,transform .28s cubic-bezier(.2,.8,.2,1);cursor:pointer}
+.gallery-card:hover,.gallery-card:focus-visible{box-shadow:0 6px 14px rgba(15,23,42,.10),0 30px 56px rgba(15,23,42,.18);transform:translateY(-7px) scale(1.015)}
 .gallery-card:focus-visible{outline:3px solid rgba(59,130,246,.45);outline-offset:2px}
 .gallery-img{position:relative;height:220px;background:linear-gradient(135deg,#dbeafe,#eff6ff);display:flex;align-items:center;justify-content:center;overflow:hidden}
 .gallery-img svg{width:58%;transition:transform .4s}
+.gallery-img img{transition:transform .5s cubic-bezier(.2,.8,.2,1)}
 .gallery-card:hover .gallery-img svg{transform:scale(1.07)}
+.gallery-card:hover .gallery-img img{transform:scale(1.06)}
+/* мягкое затемнение снизу фото — добавляет глубины */
+.gallery-img::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(15,23,42,.16),transparent 42%);pointer-events:none}
 .gallery-cat{position:absolute;top:14px;left:14px;background:rgba(255,255,255,.92);backdrop-filter:blur(6px);color:var(--primary);font-weight:600;font-size:.8rem;padding:6px 12px;border-radius:var(--r-full);box-shadow:var(--sh-sm)}
 .gallery-overlay{position:absolute;inset:0;background:rgba(15,23,42,.32);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .25s}
 .gallery-card:hover .gallery-overlay,.gallery-card:focus-visible .gallery-overlay{opacity:1}
