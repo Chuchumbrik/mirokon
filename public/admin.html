@@ -1,409 +1,312 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mirokon - Admin Dashboard</title>
-  <style>
-    body { 
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-      min-height: 100vh; 
-      margin: 0; 
-      color: white; 
-      padding: 20px;
-    }
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-    }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 30px;
-    }
-    .tab {
-      padding: 12px 24px;
-      background: rgba(255,255,255,0.2);
-      border: none;
-      border-radius: 12px;
-      color: white;
-      cursor: pointer;
-      transition: background 0.3s;
-      font-size: 16px;
-    }
-    .tab.active, .tab:hover {
-      background: rgba(255,255,255,0.4);
-    }
-    .tabs {
-      display: flex;
-      gap: 10px;
-    }
-    .logout {
-      padding: 12px 24px;
-      background: #ff6b6b;
-      border: none;
-      border-radius: 12px;
-      color: white;
-      cursor: pointer;
-    }
-    .logout:hover {
-      background: #ff5252;
-    }
-    .section {
-      display: none;
-      background: rgba(255,255,255,0.1);
-      backdrop-filter: blur(10px);
-      padding: 30px;
-      border-radius: 20px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-    }
-    .section.active {
-      display: block;
-    }
-    h2, h3 {
-      margin-top: 0;
-    }
-    .table-container {
-      overflow-x: auto;
-      margin: 20px 0;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: rgba(255,255,255,0.2);
-      border-radius: 12px;
-      overflow: hidden;
-    }
-    th, td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid rgba(255,255,255,0.3);
-    }
-    th {
-      background: rgba(255,255,255,0.3);
-    }
-    form {
-      background: rgba(255,255,255,0.15);
-      padding: 20px;
-      border-radius: 12px;
-      margin: 20px 0;
-    }
-    input, textarea {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border: none;
-      border-radius: 10px;
-      background: rgba(255,255,255,0.9);
-      box-sizing: border-box;
-      font-family: inherit;
-    }
-    textarea {
-      height: 100px;
-      resize: vertical;
-    }
-    button {
-      padding: 10px 20px;
-      background: #4facfe;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      margin: 5px;
-      font-size: 14px;
-    }
-    button:hover {
-      background: #00f2fe;
-    }
-    .delete-btn {
-      background: #ff6b6b;
-    }
-    .delete-btn:hover {
-      background: #ff5252;
-    }
-    @media (max-width: 768px) {
-      .tabs {
-        flex-direction: column;
-      }
-      .header {
-        flex-direction: column;
-        gap: 10px;
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mirokon — Админка</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0F172A;--primary:#1E40AF;--accent:#3B82F6;--muted:#64748B;--border:#E2E8F0;--ice:#EFF6FF;--surface:#fff;
+  --sh:0 8px 24px rgba(15,23,42,.08)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:#f8fafc;min-height:100vh}
+.topbar{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.topbar .row{max-width:1100px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-family:'Montserrat';font-weight:800;font-size:1.2rem}
+.brand b{color:var(--primary)}
+.who{color:var(--muted);font-size:.85rem;margin-left:auto;margin-right:12px}
+.wrap{max-width:1100px;margin:0 auto;padding:24px 20px 80px}
+.tabs{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap}
+.tab{padding:10px 18px;border:1px solid var(--border);background:#fff;border-radius:12px;font-weight:600;font-size:.95rem;cursor:pointer;color:var(--muted)}
+.tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.panel{display:none}.panel.active{display:block}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:var(--sh);padding:22px;margin-bottom:18px}
+h2{font-family:'Montserrat';font-weight:700;font-size:1.3rem;margin-bottom:16px}
+h3{font-size:1.05rem;font-weight:700;margin-bottom:12px}
+label{display:block;font-weight:600;font-size:.85rem;margin:10px 0 5px}
+input,textarea,select{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:11px;font-family:'Inter';font-size:.95rem}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+textarea{resize:vertical;min-height:70px}
+.check{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:.9rem;font-weight:500}
+.check input{width:auto}
+.btn{display:inline-flex;align-items:center;gap:6px;border:none;cursor:pointer;font-family:'Inter';font-weight:600;font-size:.88rem;padding:9px 15px;border-radius:10px;transition:.15s}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#1D4ED8}
+.btn-ghost{background:#f1f5f9;color:var(--ink)}.btn-ghost:hover{background:#e2e8f0}
+.btn-danger{background:#fef2f2;color:#b91c1c}.btn-danger:hover{background:#fee2e2}
+.btn-ok{background:#ecfdf5;color:#047857}.btn-ok:hover{background:#d1fae5}
+.btn:disabled{opacity:.5;cursor:default}
+.list-item{display:flex;gap:14px;align-items:flex-start;padding:14px;border:1px solid var(--border);border-radius:13px;margin-bottom:10px;background:#fff}
+.thumb{width:70px;height:54px;border-radius:9px;object-fit:cover;flex:none;background:linear-gradient(135deg,#dbeafe,#eff6ff);display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:1.4rem}
+.li-body{flex:1;min-width:0}
+.li-body .t{font-weight:600}
+.li-body .m{color:var(--muted);font-size:.85rem;margin-top:2px;overflow:hidden;text-overflow:ellipsis}
+.li-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.badge{font-size:.72rem;font-weight:600;padding:3px 9px;border-radius:99px}
+.badge.on{background:#ecfdf5;color:#047857}.badge.off{background:#fef3c7;color:#92400e}
+.stars{color:#fbbf24;letter-spacing:1px}
+.filters{display:flex;gap:8px;margin-bottom:14px}
+.filters .f{padding:7px 13px;border:1px solid var(--border);border-radius:10px;background:#fff;font-size:.85rem;cursor:pointer;color:var(--muted)}
+.filters .f.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.empty{text-align:center;color:var(--muted);padding:30px;border:1px dashed var(--border);border-radius:13px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 20px;border-radius:12px;box-shadow:var(--sh);font-size:.9rem;opacity:0;transition:.3s;pointer-events:none}
+.toast.show{opacity:1}
+.toast.err{background:#b91c1c}
+.row2{display:grid;grid-template-columns:1fr 140px;gap:12px}
+@media(max-width:560px){.row2{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <div class="tabs">
-        <button class="tab active" data-tab="works" onclick="switchTab('works')">
-          Works
-        </button>
-        <button class="tab" data-tab="reviews" onclick="switchTab('reviews')">
-          Reviews
-        </button>
-        <button class="tab" data-tab="news" onclick="switchTab('news')">
-          News
-        </button>
-      </div>
-      <button class="logout" onclick="logout()">Logout</button>
+  <div class="topbar"><div class="row">
+    <div class="brand">MIRO<b>KON</b> · админка</div>
+    <span class="who" id="admin-email"></span>
+    <button class="btn btn-ghost" onclick="logout()">Выйти</button>
+  </div></div>
+
+  <div class="wrap">
+    <div class="tabs">
+      <button class="tab active" data-tab="works" onclick="switchTab('works')">Работы</button>
+      <button class="tab" data-tab="reviews" onclick="switchTab('reviews')">Отзывы</button>
+      <button class="tab" data-tab="news" onclick="switchTab('news')">Новости</button>
     </div>
 
-    <div id="works" class="section active">
-      <h2>Works Management</h2>
-      <button onclick="loadData('works')">Refresh</button>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Title</th>
-              <th>Content Preview Ascending</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="works-table"></tbody>
-        </table>
+    <!-- WORKS -->
+    <section class="panel active" id="panel-works">
+      <div class="card">
+        <h3 id="works-form-title">Добавить работу</h3>
+        <input type="hidden" id="w-id">
+        <div class="row2">
+          <div><label>Название *</label><input id="w-title" placeholder="Гостиная на Ленина"></div>
+          <div><label>Категория</label><input id="w-category" placeholder="Гостиная"></div>
+        </div>
+        <label>Описание</label><textarea id="w-desc" placeholder="Двухкамерный стеклопакет…"></textarea>
+        <div class="row2">
+          <div><label>Фото</label><input type="file" id="w-photo" accept="image/*"></div>
+          <div><label>Порядок</label><input type="number" id="w-sort" value="0"></div>
+        </div>
+        <label class="check"><input type="checkbox" id="w-published"> Опубликовать на сайте</label>
+        <div style="margin-top:16px;display:flex;gap:8px">
+          <button class="btn btn-primary" id="w-save" onclick="saveWork()">Сохранить</button>
+          <button class="btn btn-ghost" onclick="resetWorkForm()">Очистить</button>
+        </div>
       </div>
-      <h3>Add New Work</h3>
-      <form>
-        <input id="title-works" placeholder="Title">
-        <textarea id="content-works" placeholder="Content"></textarea>
-        <button type="button" onclick="addItem('works')">
-          Add Work
-        </button>
-      </form>
-      <h3>Edit Work</h3>
-      <form id="edit-form-works" style="display: none;">
-        <input type="hidden" id="edit-id-works">
-        <input id="edit-title-works" placeholder="Title">
-        <textarea id="edit-content-works" placeholder="Content"></textarea>
-        <button type="button" onclick="updateItem('works')">
-          Update
-        </button>
-        <button type="button" onclick="cancelEdit('works')">
-          Cancel
-        </button>
-      </form>
-    </div>
+      <h2>Работы</h2>
+      <div id="works-list"></div>
+    </section>
 
-    <div id="reviews" class="section">
-      <h2>Reviews Management</h2>
-      <button onclick="loadData('reviews')">
-        Refresh
-      </button>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Title</th>
-              <th>Content Preview</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="reviews-table"></tbody>
-        </table>
+    <!-- REVIEWS -->
+    <section class="panel" id="panel-reviews">
+      <h2>Отзывы</h2>
+      <div class="filters">
+        <div class="f active" data-rf="pending" onclick="setReviewFilter('pending')">На модерации</div>
+        <div class="f" data-rf="approved" onclick="setReviewFilter('approved')">Опубликованные</div>
+        <div class="f" data-rf="all" onclick="setReviewFilter('all')">Все</div>
       </div>
-      <h3>Add New Review</h3>
-      <form>
-        <input id="title-reviews" placeholder="Title">
-        <textarea id="content-reviews" placeholder="Content"></textarea>
-        <button type="button" onclick="addItem('reviews')">
-          Add Review
-        </button>
-      </form>
-      <h3>Edit Review</h3>
-      <form id="edit-form-reviews" style="display: none;">
-        <input type="hidden" id="edit-id-reviews">
-        <input id="edit-title-reviews" placeholder="Title">
-        <textarea id="edit-content-reviews" placeholder="Content"></textarea>
-        <button type="button" onclick="updateItem('reviews')">
-          Update
-        </button>
-        <button type="button" onclick="cancelEdit('reviews')">
-          Cancel
-        </button>
-      </form>
-    </div>
+      <div id="reviews-list"></div>
+    </section>
 
-    <div id="news" class="section">
-      <h2>News Management</h2>
-      <button onclick="loadData('news')">
-        Refresh
-      </button>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Title</th>
-              <th>Content Preview</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="news-table"></tbody>
-        </table>
+    <!-- NEWS -->
+    <section class="panel" id="panel-news">
+      <div class="card">
+        <h3 id="news-form-title">Добавить новость</h3>
+        <input type="hidden" id="n-id">
+        <label>Заголовок *</label><input id="n-title" placeholder="Гарантия 5 лет">
+        <label>Краткий текст (в карточке)</label><textarea id="n-preview" placeholder="Коротко…"></textarea>
+        <label>Полный текст (опционально)</label><textarea id="n-body"></textarea>
+        <label class="check"><input type="checkbox" id="n-published"> Опубликовать</label>
+        <div style="margin-top:16px;display:flex;gap:8px">
+          <button class="btn btn-primary" id="n-save" onclick="saveNews()">Сохранить</button>
+          <button class="btn btn-ghost" onclick="resetNewsForm()">Очистить</button>
+        </div>
       </div>
-      <h3>Add New News</h3>
-      <form>
-        <input id="title-news" placeholder="Title">
-        <textarea id="content-news" placeholder="Content"></textarea>
-        <button type="button" onclick="addItem('news')">
-          Add News
-        </button>
-      </form>
-      <h3>Edit News</h3>
-      <form id="edit-form-news" style="display: none;">
-        <input type="hidden" id="edit-id-news">
-        <input id="edit-title-news" placeholder="Title">
-        <textarea id="edit-content-news" placeholder="Content"></textarea>
-        <button type="button" onclick="updateItem('news')">
-          Update
-        </button>
-        <button type="button" onclick="cancelEdit('news')">
-          Cancel
-        </button>
-      </form>
-    </div>
+      <h2>Новости</h2>
+      <div id="news-list"></div>
+    </section>
   </div>
-  <script>
-    let token = localStorage.getItem('token');
-    if (!token) {
-      window.location.href = '/landing.html';
-    }
-    const headers = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    };
-    let currentTab = 'works';
 
-    function switchTab(tabName) {
-      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-      document.getElementById(tabName).classList.add('active');
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-      currentTab = tabName;
-      loadData(tabName);
-    }
+  <div class="toast" id="toast"></div>
 
-    async function loadData(collection) {
-      try {
-        const res = await fetch(`/api/${collection}`, { headers });
-        if (!res.ok) throw new Error(await res.text());
-        const data = await res.json();
-        const tbody = document.getElementById(`${collection}-table`);
-        tbody.innerHTML = '';
-        data.forEach(item => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${item.id}</td>
-            <td>${item.title || ''}</td>
-            <td>${(item.content || '').substring(0, 100)}${(item.content || '').length > 100 ? '...' : ''}</td>
-            <td>
-              <button onclick="editItem('${collection}', ${item.id})">Edit</button>
-              <button class="delete-btn" onclick="deleteItem('${collection}', ${item.id})">Delete</button>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
-      } catch (e) {
-        alert('Error loading data: ' + e.message);
-      }
-    }
+<script>
+  const SUPABASE_URL = 'https://ermeokjqkzpkefqtmvif.supabase.co';
+  const SUPABASE_ANON = 'sb_publishable_LhXYeGG0w8wzi7JOlPx5Qg_GXd2Zc0K';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+  const $ = id => document.getElementById(id);
+  const safeUrl = u => (u && /^(https?:\/\/|\/)/i.test(u)) ? u : '';
 
-    async function addItem(collection) {
-      const title = document.getElementById(`title-${collection}`).value.trim();
-      const content = document.getElementById(`content-${collection}`).value.trim();
-      if (!title) return alert('Title required');
-      try {
-        const res = await fetch(`/api/${collection}`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({ title, content })
-        });
-        if (res.ok) {
-          document.getElementById(`title-${collection}`).value = '';
-          document.getElementById(`content-${collection}`).value = '';
-          loadData(collection);
-        } else {
-          const err = await res.json();
-          alert('Error adding: ' + (err.error || 'Unknown'));
-        }
-      } catch (e) {
-        alert('Error: ' + e.message);
-      }
-    }
+  function toast(msg, isErr) {
+    const t = $('toast'); t.textContent = msg; t.className = 'toast show' + (isErr ? ' err' : '');
+    setTimeout(() => { t.className = 'toast'; }, 2600);
+  }
+  // безопасный конструктор элементов (текст через textContent)
+  function el(tag, opts, ...kids) {
+    const e = document.createElement(tag); opts = opts || {};
+    if (opts.class) e.className = opts.class;
+    if (opts.text != null) e.textContent = opts.text;
+    if (opts.html === 'svg-win') e.innerHTML = '🪟';
+    Object.entries(opts).forEach(([k, v]) => { if (['class','text','html'].includes(k)) return; if (k.startsWith('on')) e.addEventListener(k.slice(2), v); else e.setAttribute(k, v); });
+    kids.forEach(k => k && e.appendChild(k));
+    return e;
+  }
 
-    async function editItem(collection, id) {
-      try {
-        const res = await fetch(`/api/${collection}/${id}`, { headers });
-        if (!res.ok) throw new Error('Item not found');
-        const item = await res.json();
-        document.getElementById(`edit-id-${collection}`).value = item.id;
-        document.getElementById(`edit-title-${collection}`).value = item.title || '';
-        document.getElementById(`edit-content-${collection}`).value = item.content || '';
-        document.getElementById(`edit-form-${collection}`).style.display = 'block';
-      } catch (e) {
-        alert('Error loading item: ' + e.message);
-      }
-    }
+  // ---- Auth guard ----
+  (async () => {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return location.replace('/landing.html');
+    const { data: admin, error } = await sb.rpc('is_admin');
+    if (error || !admin) { await sb.auth.signOut(); alert('Нет прав администратора'); return location.replace('/landing.html'); }
+    $('admin-email').textContent = session.user.email;
+    loadWorks(); loadReviews(); loadNews();
+  })();
 
-    async function updateItem(collection) {
-      const id = parseInt(document.getElementById(`edit-id-${collection}`).value);
-      const title = document.getElementById(`edit-title-${collection}`).value.trim();
-      const content = document.getElementById(`edit-content-${collection}`).value.trim();
-      if (!title) return alert('Title required');
-      try {
-        const res = await fetch(`/api/${collection}/${id}`, {
-          method: 'PUT',
-          headers,
-          body: JSON.stringify({ title, content })
-        });
-        if (res.ok) {
-          cancelEdit(collection);
-          loadData(collection);
-        } else {
-          const err = await res.json();
-          alert('Error updating: ' + (err.error || 'Unknown'));
-        }
-      } catch (e) {
-        alert('Error: ' + e.message);
-      }
-    }
+  async function logout() { await sb.auth.signOut(); location.replace('/landing.html'); }
 
-    function cancelEdit(collection) {
-      document.getElementById(`edit-form-${collection}`).style.display = 'none';
-    }
+  function switchTab(name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+    document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + name));
+  }
 
-    async function deleteItem(collection, id) {
-      if (!confirm('Are you sure you want to delete this item?')) return;
-      try {
-        const delHeaders = { 'Authorization': `Bearer ${token}` };
-        const res = await fetch(`/api/${collection}/${id}`, {
-          method: 'DELETE',
-          headers: delHeaders
-        });
-        if (res.ok) {
-          loadData(collection);
-        } else {
-          alert('Error deleting');
-        }
-      } catch (e) {
-        alert('Error: ' + e.message);
-      }
-    }
-
-    function logout() {
-      localStorage.removeItem('token');
-      window.location.href = '/landing.html';
-    }
-
-    window.addEventListener('load', () => {
-      switchTab('works');
+  // ================= WORKS =================
+  async function loadWorks() {
+    const box = $('works-list'); box.replaceChildren();
+    const { data, error } = await sb.from('works').select('*').order('sort').order('created_at', { ascending: false });
+    if (error) return toast('Ошибка загрузки работ', true);
+    if (!data.length) { box.appendChild(el('div', { class: 'empty', text: 'Пока нет работ' })); return; }
+    data.forEach(w => {
+      const img = safeUrl(w.image_url);
+      const thumb = img ? el('img', { class: 'thumb', src: img, alt: '' }) : el('div', { class: 'thumb', text: '🪟' });
+      const badge = el('span', { class: 'badge ' + (w.published ? 'on' : 'off'), text: w.published ? 'на сайте' : 'черновик' });
+      const actions = el('div', { class: 'li-actions' },
+        badge,
+        el('button', { class: 'btn btn-ghost', text: w.published ? 'Снять' : 'Опубликовать', onclick: () => togglePublish('works', w.id, !w.published) }),
+        el('button', { class: 'btn btn-ghost', text: 'Изменить', onclick: () => editWork(w) }),
+        el('button', { class: 'btn btn-danger', text: 'Удалить', onclick: () => del('works', w.id) })
+      );
+      box.appendChild(el('div', { class: 'list-item' }, thumb,
+        el('div', { class: 'li-body' }, el('div', { class: 't', text: w.title }), el('div', { class: 'm', text: [w.category, w.description].filter(Boolean).join(' · ') })),
+        actions));
     });
-  </script>
+  }
+  function editWork(w) {
+    $('w-id').value = w.id; $('w-title').value = w.title || ''; $('w-category').value = w.category || '';
+    $('w-desc').value = w.description || ''; $('w-sort').value = w.sort || 0; $('w-published').checked = !!w.published;
+    $('works-form-title').textContent = 'Изменить работу'; window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function resetWorkForm() {
+    ['w-id','w-title','w-category','w-desc','w-photo'].forEach(i => $(i).value = '');
+    $('w-sort').value = 0; $('w-published').checked = false; $('works-form-title').textContent = 'Добавить работу';
+  }
+  async function saveWork() {
+    const title = $('w-title').value.trim();
+    if (!title) return toast('Укажите название', true);
+    const btn = $('w-save'); btn.disabled = true; btn.textContent = 'Сохранение…';
+    try {
+      let image_url = null;
+      const file = $('w-photo').files[0];
+      if (file) {
+        const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+        const path = `${crypto.randomUUID()}.${ext}`;
+        const up = await sb.storage.from('works').upload(path, file, { cacheControl: '3600', upsert: false });
+        if (up.error) throw up.error;
+        image_url = sb.storage.from('works').getPublicUrl(path).data.publicUrl;
+      }
+      const row = { title, category: $('w-category').value.trim() || null, description: $('w-desc').value.trim() || null,
+        sort: parseInt($('w-sort').value, 10) || 0, published: $('w-published').checked };
+      if (image_url) row.image_url = image_url;
+      const id = $('w-id').value;
+      const res = id ? await sb.from('works').update(row).eq('id', id) : await sb.from('works').insert(row);
+      if (res.error) throw res.error;
+      toast('Сохранено'); resetWorkForm(); loadWorks();
+    } catch (e) { toast('Ошибка: ' + (e.message || e), true); }
+    finally { btn.disabled = false; btn.textContent = 'Сохранить'; }
+  }
+
+  // ================= REVIEWS =================
+  let reviewFilter = 'pending';
+  function setReviewFilter(f) {
+    reviewFilter = f;
+    document.querySelectorAll('.filters .f').forEach(x => x.classList.toggle('active', x.dataset.rf === f));
+    loadReviews();
+  }
+  async function loadReviews() {
+    const box = $('reviews-list'); box.replaceChildren();
+    let q = sb.from('reviews').select('*').order('created_at', { ascending: false });
+    if (reviewFilter === 'pending') q = q.eq('approved', false);
+    else if (reviewFilter === 'approved') q = q.eq('approved', true);
+    const { data, error } = await q;
+    if (error) return toast('Ошибка загрузки отзывов', true);
+    if (!data.length) { box.appendChild(el('div', { class: 'empty', text: 'Нет отзывов в этой категории' })); return; }
+    data.forEach(r => {
+      const badge = el('span', { class: 'badge ' + (r.approved ? 'on' : 'off'), text: r.approved ? 'опубликован' : 'на модерации' });
+      const actions = el('div', { class: 'li-actions' }, badge,
+        el('button', { class: r.approved ? 'btn btn-ghost' : 'btn btn-ok', text: r.approved ? 'Снять' : 'Одобрить', onclick: () => togglePublish('reviews', r.id, !r.approved, 'approved') }),
+        el('button', { class: 'btn btn-danger', text: 'Удалить', onclick: () => del('reviews', r.id) })
+      );
+      box.appendChild(el('div', { class: 'list-item' },
+        el('div', { class: 'li-body' },
+          el('div', { class: 't' }, el('span', { class: 'stars', text: '★'.repeat(r.rating) }), document.createTextNode('  ' + (r.author_name || '') + (r.author_city ? ' · ' + r.author_city : ''))),
+          el('div', { class: 'm', text: r.text })),
+        actions));
+    });
+  }
+
+  // ================= NEWS =================
+  async function loadNews() {
+    const box = $('news-list'); box.replaceChildren();
+    const { data, error } = await sb.from('news').select('*').order('created_at', { ascending: false });
+    if (error) return toast('Ошибка загрузки новостей', true);
+    if (!data.length) { box.appendChild(el('div', { class: 'empty', text: 'Пока нет новостей' })); return; }
+    data.forEach(n => {
+      const badge = el('span', { class: 'badge ' + (n.published ? 'on' : 'off'), text: n.published ? 'на сайте' : 'черновик' });
+      const actions = el('div', { class: 'li-actions' }, badge,
+        el('button', { class: 'btn btn-ghost', text: n.published ? 'Снять' : 'Опубликовать', onclick: () => togglePublish('news', n.id, !n.published) }),
+        el('button', { class: 'btn btn-ghost', text: 'Изменить', onclick: () => editNews(n) }),
+        el('button', { class: 'btn btn-danger', text: 'Удалить', onclick: () => del('news', n.id) })
+      );
+      box.appendChild(el('div', { class: 'list-item' },
+        el('div', { class: 'li-body' }, el('div', { class: 't', text: n.title }), el('div', { class: 'm', text: n.preview_text || '' })),
+        actions));
+    });
+  }
+  function editNews(n) {
+    $('n-id').value = n.id; $('n-title').value = n.title || ''; $('n-preview').value = n.preview_text || '';
+    $('n-body').value = n.body || ''; $('n-published').checked = !!n.published;
+    $('news-form-title').textContent = 'Изменить новость'; window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function resetNewsForm() {
+    ['n-id','n-title','n-preview','n-body'].forEach(i => $(i).value = '');
+    $('n-published').checked = false; $('news-form-title').textContent = 'Добавить новость';
+  }
+  async function saveNews() {
+    const title = $('n-title').value.trim();
+    if (!title) return toast('Укажите заголовок', true);
+    const btn = $('n-save'); btn.disabled = true; btn.textContent = 'Сохранение…';
+    try {
+      const row = { title, preview_text: $('n-preview').value.trim() || null, body: $('n-body').value.trim() || null, published: $('n-published').checked };
+      const id = $('n-id').value;
+      const res = id ? await sb.from('news').update(row).eq('id', id) : await sb.from('news').insert(row);
+      if (res.error) throw res.error;
+      toast('Сохранено'); resetNewsForm(); loadNews();
+    } catch (e) { toast('Ошибка: ' + (e.message || e), true); }
+    finally { btn.disabled = false; btn.textContent = 'Сохранить'; }
+  }
+
+  // ================= общие =================
+  async function togglePublish(table, id, value, field) {
+    const f = field || 'published';
+    const { error } = await sb.from(table).update({ [f]: value }).eq('id', id);
+    if (error) return toast('Ошибка: ' + error.message, true);
+    toast(value ? 'Опубликовано' : 'Снято с публикации');
+    table === 'works' ? loadWorks() : table === 'reviews' ? loadReviews() : loadNews();
+  }
+  async function del(table, id) {
+    if (!confirm('Удалить запись безвозвратно?')) return;
+    const { error } = await sb.from(table).delete().eq('id', id);
+    if (error) return toast('Ошибка: ' + error.message, true);
+    toast('Удалено');
+    table === 'works' ? loadWorks() : table === 'reviews' ? loadReviews() : loadNews();
+  }
+</script>
 </body>
 </html>

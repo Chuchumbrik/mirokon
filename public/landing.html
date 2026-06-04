@@ -1,82 +1,75 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mirokon - Login</title>
-  <style>
-    body { 
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-      min-height: 100vh; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      margin: 0; 
-      color: white; 
-    }
-    .login-form { 
-      background: rgba(255,255,255,0.1); 
-      backdrop-filter: blur(10px); 
-      padding: 2rem; 
-      border-radius: 20px; 
-      box-shadow: 0 8px 32px rgba(0,0,0,0.3); 
-      width: 100%; 
-      max-width: 400px; 
-    }
-    h1 { text-align: center; margin-bottom: 2rem; }
-    input { 
-      width: 100%; 
-      padding: 12px; 
-      margin: 10px 0; 
-      border: none; 
-      border-radius: 10px; 
-      background: rgba(255,255,255,0.9); 
-      font-size: 16px; 
-      box-sizing: border-box; 
-    }
-    button { 
-      width: 100%; 
-      padding: 12px; 
-      background: #4facfe; 
-      color: white; 
-      border: none; 
-      border-radius: 10px; 
-      font-size: 16px; 
-      cursor: pointer; 
-      transition: background 0.3s; 
-    }
-    button:hover { background: #00f2fe; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Вход — Mirokon Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0F172A;--primary:#1E40AF;--accent:#3B82F6;--muted:#64748B;--border:#E2E8F0;--ice:#EFF6FF}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(900px 500px at 80% -10%,var(--ice),#fff),linear-gradient(180deg,#fff,#f8fafc);padding:20px}
+.card{background:#fff;border:1px solid var(--border);border-radius:24px;box-shadow:0 24px 48px rgba(15,23,42,.1);padding:40px;width:100%;max-width:400px}
+.brand{font-family:'Montserrat';font-weight:800;font-size:1.5rem;letter-spacing:-.01em;text-align:center;margin-bottom:6px}
+.brand b{color:var(--primary)}
+.sub{text-align:center;color:var(--muted);font-size:.9rem;margin-bottom:26px}
+label{display:block;font-weight:600;font-size:.9rem;margin:14px 0 6px}
+input{width:100%;padding:13px 15px;border:1.5px solid var(--border);border-radius:14px;font-family:'Inter';font-size:1rem;transition:.2s}
+input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px rgba(59,130,246,.15)}
+button{width:100%;margin-top:22px;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:14px;font-family:'Inter';font-weight:600;font-size:1rem;cursor:pointer;transition:.2s}
+button:hover{background:#1D4ED8}
+button:disabled{opacity:.6;cursor:default}
+.status{margin-top:14px;padding:11px 14px;border-radius:12px;font-size:.9rem;display:none}
+.status.err{display:block;background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+.back{display:block;text-align:center;margin-top:18px;color:var(--muted);text-decoration:none;font-size:.85rem}
+.back:hover{color:var(--primary)}
+</style>
 </head>
 <body>
-  <div class="login-form">
-    <h1>Mirokon Admin</h1>
-    <input type="text" id="username" placeholder="Username">
-    <input type="password" id="password" placeholder="Password">
-    <button onclick="login()">Login</button>
+  <div class="card">
+    <div class="brand">MIRO<b>KON</b></div>
+    <p class="sub">Панель управления контентом</p>
+    <form id="login-form" novalidate>
+      <label for="email">E-mail</label>
+      <input type="email" id="email" autocomplete="username" required>
+      <label for="password">Пароль</label>
+      <input type="password" id="password" autocomplete="current-password" required>
+      <button type="submit" id="submit-btn">Войти</button>
+      <div class="status" id="status" role="alert"></div>
+    </form>
+    <a class="back" href="/">← На сайт</a>
   </div>
-  <script>
-    async function login() {
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
-      try {
-        const res = await fetch('/api/login', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({username, password})
-        });
-        const data = await res.json();
-        if (res.ok) {
-          localStorage.setItem('token', data.token);
-          window.location.href = '/admin.html';
-        } else {
-          alert(data.error);
-        }
-      } catch(e) {
-        alert('Error: ' + e.message);
-      }
+
+<script>
+  const SUPABASE_URL = 'https://ermeokjqkzpkefqtmvif.supabase.co';
+  const SUPABASE_ANON = 'sb_publishable_LhXYeGG0w8wzi7JOlPx5Qg_GXd2Zc0K';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+  // уже залогинен → сразу в админку
+  sb.auth.getSession().then(({ data }) => { if (data.session) location.href = '/admin.html'; });
+
+  const form = document.getElementById('login-form');
+  const statusEl = document.getElementById('status');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const btn = document.getElementById('submit-btn');
+    statusEl.className = 'status';
+    btn.disabled = true; btn.textContent = 'Вход…';
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) {
+      statusEl.className = 'status err';
+      statusEl.textContent = 'Неверный e-mail или пароль';
+      btn.disabled = false; btn.textContent = 'Войти';
+      return;
     }
-  </script>
+    location.href = '/admin.html';
+  });
+</script>
 </body>
 </html>
