@@ -22,6 +22,7 @@ const handler = async (req, res) => {
 
   try {
     // 1) Сохраняем в БД на модерацию (service_role минует RLS, approved=false)
+    let reviewId = null;
     if (SUPABASE_URL && SERVICE_KEY) {
       const dbRes = await fetch(`${SUPABASE_URL}/rest/v1/reviews`, {
         method: 'POST',
@@ -29,23 +30,32 @@ const handler = async (req, res) => {
           'Content-Type': 'application/json',
           apikey: SERVICE_KEY,
           Authorization: `Bearer ${SERVICE_KEY}`,
-          Prefer: 'return=minimal'
+          Prefer: 'return=representation'
         },
         body: JSON.stringify({ author_name: name, author_city: city || null, rating, text, approved: false })
       });
       if (!dbRes.ok) {
         throw new Error(`DB error ${dbRes.status}: ${await dbRes.text()}`);
       }
+      const rows = await dbRes.json();
+      reviewId = rows && rows[0] && rows[0].id;
     }
 
-    // 2) Уведомление в Telegram — best-effort, без parse_mode (без инъекций разметки)
+    // 2) Уведомление в Telegram с кнопками модерации — best-effort, без parse_mode
     try {
+      const reply_markup = reviewId ? {
+        inline_keyboard: [[
+          { text: '✅ Одобрить', callback_data: `appr:${reviewId}` },
+          { text: '🗑 Отклонить', callback_data: `rej:${reviewId}` }
+        ]]
+      } : undefined;
       await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           chat_id: chatId,
-          text: `🗣 Новый отзыв Mirokon на модерацию:\n\n👤 ${name}${city ? ' · ' + city : ''}\n⭐ ${rating}/5\n💬 ${text}\n\nОдобрить в админке.`,
+          text: `🗣 Новый отзыв Mirokon на модерацию:\n\n👤 ${name}${city ? ' · ' + city : ''}\n⭐ ${rating}/5\n💬 ${text}`,
+          reply_markup,
           disable_web_page_preview: true
         })
       });
