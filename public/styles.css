@@ -1,4 +1,5 @@
 /* ===== Mirokon design system — см. docs/design.md ===== */
+*,*::before,*::after{box-sizing:border-box}
 :root{
   --ink:#0F172A; --primary:#1E40AF; --primary-700:#1D4ED8; --accent:#3B82F6;
   --ice:#EFF6FF; --muted:#64748B; --border:#E2E8F0; --surface:#FFFFFF;
