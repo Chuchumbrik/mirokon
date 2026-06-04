@@ -4,16 +4,18 @@
 const handler = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  // Проверка секрета вебхука (Telegram шлёт его заголовком)
+  // Проверка секрета вебхука (fail-closed: без секрета не обрабатываем)
   const secret = process.env.TG_WEBHOOK_SECRET;
-  if (secret && req.headers['x-telegram-bot-api-secret-token'] !== secret) {
+  if (!secret || req.headers['x-telegram-bot-api-secret-token'] !== secret) {
     return res.status(401).json({ error: 'unauthorized' });
   }
 
-  const botToken = process.env.TG_BOT_TOKEN || '8622267403:AAEfT3X67P2i3UJ0Ghkd-zomyQ0URN4q_aI';
-  const adminChat = String(process.env.TG_CHAT_ID || '649175786');
+  const botToken = process.env.TG_BOT_TOKEN;
+  const adminChat = process.env.TG_CHAT_ID;
   const SUPABASE_URL = process.env.SUPABASE_URL;
   const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
+  if (!botToken || !adminChat) return res.status(500).json({ error: 'not configured' });
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   const tg = (method, body) => fetch(`https://api.telegram.org/bot${botToken}/${method}`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
   });
@@ -34,11 +36,11 @@ const handler = async (req, res) => {
       const action = sep > 0 ? data.slice(0, sep) : data;
       const id = sep > 0 ? data.slice(sep + 1) : '';
       let result = 'Неизвестное действие';
-      if ((action === 'appr' || action === 'rej') && id && SUPABASE_URL && SERVICE_KEY) {
-        const url = `${SUPABASE_URL}/rest/v1/reviews?id=eq.${encodeURIComponent(id)}`;
+      if ((action === 'appr' || action === 'rej') && UUID_RE.test(id) && SUPABASE_URL && SERVICE_KEY) {
         const r = action === 'appr'
-          ? await fetch(url, { method: 'PATCH', headers: dbHeaders, body: JSON.stringify({ approved: true }) })
-          : await fetch(url, { method: 'DELETE', headers: dbHeaders });
+          // approved=is.false: повторный клик по уже одобренному ничего не делает
+          ? await fetch(`${SUPABASE_URL}/rest/v1/reviews?id=eq.${id}&approved=is.false`, { method: 'PATCH', headers: dbHeaders, body: JSON.stringify({ approved: true }) })
+          : await fetch(`${SUPABASE_URL}/rest/v1/reviews?id=eq.${id}`, { method: 'DELETE', headers: dbHeaders });
         result = r.ok ? (action === 'appr' ? '✅ Одобрено и опубликовано' : '🗑 Отклонено и удалено') : '⚠️ Ошибка БД';
       }
       await tg('answerCallbackQuery', { callback_query_id: cq.id, text: result });

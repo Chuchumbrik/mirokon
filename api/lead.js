@@ -9,10 +9,12 @@ const handler = async (req, res) => {
     return res.status(400).json({ error: 'Укажите имя и телефон' });
   }
 
-  // TODO (DR-003/DR-006): перед публичным релизом вынести токен в ENV Vercel
-  // и сжечь текущий тестовый токен. На время тестов оставлен fallback.
-  const botToken = process.env.TG_BOT_TOKEN || '8622267403:AAEfT3X67P2i3UJ0Ghkd-zomyQ0URN4q_aI';
+  // Секреты только из ENV (тестовый токен — в Vercel ENV; сжечь перед релизом, DR-006).
+  const botToken = process.env.TG_BOT_TOKEN;
   const chatId = process.env.TG_CHAT_ID || '649175786';
+  if (!botToken) {
+    return res.status(500).json({ error: 'Сервис временно недоступен. Позвоните нам напрямую.' });
+  }
 
   const text =
     `🪟 *Новая заявка с сайта Mirokon*\n\n` +

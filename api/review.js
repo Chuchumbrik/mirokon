@@ -16,8 +16,8 @@ const handler = async (req, res) => {
 
   const SUPABASE_URL = process.env.SUPABASE_URL;
   const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
-  // TODO (DR-003/DR-006): вынести TG-токен в ENV и сжечь тестовый перед релизом.
-  const botToken = process.env.TG_BOT_TOKEN || '8622267403:AAEfT3X67P2i3UJ0Ghkd-zomyQ0URN4q_aI';
+  // Секреты только из ENV (тестовый токен — в Vercel ENV; сжечь перед релизом, DR-006).
+  const botToken = process.env.TG_BOT_TOKEN;
   const chatId = process.env.TG_CHAT_ID || '649175786';
 
   try {
@@ -42,7 +42,7 @@ const handler = async (req, res) => {
     }
 
     // 2) Уведомление в Telegram с кнопками модерации — best-effort, без parse_mode
-    try {
+    if (botToken) try {
       const reply_markup = reviewId ? {
         inline_keyboard: [[
           { text: '✅ Одобрить', callback_data: `appr:${reviewId}` },
