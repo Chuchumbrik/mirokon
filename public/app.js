@@ -445,3 +445,50 @@ lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLigh
     }
   });
 })();
+
+// ===== Навигация: тень хедера, scroll-spy, бренд → наверх, появление секций =====
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const header = document.querySelector('.site-header');
+
+  // Тень хедера при прокрутке
+  const onScroll = () => { if (header) header.classList.toggle('scrolled', window.scrollY > 8); };
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  // Клик по бренду (лого) — всегда в самый верх страницы
+  document.querySelectorAll('a.brand[href="#hero"]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+      if (history.replaceState) history.replaceState(null, '', location.pathname);
+    });
+  });
+
+  // Scroll-spy: подсветка активного пункта меню при прокрутке
+  const navLinks = [...document.querySelectorAll('.nav-link')];
+  const sections = ['constructor', 'gallery', 'reviews', 'news', 'contact']
+    .map(id => document.getElementById(id)).filter(Boolean);
+  if ('IntersectionObserver' in window && sections.length) {
+    const spy = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id));
+        }
+      });
+    }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+    sections.forEach(s => spy.observe(s));
+  }
+
+  // Плавное появление секций при прокрутке (с уважением к prefers-reduced-motion)
+  if (!reduce && 'IntersectionObserver' in window) {
+    const sel = ['#constructor .text-center', '#constructor .grid', '#gallery .text-center', '.gallery-grid',
+      '#reviews .text-center', '#news .text-center', '.news-grid', '#contact .lead-copy', '#contact .form-card'];
+    const targets = sel.flatMap(s => [...document.querySelectorAll(s)]);
+    targets.forEach(el => el.classList.add('reveal'));
+    const io = new IntersectionObserver((entries, obs) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); obs.unobserve(e.target); } });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.06 });
+    targets.forEach(el => io.observe(el));
+  }
+})();

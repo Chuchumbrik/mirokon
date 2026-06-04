@@ -203,3 +203,15 @@ h1,h2,h3,h4{font-family:'Montserrat',sans-serif;letter-spacing:-.02em}
 @media(min-width:1024px){
   .lg\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+/* ===== навигация по сайту: плавный скролл, активный пункт, тень хедера ===== */
+html{scroll-behavior:smooth;scroll-padding-top:88px}
+.site-header{transition:box-shadow .25s ease,background .25s ease}
+.site-header.scrolled{box-shadow:var(--sh-md)}
+.nav-link.active{opacity:1;color:var(--primary)}
+/* появление секций при прокрутке */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
+.reveal.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .reveal{opacity:1;transform:none;transition:none}
+}
