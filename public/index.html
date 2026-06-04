@@ -726,10 +726,11 @@ async function loadGallery() {
   if (error) return console.error('works:', error.message);
   if (!data.length) { document.getElementById('gallery-empty').style.display = 'block'; return; }
   grid.innerHTML = data.map(w => {
-    const media = w.image_url
-      ? `<img src="${esc(w.image_url)}" alt="${esc(w.title)}" loading="lazy" style="width:100%;height:100%;object-fit:cover">`
+    const safeImg = w.image_url && /^(https?:\/\/|\/)/i.test(w.image_url) ? w.image_url : '';
+    const media = safeImg
+      ? `<img src="${esc(safeImg)}" alt="${esc(w.title)}" loading="lazy" style="width:100%;height:100%;object-fit:cover">`
       : `<svg><use href="#win-illus"/></svg>`;
-    return `<article class="gallery-card" tabindex="0" role="button" data-title="${esc(w.title)}" data-desc="${esc(w.description)}" data-img="${esc(w.image_url||'')}" onclick="openLightbox(this)" onkeydown="if(event.key==='Enter')openLightbox(this)">`
+    return `<article class="gallery-card" tabindex="0" role="button" data-title="${esc(w.title)}" data-desc="${esc(w.description)}" data-img="${esc(safeImg)}" onclick="openLightbox(this)" onkeydown="if(event.key==='Enter')openLightbox(this)">`
       + `<div class="gallery-img"><span class="gallery-cat">${esc(w.category||'Работа')}</span>${media}<div class="gallery-overlay"><span>Смотреть ↗</span></div></div>`
       + `<div class="gallery-body"><h3>${esc(w.title)}</h3><p>${esc(w.description||'')}</p></div></article>`;
   }).join('');
@@ -866,9 +867,16 @@ function openLightbox(card) {
   document.getElementById('lb-title').textContent = card.dataset.title || 'Работа';
   document.getElementById('lb-desc').textContent = card.dataset.desc || '';
   const box = lightbox.querySelector('.lightbox-img');
-  box.innerHTML = card.dataset.img
-    ? `<img src="${card.dataset.img}" alt="" style="width:100%;height:100%;object-fit:cover">`
-    : '<svg><use href="#win-illus"/></svg>';
+  box.replaceChildren();
+  const imgUrl = card.dataset.img && /^(https?:\/\/|\/)/i.test(card.dataset.img) ? card.dataset.img : '';
+  if (imgUrl) {
+    const img = document.createElement('img');   // src через свойство не парсит HTML
+    img.src = imgUrl; img.alt = '';
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover';
+    box.appendChild(img);
+  } else {
+    box.innerHTML = '<svg><use href="#win-illus"/></svg>';
+  }
   lightbox.classList.remove('hidden');
   document.body.style.overflow = 'hidden';
   document.addEventListener('keydown', lbEsc);
