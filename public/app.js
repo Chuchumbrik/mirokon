@@ -252,7 +252,7 @@ async function loadNews() {
   const grid = document.getElementById('news-grid'); if (!sb || !grid) return;
   const { data, error } = await sb.from('news').select('title,preview_text,created_at').eq('published', true).order('created_at', { ascending: false }).limit(8);
   if (error) return console.error('news:', error.message);
-  if (!data.length) { document.getElementById('news-empty').style.display = 'block'; return; }
+  if (!data.length) { grid.innerHTML = ''; document.getElementById('news-empty').style.display = 'block'; return; }
   const fmt = d => new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' });
   grid.innerHTML = data.map(n => `<article class="news-card"><span class="news-date">${esc(fmt(n.created_at))}</span><h3>${esc(n.title)}</h3><p>${esc(n.preview_text||'')}</p></article>`).join('');
 }
@@ -325,6 +325,7 @@ document.getElementById('review-form').addEventListener('submit', async (e) => {
   const textEl = document.getElementById('r-text');
   const name = nameEl.value.trim();
   const text = textEl.value.trim();
+  const city = (document.getElementById('r-city')?.value || '').trim();
   const rating = parseInt(ratingInput.value);
   const setStatus = (type, msg) => { reviewStatusEl.className = 'form-status ' + type; reviewStatusEl.textContent = msg; };
   nameEl.classList.toggle('invalid', !name);
@@ -338,7 +339,7 @@ document.getElementById('review-form').addEventListener('submit', async (e) => {
     const res = await fetch('/api/review', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, rating, text })
+      body: JSON.stringify({ name, city, rating, text })
     });
     const data = await res.json().catch(() => ({}));
     if (res.ok) {
