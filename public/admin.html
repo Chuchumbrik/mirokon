@@ -56,6 +56,30 @@ textarea{resize:vertical;min-height:70px}
 .toast.err{background:#b91c1c}
 .row2{display:grid;grid-template-columns:1fr 140px;gap:12px}
 @media(max-width:560px){.row2{grid-template-columns:1fr}}
+.ph-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:10px 0}
+.ph-card{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:4/3;background:#f1f5f9;border:1px solid var(--border);cursor:pointer}
+.ph-card img{width:100%;height:100%;object-fit:cover;display:block;transition:.15s}
+.ph-card:hover img{opacity:.82}
+.ph-ov{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:6px;opacity:0;transition:.15s;background:linear-gradient(to bottom,rgba(0,0,0,.35) 0,transparent 45%,transparent 55%,rgba(0,0,0,.45) 100%)}
+.ph-card:hover .ph-ov{opacity:1}
+.ph-row{display:flex;gap:4px}
+.ph-b{background:rgba(255,255,255,.88);border:none;border-radius:7px;cursor:pointer;padding:4px 8px;font-size:.75rem;font-weight:700;color:var(--ink);line-height:1.4}
+.ph-b:hover{background:#fff}
+.ph-b.rm{color:#b91c1c}
+.ph-add-zone{border:2px dashed var(--border);border-radius:10px;padding:18px;text-align:center;cursor:pointer;color:var(--muted);font-size:.88rem;margin-top:6px;transition:.15s}
+.ph-add-zone:hover{border-color:var(--accent);color:var(--accent);background:var(--ice)}
+.lb{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:200;display:none;align-items:center;justify-content:center;flex-direction:column}
+.lb.open{display:flex}
+.lb img{max-width:90vw;max-height:82vh;border-radius:8px;object-fit:contain;display:block}
+.lb-x{position:absolute;top:14px;right:18px;color:#fff;font-size:2rem;cursor:pointer;background:none;border:none;line-height:1;opacity:.8}
+.lb-x:hover{opacity:1}
+.lb-arr{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.14);color:#fff;border:none;border-radius:50%;width:46px;height:46px;font-size:1.5rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.lb-arr:hover{background:rgba(255,255,255,.25)}
+.lb-arr.p{left:14px}.lb-arr.n{right:14px}
+.lb-cnt{color:rgba(255,255,255,.6);font-size:.82rem;margin-top:10px}
+.ph-cover-badge{position:absolute;bottom:6px;left:6px;background:rgba(30,64,175,.85);color:#fff;font-size:.7rem;font-weight:700;padding:2px 7px;border-radius:5px;pointer-events:none;letter-spacing:.3px}
+@media(hover:none){.ph-ov{opacity:1}}
+.lb-single .lb-arr,.lb-single .lb-cnt{display:none}
 </style>
 </head>
 <body>
@@ -94,9 +118,16 @@ textarea{resize:vertical;min-height:70px}
           <div><label>Категория</label><input id="w-category" placeholder="Гостиная"></div>
         </div>
         <label>Описание</label><textarea id="w-desc" placeholder="Двухкамерный стеклопакет…"></textarea>
-        <div class="row2">
-          <div><label>Фото</label><input type="file" id="w-photo" accept="image/*"></div>
-          <div><label>Порядок</label><input type="number" id="w-sort" value="0"></div>
+        <div><label>Порядок</label><input type="number" id="w-sort" value="0" style="max-width:140px"></div>
+        <div id="w-newphoto-wrap" style="margin-top:12px">
+          <label>Фото (обложка)</label>
+          <input type="file" id="w-photo" accept="image/*">
+        </div>
+        <div id="w-photos-section" style="display:none;margin-top:14px">
+          <label style="margin-bottom:8px">Фото галереи</label>
+          <div class="ph-grid" id="w-photo-grid"></div>
+          <div class="ph-add-zone" id="w-add-zone" onclick="$('w-multi-input').click()">+ Добавить фото</div>
+          <input type="file" id="w-multi-input" accept="image/*" multiple style="display:none" onchange="addWorkPhotos(this.files)">
         </div>
         <label class="check"><input type="checkbox" id="w-published"> Опубликовать на сайте</label>
         <div style="margin-top:16px;display:flex;gap:8px">
@@ -139,6 +170,14 @@ textarea{resize:vertical;min-height:70px}
   </div>
 
   <div class="toast" id="toast"></div>
+
+  <div class="lb" id="lightbox" onclick="lbBgClick(event)">
+    <button class="lb-x" onclick="closeLb()">&times;</button>
+    <button class="lb-arr p" onclick="lbNav(-1);event.stopPropagation()">&#8249;</button>
+    <img id="lb-img" src="" alt="">
+    <button class="lb-arr n" onclick="lbNav(1);event.stopPropagation()">&#8250;</button>
+    <span class="lb-cnt" id="lb-cnt"></span>
+  </div>
 
 <script>
   const SUPABASE_URL = 'https://ermeokjqkzpkefqtmvif.supabase.co';
@@ -233,13 +272,15 @@ textarea{resize:vertical;min-height:70px}
   // ================= WORKS =================
   async function loadWorks() {
     const box = $('works-list'); box.replaceChildren();
-    const { data, error } = await sb.from('works').select('*').order('sort').order('created_at', { ascending: false });
+    const { data, error } = await sb.from('works').select('*, work_photos(id)').order('sort').order('created_at', { ascending: false });
     if (error) return toast('Ошибка загрузки работ', true);
     if (!data.length) { box.appendChild(el('div', { class: 'empty', text: 'Пока нет работ' })); return; }
     data.forEach(w => {
       const img = safeUrl(w.image_url);
       const thumb = img ? el('img', { class: 'thumb', src: img, alt: '' }) : el('div', { class: 'thumb', text: '🪟' });
       const badge = el('span', { class: 'badge ' + (w.published ? 'on' : 'off'), text: w.published ? 'на сайте' : 'черновик' });
+      const photoCount = w.work_photos?.length || 0;
+      const meta = [w.category, w.description].filter(Boolean).join(' · ');
       const actions = el('div', { class: 'li-actions' },
         badge,
         el('button', { class: 'btn btn-ghost', text: w.published ? 'Снять' : 'Опубликовать', onclick: () => togglePublish('works', w.id, !w.published) }),
@@ -247,42 +288,195 @@ textarea{resize:vertical;min-height:70px}
         el('button', { class: 'btn btn-danger', text: 'Удалить', onclick: () => del('works', w.id) })
       );
       box.appendChild(el('div', { class: 'list-item' }, thumb,
-        el('div', { class: 'li-body' }, el('div', { class: 't', text: w.title }), el('div', { class: 'm', text: [w.category, w.description].filter(Boolean).join(' · ') })),
+        el('div', { class: 'li-body' },
+          el('div', { class: 't', text: w.title }),
+          el('div', { class: 'm', text: [meta, photoCount ? photoCount + ' фото' : ''].filter(Boolean).join(' · ') })),
         actions));
     });
   }
   function editWork(w) {
     $('w-id').value = w.id; $('w-title').value = w.title || ''; $('w-category').value = w.category || '';
     $('w-desc').value = w.description || ''; $('w-sort').value = w.sort || 0; $('w-published').checked = !!w.published;
-    $('works-form-title').textContent = 'Изменить работу'; window.scrollTo({ top: 0, behavior: 'smooth' });
+    $('works-form-title').textContent = 'Изменить работу';
+    $('w-newphoto-wrap').style.display = 'none';
+    $('w-photos-section').style.display = 'block';
+    loadWorkPhotos(w.id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   function resetWorkForm() {
     ['w-id','w-title','w-category','w-desc','w-photo'].forEach(i => $(i).value = '');
     $('w-sort').value = 0; $('w-published').checked = false; $('works-form-title').textContent = 'Добавить работу';
+    $('w-newphoto-wrap').style.display = 'block';
+    $('w-photos-section').style.display = 'none';
+    wpCache = []; $('w-photo-grid').replaceChildren();
+    const z = $('w-add-zone'); if (z) { z.textContent = '+ Добавить фото'; z.style.pointerEvents = ''; }
   }
   async function saveWork() {
     const title = $('w-title').value.trim();
     if (!title) return toast('Укажите название', true);
     const btn = $('w-save'); btn.disabled = true; btn.textContent = 'Сохранение…';
     try {
-      let image_url = null;
-      const file = $('w-photo').files[0];
-      if (file) {
-        const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-        const path = `${crypto.randomUUID()}.${ext}`;
-        const up = await sb.storage.from('works').upload(path, file, { cacheControl: '3600', upsert: false });
-        if (up.error) throw up.error;
-        image_url = sb.storage.from('works').getPublicUrl(path).data.publicUrl;
+      const id = $('w-id').value;
+      let image_url = null, coverPath = null;
+      if (!id) {
+        const file = $('w-photo').files[0];
+        if (file) {
+          if (file.size > 15 * 1024 * 1024) throw new Error('Файл больше 15 МБ');
+          const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+          coverPath = `${crypto.randomUUID()}.${ext}`;
+          const up = await sb.storage.from('works').upload(coverPath, file, { cacheControl: '3600', upsert: false });
+          if (up.error) throw up.error;
+          image_url = sb.storage.from('works').getPublicUrl(coverPath).data.publicUrl;
+        }
       }
       const row = { title, category: $('w-category').value.trim() || null, description: $('w-desc').value.trim() || null,
         sort: parseInt($('w-sort').value, 10) || 0, published: $('w-published').checked };
       if (image_url) row.image_url = image_url;
-      const id = $('w-id').value;
-      const res = id ? await sb.from('works').update(row).eq('id', id) : await sb.from('works').insert(row);
-      if (res.error) throw res.error;
-      toast('Сохранено'); resetWorkForm(); loadWorks();
+      if (id) {
+        const res = await sb.from('works').update(row).eq('id', id);
+        if (res.error) throw res.error;
+        toast('Сохранено'); loadWorks();
+      } else {
+        const res = await sb.from('works').insert(row).select('id').single();
+        if (res.error) throw res.error;
+        const newId = res.data.id;
+        if (image_url) {
+          const ins = await sb.from('work_photos').insert({ work_id: newId, url: image_url, storage_path: coverPath, sort: 0 });
+          if (ins.error) toast('Фото сохранено, но не добавлено в галерею: ' + ins.error.message, true);
+        }
+        $('w-id').value = newId;
+        $('works-form-title').textContent = 'Изменить работу';
+        $('w-newphoto-wrap').style.display = 'none';
+        $('w-photos-section').style.display = 'block';
+        $('w-photo').value = '';
+        await loadWorkPhotos(newId);
+        toast('Сохранено — теперь можно добавить больше фото'); loadWorks();
+      }
     } catch (e) { toast('Ошибка: ' + (e.message || e), true); }
     finally { btn.disabled = false; btn.textContent = 'Сохранить'; }
+  }
+
+  // ================= PHOTO GALLERY =================
+  let wpCache = [], lbPhotos = [], lbIdx = 0, wpMoving = false;
+
+  async function loadWorkPhotos(workId) {
+    const { data, error } = await sb.from('work_photos').select('*').eq('work_id', workId).order('sort').order('created_at');
+    if (error) { toast('Ошибка загрузки фото', true); return; }
+    wpCache = data || [];
+    renderWpGrid();
+  }
+
+  function renderWpGrid() {
+    const grid = $('w-photo-grid'); grid.replaceChildren();
+    wpCache.forEach((ph, i) => {
+      const card = document.createElement('div'); card.className = 'ph-card';
+      const img = el('img', { src: safeUrl(ph.url), alt: '' });
+      img.addEventListener('click', () => openLb(i));
+      const ov = el('div', { class: 'ph-ov' });
+      const topRow = el('div', { class: 'ph-row' });
+      if (i > 0) topRow.appendChild(el('button', { class: 'ph-b', text: '↑', title: 'Выше', onclick: (e) => { e.stopPropagation(); moveWp(ph.id, -1); } }));
+      if (i < wpCache.length - 1) topRow.appendChild(el('button', { class: 'ph-b', text: '↓', title: 'Ниже', onclick: (e) => { e.stopPropagation(); moveWp(ph.id, 1); } }));
+      const botRow = el('div', { class: 'ph-row' },
+        el('button', { class: 'ph-b rm', text: '✕ Удалить', onclick: (e) => { e.stopPropagation(); delWp(ph.id, ph.storage_path); } })
+      );
+      ov.appendChild(topRow); ov.appendChild(botRow);
+      card.appendChild(img); card.appendChild(ov);
+      if (i === 0) card.appendChild(el('div', { class: 'ph-cover-badge', text: 'Обложка' }));
+      grid.appendChild(card);
+    });
+  }
+
+  async function addWorkPhotos(files) {
+    if (!files.length) return;
+    const workId = $('w-id').value;
+    if (!workId) { toast('Сначала сохраните работу', true); return; }
+    const MAX = 15 * 1024 * 1024;
+    for (const f of files) {
+      if (f.size > MAX) return toast(`"${f.name}" больше 15 МБ`, true);
+    }
+    const zone = $('w-add-zone');
+    const wasEmpty = wpCache.length === 0;
+    let nextSort = wpCache.length ? Math.max(...wpCache.map(p => p.sort)) + 1 : 0;
+    let done = 0;
+    zone.textContent = `Загрузка 0 / ${files.length}…`;
+    zone.style.pointerEvents = 'none';
+    for (let i = 0; i < files.length; i++) {
+      try {
+        const ext = (files[i].name.split('.').pop() || 'jpg').toLowerCase();
+        const storagePath = `${crypto.randomUUID()}.${ext}`;
+        const up = await sb.storage.from('works').upload(storagePath, files[i], { cacheControl: '3600', upsert: false });
+        if (up.error) throw up.error;
+        const url = sb.storage.from('works').getPublicUrl(storagePath).data.publicUrl;
+        const ins = await sb.from('work_photos').insert({ work_id: workId, url, storage_path: storagePath, sort: nextSort++ });
+        if (ins.error) { await sb.storage.from('works').remove([storagePath]); throw ins.error; }
+        done++;
+        zone.textContent = `Загрузка ${done} / ${files.length}…`;
+      } catch (e) { toast('Ошибка: ' + (e.message || e), true); }
+    }
+    zone.textContent = '+ Добавить фото';
+    zone.style.pointerEvents = '';
+    $('w-multi-input').value = '';
+    await loadWorkPhotos(workId);
+    if (wasEmpty && wpCache.length > 0) await sb.from('works').update({ image_url: wpCache[0].url }).eq('id', workId);
+    if (done > 0) toast(done > 1 ? `Добавлено ${done} фото` : 'Фото добавлено');
+    loadWorks();
+  }
+
+  async function delWp(photoId, storagePath) {
+    if (!confirm('Удалить фото?')) return;
+    const { error } = await sb.from('work_photos').delete().eq('id', photoId);
+    if (error) return toast('Ошибка удаления', true);
+    if (storagePath) await sb.storage.from('works').remove([storagePath]);
+    wpCache = wpCache.filter(p => p.id !== photoId);
+    const workId = $('w-id').value;
+    const cover = wpCache.length ? wpCache[0].url : null;
+    await sb.from('works').update({ image_url: cover }).eq('id', workId);
+    renderWpGrid(); loadWorks(); toast('Удалено');
+  }
+
+  async function moveWp(photoId, dir) {
+    if (wpMoving) return;
+    wpMoving = true;
+    try {
+      const idx = wpCache.findIndex(p => p.id === photoId);
+      const swap = idx + dir;
+      if (swap < 0 || swap >= wpCache.length) return;
+      [wpCache[idx], wpCache[swap]] = [wpCache[swap], wpCache[idx]];
+      const results = await Promise.all(wpCache.map((p, i) => sb.from('work_photos').update({ sort: i }).eq('id', p.id)));
+      if (results.some(r => r.error)) {
+        toast('Ошибка сортировки', true);
+        await loadWorkPhotos($('w-id').value);
+        return;
+      }
+      wpCache.forEach((p, i) => p.sort = i);
+      const workId = $('w-id').value;
+      if (idx === 0 || swap === 0) await sb.from('works').update({ image_url: wpCache[0].url }).eq('id', workId);
+      renderWpGrid(); loadWorks();
+    } finally { wpMoving = false; }
+  }
+
+  function openLb(idx) {
+    lbPhotos = wpCache; lbIdx = idx;
+    $('lb-img').src = safeUrl(lbPhotos[idx].url);
+    $('lb-cnt').textContent = (idx + 1) + ' / ' + lbPhotos.length;
+    $('lightbox').classList.toggle('lb-single', lbPhotos.length === 1);
+    $('lightbox').classList.add('open');
+    document.addEventListener('keydown', lbKey);
+  }
+  function closeLb() {
+    $('lightbox').classList.remove('open');
+    document.removeEventListener('keydown', lbKey);
+  }
+  function lbBgClick(e) { if (e.target === $('lightbox')) closeLb(); }
+  function lbNav(dir) {
+    lbIdx = (lbIdx + dir + lbPhotos.length) % lbPhotos.length;
+    $('lb-img').src = safeUrl(lbPhotos[lbIdx].url);
+    $('lb-cnt').textContent = (lbIdx + 1) + ' / ' + lbPhotos.length;
+  }
+  function lbKey(e) {
+    if (e.key === 'ArrowLeft') lbNav(-1);
+    else if (e.key === 'ArrowRight') lbNav(1);
+    else if (e.key === 'Escape') closeLb();
   }
 
   // ================= REVIEWS =================
@@ -366,6 +560,14 @@ textarea{resize:vertical;min-height:70px}
   }
   async function del(table, id) {
     if (!confirm('Удалить запись безвозвратно?')) return;
+    if (table === 'works') {
+      const { data: photos } = await sb.from('work_photos').select('storage_path').eq('work_id', id);
+      if (photos && photos.length) {
+        const paths = photos.map(p => p.storage_path).filter(Boolean);
+        if (paths.length) await sb.storage.from('works').remove(paths);
+      }
+      if ($('w-id').value === id) resetWorkForm();
+    }
     const { error } = await sb.from(table).delete().eq('id', id);
     if (error) return toast('Ошибка: ' + error.message, true);
     toast('Удалено');
