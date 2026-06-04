@@ -31,6 +31,9 @@ input,textarea,select{width:100%;padding:11px 13px;border:1.5px solid var(--bord
 input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.15)}
 textarea{resize:vertical;min-height:70px}
 .check{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:.9rem;font-weight:500}
+.scope-checks{display:grid;grid-template-columns:1fr 1fr;gap:2px 18px;margin-top:6px}
+.scope-checks .check{margin-top:6px}
+@media(max-width:560px){.scope-checks{grid-template-columns:1fr}}
 .check input{width:auto}
 .btn{display:inline-flex;align-items:center;gap:6px;border:none;cursor:pointer;font-family:'Inter';font-weight:600;font-size:.88rem;padding:9px 15px;border-radius:10px;transition:.15s}
 .btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#1D4ED8}
@@ -138,6 +141,35 @@ textarea{resize:vertical;min-height:70px}
         </div>
         <label>Описание</label><textarea id="w-desc" placeholder="Двухкамерный стеклопакет…"></textarea>
         <div><label>Порядок</label><input type="number" id="w-sort" value="0" style="max-width:140px"></div>
+        <div class="row2" style="margin-top:8px">
+          <div><label>Система (профиль)</label><input id="w-system" placeholder="VEKA Softline 70"></div>
+          <div><label>Цена «от», ₽</label><input type="number" id="w-pricefrom" placeholder="38000"></div>
+        </div>
+        <div class="row2">
+          <div><label>Срок, дней</label><input type="number" id="w-duration" placeholder="1"></div>
+          <div><label>Район / город</label><input id="w-area" placeholder="Химки"></div>
+        </div>
+        <div class="row2">
+          <div><label>Гарантия</label><input id="w-warranty" placeholder="5 лет"></div>
+          <div><label>Тип окна (для «Рассчитать»)</label>
+            <select id="w-tpltype">
+              <option value="">— не задан —</option>
+              <option value="single-turn">Одностворчатое поворотное</option>
+              <option value="single-deaf">Одностворчатое глухое</option>
+              <option value="double-deaf-turn">Двустворчатое (глухое + поворотное)</option>
+              <option value="double-turn">Двустворчатое поворотное</option>
+              <option value="triple">Трёхстворчатое</option>
+              <option value="balcony">Балконный блок</option>
+            </select>
+          </div>
+        </div>
+        <label style="margin-top:10px">Перечень работ (под ключ)</label>
+        <div class="scope-checks" id="w-scope">
+          <label class="check"><input type="checkbox" value="Демонтаж старого"> Демонтаж старого</label>
+          <label class="check"><input type="checkbox" value="Монтаж окна"> Монтаж окна</label>
+          <label class="check"><input type="checkbox" value="Откосы и подоконник"> Откосы и подоконник</label>
+          <label class="check"><input type="checkbox" value="Вынос мусора и уборка"> Вынос мусора и уборка</label>
+        </div>
         <div id="w-newphoto-wrap" style="margin-top:12px">
           <label>Фото (обложка)</label>
           <input type="file" id="w-photo" accept="image/*">
@@ -340,6 +372,10 @@ textarea{resize:vertical;min-height:70px}
   function editWork(w) {
     $('w-id').value = w.id; $('w-title').value = w.title || ''; $('w-category').value = w.category || '';
     $('w-desc').value = w.description || ''; $('w-sort').value = w.sort || 0; $('w-published').checked = !!w.published;
+    $('w-system').value = w.system || ''; $('w-pricefrom').value = w.price_from || ''; $('w-duration').value = w.duration_days || '';
+    $('w-area').value = w.area || ''; $('w-warranty').value = w.warranty || ''; $('w-tpltype').value = w.tpl_window_type || '';
+    const scopeSet = new Set(w.scope || []);
+    $('w-scope').querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = scopeSet.has(cb.value));
     $('works-form-title').textContent = 'Изменить работу';
     $('w-newphoto-wrap').style.display = 'none';
     $('w-photos-section').style.display = 'block';
@@ -347,7 +383,9 @@ textarea{resize:vertical;min-height:70px}
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   function resetWorkForm() {
-    ['w-id','w-title','w-category','w-desc','w-photo'].forEach(i => $(i).value = '');
+    ['w-id','w-title','w-category','w-desc','w-photo','w-system','w-pricefrom','w-duration','w-area','w-warranty'].forEach(i => $(i).value = '');
+    $('w-tpltype').value = '';
+    $('w-scope').querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false);
     $('w-sort').value = 0; $('w-published').checked = false; $('works-form-title').textContent = 'Добавить работу';
     $('w-newphoto-wrap').style.display = 'block';
     $('w-photos-section').style.display = 'none';
@@ -372,8 +410,16 @@ textarea{resize:vertical;min-height:70px}
           image_url = sb.storage.from('works').getPublicUrl(coverPath).data.publicUrl;
         }
       }
+      const scope = [...$('w-scope').querySelectorAll('input[type=checkbox]:checked')].map(cb => cb.value);
       const row = { title, category: $('w-category').value.trim() || null, description: $('w-desc').value.trim() || null,
-        sort: parseInt($('w-sort').value, 10) || 0, published: $('w-published').checked };
+        sort: parseInt($('w-sort').value, 10) || 0, published: $('w-published').checked,
+        system: $('w-system').value.trim() || null,
+        price_from: parseInt($('w-pricefrom').value, 10) || null,
+        duration_days: parseInt($('w-duration').value, 10) || null,
+        area: $('w-area').value.trim() || null,
+        warranty: $('w-warranty').value.trim() || null,
+        tpl_window_type: $('w-tpltype').value || null,
+        scope: scope.length ? scope : null };
       if (image_url) row.image_url = image_url;
       if (id) {
         const res = await sb.from('works').update(row).eq('id', id);
