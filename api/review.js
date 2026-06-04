@@ -1,5 +1,7 @@
 // POST /api/review — приём отзыва: сохраняем в Supabase на модерацию (approved=false)
 // и шлём уведомление в Telegram (best-effort).
+const { checkRateLimit, getClientIp } = require('./_ratelimit');
+
 const handler = async (req, res) => {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -12,6 +14,13 @@ const handler = async (req, res) => {
   rating = parseInt(rating, 10);
   if (!name || !text || !(rating >= 1 && rating <= 5)) {
     return res.status(400).json({ error: 'Заполните имя, текст и рейтинг (1–5)' });
+  }
+
+  // Rate-limit: не более 3 отзывов/час с одного IP (ТЗ 5.2)
+  const ip = getClientIp(req);
+  const rl = await checkRateLimit('review', ip, { max: 3, windowSeconds: 3600 });
+  if (!rl.allowed) {
+    return res.status(429).json({ error: 'Слишком много отзывов. Попробуйте позже.' });
   }
 
   const SUPABASE_URL = process.env.SUPABASE_URL;

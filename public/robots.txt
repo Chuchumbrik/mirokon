@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /landing.html
+Disallow: /design-preview.html
+
+Sitemap: https://mirokon-new.vercel.app/sitemap.xml
