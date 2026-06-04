@@ -198,8 +198,12 @@
             <input type="range" id="height" min="600" max="2400" value="1400" step="10" class="ctor-range">
             <div class="range-scale"><span>600 мм</span><span>2400 мм</span></div>
           </div>
+          <div id="ctor-edit-banner" class="ctor-edit-banner" style="display:none">
+            <span>Позиция <strong id="ctor-edit-num">1</strong> в редактировании — изменения не сохранены</span>
+            <button type="button" onclick="cancelEdit()" class="btn-ds btn-ds-secondary" style="padding:8px 16px;font-size:.85rem">Отменить</button>
+          </div>
           <div class="grid grid-cols-2 gap-4 pt-2">
-            <button onclick="addToCart()" class="btn-ds btn-ds-primary" style="justify-content:center">+ Добавить в список</button>
+            <button id="ctor-add-btn" onclick="addToCart()" class="btn-ds btn-ds-primary" style="justify-content:center">+ Добавить в список</button>
             <button onclick="resetCalc()" class="btn-ds btn-ds-secondary" style="justify-content:center">Сбросить</button>
           </div>
         </div>

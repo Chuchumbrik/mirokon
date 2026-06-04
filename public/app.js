@@ -116,11 +116,14 @@
     const cart = (() => { try { const s = localStorage.getItem(_CART_KEY); return s ? JSON.parse(s) : []; } catch { return []; } })();
     function _persistCart() { try { localStorage.setItem(_CART_KEY, JSON.stringify(cart)); } catch {} }
 
-    let ctorDirty = false; // true если пользователь изменил конструктор, но не добавил позицию
+    let ctorDirty    = false; // пользователь изменил конструктор, но не сохранил
+    let editingIndex  = -1;   // индекс редактируемой позиции (-1 = нет)
+    let editingBackup = null; // копия оригинала для отмены
 
-    function addToCart() {
-      const price = parseInt(priceEl.dataset.v || 0) || 3000;
-      cart.push({
+    // --- вспомогательные ---
+
+    function _makeItem() {
+      return {
         typeText:  document.getElementById('window-type').selectedOptions[0].textContent,
         typeVal:   document.getElementById('window-type').value,
         profText:  document.getElementById('profile').selectedOptions[0].textContent,
@@ -131,16 +134,11 @@
         hwVal:     document.getElementById('hardware').value,
         width:  widthSlider.value,
         height: heightSlider.value,
-        price
-      });
-      ctorDirty = false;
-      _persistCart();
-      renderCart();
-      document.getElementById('cart-section').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        price:  parseInt(priceEl.dataset.v || 0) || 3000
+      };
     }
 
-    function editFromCart(i) {
-      const item = cart[i];
+    function _loadItemToConstructor(item) {
       if (item.typeVal)  document.getElementById('window-type').value = item.typeVal;
       if (item.profVal)  document.getElementById('profile').value     = item.profVal;
       if (item.glassVal) document.getElementById('glass').value       = item.glassVal;
@@ -150,13 +148,115 @@
       updateVal(widthSlider, widthVal);
       updateVal(heightSlider, heightVal);
       drawWindow(); calcPrice();
-      removeFromCart(i);
-      ctorDirty = true;
+    }
+
+    // Рендер предпросмотра заказа — вызывается и из submitCart, и при обновлении позиции
+    function _renderPreview() {
+      const preview = document.getElementById('form-order-preview');
+      if (!preview || !cart.length) return;
+      let total = 0;
+      preview.replaceChildren();
+      const head = document.createElement('div'); head.className = 'form-order-head';
+      const n = cart.length, word = n===1?'позиция':n<=4?'позиции':'позиций';
+      const titleSpan = document.createElement('span'); titleSpan.className = 'form-order-title';
+      titleSpan.textContent = 'Ваш заказ · ' + n + ' ' + word;
+      const editBtn = document.createElement('button'); editBtn.type = 'button'; editBtn.className = 'form-order-edit'; editBtn.textContent = '← Изменить состав';
+      editBtn.addEventListener('click', () => document.getElementById('constructor').scrollIntoView({behavior:'smooth'}));
+      head.appendChild(titleSpan); head.appendChild(editBtn);
+      preview.appendChild(head);
+      cart.forEach((item, i) => {
+        total += item.price;
+        const row  = document.createElement('div'); row.className = 'form-order-item';
+        const info = document.createElement('div'); info.className = 'form-order-item-info';
+        const nm   = document.createElement('div'); nm.className = 'form-order-item-name'; nm.textContent = (i+1) + '. ' + item.typeText;
+        const mt   = document.createElement('div'); mt.className = 'form-order-item-meta'; mt.textContent = item.profText + ' · ' + item.glassText + ' · ' + item.width + '×' + item.height + ' мм';
+        const pr   = document.createElement('span'); pr.className = 'form-order-item-price'; pr.textContent = item.price.toLocaleString('ru-RU') + ' ₽';
+        info.appendChild(nm); info.appendChild(mt);
+        row.appendChild(info); row.appendChild(pr);
+        preview.appendChild(row);
+      });
+      const foot = document.createElement('div'); foot.className = 'form-order-total';
+      const lbl  = document.createElement('span'); lbl.className = 'form-order-total-label'; lbl.textContent = 'Ориентировочная стоимость';
+      const sm   = document.createElement('span'); sm.className  = 'form-order-total-sum';   sm.textContent  = total.toLocaleString('ru-RU') + ' ₽';
+      foot.appendChild(lbl); foot.appendChild(sm);
+      preview.appendChild(foot);
+      preview.className = 'form-order-preview';
+      preview.style.display = 'block';
+    }
+
+    // Показать/скрыть баннер редактирования и поменять текст кнопки «Добавить»
+    function _updateEditBanner() {
+      const banner = document.getElementById('ctor-edit-banner');
+      const numEl  = document.getElementById('ctor-edit-num');
+      const addBtn = document.getElementById('ctor-add-btn');
+      if (!banner) return;
+      if (editingIndex !== -1) {
+        banner.style.display = 'flex';
+        if (numEl)  numEl.textContent  = editingIndex + 1;
+        if (addBtn) addBtn.textContent = 'Сохранить изменения';
+      } else {
+        banner.style.display = 'none';
+        if (addBtn) addBtn.textContent = '+ Добавить в список';
+      }
+    }
+
+    // --- публичные функции ---
+
+    function addToCart() {
+      const item = _makeItem();
+      if (editingIndex !== -1) {
+        cart[editingIndex] = item;    // обновить позицию на месте
+        editingIndex  = -1;
+        editingBackup = null;
+        // если предпросмотр заказа уже открыт — обновить его автоматически
+        const fp = document.getElementById('form-order-preview');
+        if (fp && fp.style.display !== 'none') _renderPreview();
+      } else {
+        cart.push(item);
+        document.getElementById('cart-section').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      ctorDirty = false;
+      _persistCart();
+      renderCart();
+      _updateEditBanner();
+    }
+
+    function editFromCart(i) {
+      if (editingIndex !== -1 && editingIndex !== i) {
+        cart[editingIndex] = editingBackup; // откатить предыдущую при переключении
+      }
+      editingIndex  = i;
+      editingBackup = Object.assign({}, cart[i]);
+      _loadItemToConstructor(cart[i]);
+      ctorDirty = false;
+      renderCart();
+      _updateEditBanner();
       document.getElementById('constructor').scrollIntoView({ behavior: 'smooth' });
     }
 
-    function removeFromCart(i) { cart.splice(i, 1); _persistCart(); renderCart(); }
-    function clearCart()       { cart.length = 0;   _persistCart(); renderCart(); }
+    function cancelEdit() {
+      if (editingIndex !== -1 && editingBackup) {
+        cart[editingIndex] = editingBackup; // вернуть оригинал
+        _persistCart();
+      }
+      editingIndex  = -1;
+      editingBackup = null;
+      ctorDirty = false;
+      renderCart();
+      _updateEditBanner();
+    }
+
+    function removeFromCart(i) {
+      if (editingIndex === i)      { editingIndex = -1; editingBackup = null; _updateEditBanner(); }
+      else if (editingIndex > i)   { editingIndex--; }
+      cart.splice(i, 1); _persistCart(); renderCart();
+    }
+
+    function clearCart() {
+      cart.length = 0; editingIndex = -1; editingBackup = null; ctorDirty = false;
+      _persistCart(); renderCart(); _updateEditBanner();
+    }
+
     renderCart(); // восстановить корзину из localStorage при загрузке
 
     function renderCart() {
@@ -170,17 +270,23 @@
       itemsEl.replaceChildren();
       let total = 0;
       cart.forEach((item, i) => {
+        const isEditing = i === editingIndex;
         total += item.price;
-        const row   = document.createElement('div');   row.className   = 'cart-item';
+        const row   = document.createElement('div');   row.className   = 'cart-item' + (isEditing ? ' editing' : '');
         const body  = document.createElement('div');   body.className  = 'cart-item-body';
         const title = document.createElement('div');   title.className = 'cart-item-title'; title.textContent = item.typeText;
         const meta  = document.createElement('div');   meta.className  = 'cart-item-meta';  meta.textContent  = item.profText + ' · ' + item.glassText + ' · ' + item.width + '×' + item.height + ' мм';
-        const price = document.createElement('span'); price.className = 'cart-item-price'; price.textContent = item.price.toLocaleString('ru-RU') + ' ₽';
-        const edit  = document.createElement('button'); edit.className = 'cart-item-edit'; edit.textContent = '✎'; edit.title = 'Редактировать позицию';
+        if (isEditing) {
+          const badge = document.createElement('span'); badge.className = 'cart-item-editing-badge'; badge.textContent = 'в редактировании';
+          body.append(title, meta, badge);
+        } else {
+          body.append(title, meta);
+        }
+        const price = document.createElement('span');  price.className  = 'cart-item-price'; price.textContent = item.price.toLocaleString('ru-RU') + ' ₽';
+        const edit  = document.createElement('button'); edit.className   = 'cart-item-edit' + (isEditing ? ' active' : ''); edit.textContent = '✎'; edit.title = 'Редактировать позицию'; edit.disabled = isEditing;
         edit.addEventListener('click', () => editFromCart(i));
         const rm    = document.createElement('button'); rm.className = 'cart-item-rm'; rm.textContent = '✕'; rm.title = 'Удалить позицию';
         rm.addEventListener('click', () => removeFromCart(i));
-        body.append(title, meta);
         row.append(body, price, edit, rm);
         itemsEl.appendChild(row);
       });
@@ -191,42 +297,16 @@
     }
 
     function submitCart() {
-      if (ctorDirty) {
+      // Предупреждение только о несохранённой НОВОЙ позиции (не режим редактирования)
+      if (ctorDirty && editingIndex === -1) {
         const type = document.getElementById('window-type').selectedOptions[0].textContent;
         const sz   = widthSlider.value + '×' + heightSlider.value + ' мм';
         const p    = (parseInt(priceEl.dataset.v || 0) || 3000).toLocaleString('ru-RU');
         if (confirm('В конструкторе настроена позиция:\n' + type + ', ' + sz + ' (~' + p + ' ₽)\n\nДобавить её в заявку?')) addToCart();
       }
-      const preview = document.getElementById('form-order-preview');
-      if (preview && cart.length) {
-        let total = 0;
-        preview.replaceChildren();
-        const head = document.createElement('div'); head.className = 'form-order-head';
-        const n = cart.length, word = n===1?'позиция':n<=4?'позиции':'позиций';
-        const titleSpan = document.createElement('span'); titleSpan.className = 'form-order-title';
-        titleSpan.textContent = 'Ваш заказ · ' + n + ' ' + word;
-        const editBtn = document.createElement('button'); editBtn.type = 'button'; editBtn.className = 'form-order-edit'; editBtn.textContent = '← Изменить состав';
-        editBtn.addEventListener('click', () => document.getElementById('constructor').scrollIntoView({behavior:'smooth'}));
-        head.appendChild(titleSpan); head.appendChild(editBtn);
-        preview.appendChild(head);
-        cart.forEach((item, i) => {
-          total += item.price;
-          const row = document.createElement('div'); row.className = 'form-order-item';
-          const info = document.createElement('div'); info.className = 'form-order-item-info';
-          const nm = document.createElement('div'); nm.className = 'form-order-item-name'; nm.textContent = (i+1) + '. ' + item.typeText;
-          const mt = document.createElement('div'); mt.className = 'form-order-item-meta'; mt.textContent = item.profText + ' · ' + item.glassText + ' · ' + item.width + '×' + item.height + ' мм';
-          const pr = document.createElement('span'); pr.className = 'form-order-item-price'; pr.textContent = item.price.toLocaleString('ru-RU') + ' ₽';
-          info.appendChild(nm); info.appendChild(mt);
-          row.appendChild(info); row.appendChild(pr);
-          preview.appendChild(row);
-        });
-        const foot = document.createElement('div'); foot.className = 'form-order-total';
-        const lbl = document.createElement('span'); lbl.className = 'form-order-total-label'; lbl.textContent = 'Ориентировочная стоимость';
-        const sm = document.createElement('span'); sm.className = 'form-order-total-sum'; sm.textContent = total.toLocaleString('ru-RU') + ' ₽';
-        foot.appendChild(lbl); foot.appendChild(sm);
-        preview.appendChild(foot);
-        preview.className = 'form-order-preview';
-        preview.style.display = 'block';
+      const fp = document.getElementById('form-order-preview');
+      if (fp && cart.length) {
+        _renderPreview();
         const msg = document.getElementById('lead-message');
         if (msg) msg.value = '';
       }
@@ -239,6 +319,7 @@
     }
 
     function resetCalc() {
+      if (editingIndex !== -1) cancelEdit(); // отменить редактирование при сбросе
       document.getElementById('window-type').selectedIndex = 0;
       document.getElementById('profile').selectedIndex = 0;
       document.getElementById('glass').selectedIndex = 0;
