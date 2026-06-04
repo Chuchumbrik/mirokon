@@ -88,10 +88,10 @@
 
     // Events
     ['window-type', 'profile', 'glass', 'hardware'].forEach(id => {
-      document.getElementById(id).addEventListener('change', () => { drawWindow(); calcPrice(); });
+      document.getElementById(id).addEventListener('change', () => { ctorDirty = true; drawWindow(); calcPrice(); });
     });
-    widthSlider.addEventListener('input', () => { updateVal(widthSlider, widthVal); drawWindow(); calcPrice(); });
-    heightSlider.addEventListener('input', () => { updateVal(heightSlider, heightVal); drawWindow(); calcPrice(); });
+    widthSlider.addEventListener('input', () => { ctorDirty = true; updateVal(widthSlider, widthVal); drawWindow(); calcPrice(); });
+    heightSlider.addEventListener('input', () => { ctorDirty = true; updateVal(heightSlider, heightVal); drawWindow(); calcPrice(); });
 
     // Init
     drawWindow();
@@ -116,20 +116,43 @@
     const cart = (() => { try { const s = localStorage.getItem(_CART_KEY); return s ? JSON.parse(s) : []; } catch { return []; } })();
     function _persistCart() { try { localStorage.setItem(_CART_KEY, JSON.stringify(cart)); } catch {} }
 
+    let ctorDirty = false; // true если пользователь изменил конструктор, но не добавил позицию
+
     function addToCart() {
       const price = parseInt(priceEl.dataset.v || 0) || 3000;
       cart.push({
         typeText:  document.getElementById('window-type').selectedOptions[0].textContent,
+        typeVal:   document.getElementById('window-type').value,
         profText:  document.getElementById('profile').selectedOptions[0].textContent,
+        profVal:   document.getElementById('profile').value,
         glassText: document.getElementById('glass').selectedOptions[0].textContent,
+        glassVal:  document.getElementById('glass').value,
         hwText:    document.getElementById('hardware').selectedOptions[0].textContent,
+        hwVal:     document.getElementById('hardware').value,
         width:  widthSlider.value,
         height: heightSlider.value,
         price
       });
+      ctorDirty = false;
       _persistCart();
       renderCart();
       document.getElementById('cart-section').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function editFromCart(i) {
+      const item = cart[i];
+      if (item.typeVal)  document.getElementById('window-type').value = item.typeVal;
+      if (item.profVal)  document.getElementById('profile').value     = item.profVal;
+      if (item.glassVal) document.getElementById('glass').value       = item.glassVal;
+      if (item.hwVal)    document.getElementById('hardware').value    = item.hwVal;
+      widthSlider.value  = item.width;
+      heightSlider.value = item.height;
+      updateVal(widthSlider, widthVal);
+      updateVal(heightSlider, heightVal);
+      drawWindow(); calcPrice();
+      removeFromCart(i);
+      ctorDirty = true;
+      document.getElementById('constructor').scrollIntoView({ behavior: 'smooth' });
     }
 
     function removeFromCart(i) { cart.splice(i, 1); _persistCart(); renderCart(); }
@@ -153,10 +176,12 @@
         const title = document.createElement('div');   title.className = 'cart-item-title'; title.textContent = item.typeText;
         const meta  = document.createElement('div');   meta.className  = 'cart-item-meta';  meta.textContent  = item.profText + ' · ' + item.glassText + ' · ' + item.width + '×' + item.height + ' мм';
         const price = document.createElement('span'); price.className = 'cart-item-price'; price.textContent = item.price.toLocaleString('ru-RU') + ' ₽';
+        const edit  = document.createElement('button'); edit.className = 'cart-item-edit'; edit.textContent = '✎'; edit.title = 'Редактировать позицию';
+        edit.addEventListener('click', () => editFromCart(i));
         const rm    = document.createElement('button'); rm.className = 'cart-item-rm'; rm.textContent = '✕'; rm.title = 'Удалить позицию';
         rm.addEventListener('click', () => removeFromCart(i));
         body.append(title, meta);
-        row.append(body, price, rm);
+        row.append(body, price, edit, rm);
         itemsEl.appendChild(row);
       });
       const n = cart.length, word = n === 1 ? 'позиция' : n <= 4 ? 'позиции' : 'позиций';
@@ -166,6 +191,12 @@
     }
 
     function submitCart() {
+      if (ctorDirty) {
+        const type = document.getElementById('window-type').selectedOptions[0].textContent;
+        const sz   = widthSlider.value + '×' + heightSlider.value + ' мм';
+        const p    = (parseInt(priceEl.dataset.v || 0) || 3000).toLocaleString('ru-RU');
+        if (confirm('В конструкторе настроена позиция:\n' + type + ', ' + sz + ' (~' + p + ' ₽)\n\nДобавить её в заявку?')) addToCart();
+      }
       const preview = document.getElementById('form-order-preview');
       if (preview && cart.length) {
         let total = 0;
@@ -214,6 +245,7 @@
       document.getElementById('hardware').selectedIndex = 0;
       widthSlider.value = 1400; heightSlider.value = 1400;
       updateVal(widthSlider, widthVal); updateVal(heightSlider, heightVal);
+      ctorDirty = false;
       drawWindow(); calcPrice();
     }
 
