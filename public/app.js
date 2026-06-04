@@ -236,7 +236,8 @@
 
     function cancelEdit() {
       if (editingIndex !== -1 && editingBackup) {
-        cart[editingIndex] = editingBackup; // вернуть оригинал
+        cart[editingIndex] = editingBackup; // вернуть оригинал в корзину
+        _loadItemToConstructor(editingBackup); // вернуть оригинал в конструктор
         _persistCart();
       }
       editingIndex  = -1;
