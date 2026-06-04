@@ -64,7 +64,8 @@ create table if not exists public.leads (
   created_at    timestamptz not null default now()
 );
 create index if not exists leads_idx on public.leads (processed, created_at desc);
-alter table public.leads enable row level security;  -- политик нет → публичного доступа нет
+alter table public.leads enable row level security;  -- запись только service_role
+create policy "admin read leads" on public.leads for select to authenticated using (public.is_admin());
 
 -- ---------- Админы и проверка роли ----------
 create table if not exists public.app_admins (

@@ -67,13 +67,25 @@ textarea{resize:vertical;min-height:70px}
 
   <div class="wrap">
     <div class="tabs">
-      <button class="tab active" data-tab="works" onclick="switchTab('works')">Работы</button>
+      <button class="tab active" data-tab="leads" onclick="switchTab('leads')">Заявки</button>
+      <button class="tab" data-tab="works" onclick="switchTab('works')">Работы</button>
       <button class="tab" data-tab="reviews" onclick="switchTab('reviews')">Отзывы</button>
       <button class="tab" data-tab="news" onclick="switchTab('news')">Новости</button>
     </div>
 
+    <!-- LEADS -->
+    <section class="panel active" id="panel-leads">
+      <h2>Заявки</h2>
+      <div class="filters">
+        <div class="f active" data-lf="new" onclick="setLeadFilter('new')">Новые</div>
+        <div class="f" data-lf="processed" onclick="setLeadFilter('processed')">Обработанные</div>
+        <div class="f" data-lf="all" onclick="setLeadFilter('all')">Все</div>
+      </div>
+      <div id="leads-list"></div>
+    </section>
+
     <!-- WORKS -->
-    <section class="panel active" id="panel-works">
+    <section class="panel" id="panel-works">
       <div class="card">
         <h3 id="works-form-title">Добавить работу</h3>
         <input type="hidden" id="w-id">
@@ -157,7 +169,7 @@ textarea{resize:vertical;min-height:70px}
     const { data: admin, error } = await sb.rpc('is_admin');
     if (error || !admin) { await sb.auth.signOut(); alert('Нет прав администратора'); return location.replace('/landing.html'); }
     $('admin-email').textContent = session.user.email;
-    loadWorks(); loadReviews(); loadNews();
+    loadLeads(); loadWorks(); loadReviews(); loadNews();
   })();
 
   async function logout() { await sb.auth.signOut(); location.replace('/landing.html'); }
@@ -165,6 +177,57 @@ textarea{resize:vertical;min-height:70px}
   function switchTab(name) {
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
     document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + name));
+  }
+
+  // ================= LEADS (заявки) =================
+  let leadFilter = 'new';
+  function setLeadFilter(f) {
+    leadFilter = f;
+    document.querySelectorAll('.filters .f[data-lf]').forEach(x => x.classList.toggle('active', x.dataset.lf === f));
+    loadLeads();
+  }
+  async function loadLeads() {
+    const box = $('leads-list'); box.replaceChildren();
+    let q = sb.from('leads').select('*').order('created_at', { ascending: false });
+    if (leadFilter === 'new') q = q.eq('processed', false);
+    else if (leadFilter === 'processed') q = q.eq('processed', true);
+    const { data, error } = await q;
+    if (error) return toast('Ошибка загрузки заявок', true);
+    if (!data.length) { box.appendChild(el('div', { class: 'empty', text: 'Нет заявок в этой категории' })); return; }
+    data.forEach(l => {
+      const badge = el('span', { class: 'badge ' + (l.processed ? 'on' : 'off'), text: l.processed ? 'обработана' : 'новая' });
+      const phone = el('a', { href: 'tel:' + (l.phone || '').replace(/[^\d+]/g, ''), text: l.phone || '—', style: 'color:var(--primary);text-decoration:none;font-weight:600' });
+      const when = new Date(l.created_at).toLocaleString('ru-RU');
+      const actions = el('div', { class: 'li-actions' }, badge,
+        el('button', { class: l.processed ? 'btn btn-ghost' : 'btn btn-ok', text: l.processed ? 'Вернуть' : 'Обработана',
+          onclick: () => moderateLead(l.id, l.processed ? 'unprocess' : 'process') }),
+        el('button', { class: 'btn btn-danger', text: 'Удалить', onclick: () => moderateLead(l.id, 'delete') })
+      );
+      const body = el('div', { class: 'li-body' },
+        el('div', { class: 't', text: l.name || '—' }),
+        el('div', { class: 'm' }, phone, document.createTextNode(l.message ? '  ·  ' + l.message : '')),
+        el('div', { class: 'm', text: when })
+      );
+      box.appendChild(el('div', { class: 'list-item' }, body, actions));
+    });
+  }
+  async function moderateLead(id, action) {
+    if (action === 'delete' && !confirm('Удалить заявку безвозвратно?')) return;
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) return location.replace('/landing.html');
+      const res = await fetch('/api/moderate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.access_token },
+        body: JSON.stringify({ type: 'lead', id, action })
+      });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(d.error || ('код ' + res.status));
+      toast(action === 'delete' ? 'Удалено' : action === 'process' ? 'Обработана' : 'Возвращено в работу');
+      loadLeads();
+    } catch (e) {
+      toast('Ошибка: ' + (e.message || e), true);
+    }
   }
 
   // ================= WORKS =================
@@ -226,7 +289,7 @@ textarea{resize:vertical;min-height:70px}
   let reviewFilter = 'pending';
   function setReviewFilter(f) {
     reviewFilter = f;
-    document.querySelectorAll('.filters .f').forEach(x => x.classList.toggle('active', x.dataset.rf === f));
+    document.querySelectorAll('.filters .f[data-rf]').forEach(x => x.classList.toggle('active', x.dataset.rf === f));
     loadReviews();
   }
   async function loadReviews() {

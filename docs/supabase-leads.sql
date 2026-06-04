@@ -20,6 +20,11 @@ create table if not exists public.leads (
 
 create index if not exists leads_idx on public.leads (processed, created_at desc);
 
--- RLS включён, политик нет → anon/authenticated не видят таблицу.
--- service_role (серверные функции) обходит RLS.
+-- RLS включён. service_role (серверные функции) обходит RLS и пишет заявки.
 alter table public.leads enable row level security;
+
+-- Админ может ЧИТАТЬ заявки в админке (запись/удаление — через /api/moderate
+-- на service_role, чтобы синхронизировать сообщение в Telegram).
+drop policy if exists "admin read leads" on public.leads;
+create policy "admin read leads" on public.leads
+  for select to authenticated using (public.is_admin());
