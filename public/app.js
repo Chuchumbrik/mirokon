@@ -162,20 +162,38 @@
     }
 
     function submitCart() {
-      const msgEl = document.getElementById('lead-message');
-      if (msgEl && cart.length) {
-        let text = 'Заявка из конструктора:\n\n', total = 0;
+      const preview = document.getElementById('form-order-preview');
+      if (preview && cart.length) {
+        let total = 0;
+        preview.replaceChildren();
+        const head = document.createElement('div'); head.className = 'form-order-head';
+        const n = cart.length, word = n===1?'позиция':n<=4?'позиции':'позиций';
+        const titleSpan = document.createElement('span'); titleSpan.className = 'form-order-title';
+        titleSpan.textContent = 'Ваш заказ · ' + n + ' ' + word;
+        const editBtn = document.createElement('button'); editBtn.type = 'button'; editBtn.className = 'form-order-edit'; editBtn.textContent = '← Изменить состав';
+        editBtn.addEventListener('click', () => document.getElementById('constructor').scrollIntoView({behavior:'smooth'}));
+        head.appendChild(titleSpan); head.appendChild(editBtn);
+        preview.appendChild(head);
         cart.forEach((item, i) => {
           total += item.price;
-          text += (i + 1) + '. ' + item.typeText + '\n';
-          text += '   Профиль: '     + item.profText  + '\n';
-          text += '   Стеклопакет: ' + item.glassText + '\n';
-          text += '   Фурнитура: '   + item.hwText    + '\n';
-          text += '   Размер: '      + item.width + '×' + item.height + ' мм\n';
-          text += '   ~' + item.price.toLocaleString('ru-RU') + ' ₽\n\n';
+          const row = document.createElement('div'); row.className = 'form-order-item';
+          const info = document.createElement('div'); info.className = 'form-order-item-info';
+          const nm = document.createElement('div'); nm.className = 'form-order-item-name'; nm.textContent = (i+1) + '. ' + item.typeText;
+          const mt = document.createElement('div'); mt.className = 'form-order-item-meta'; mt.textContent = item.profText + ' · ' + item.glassText + ' · ' + item.width + '×' + item.height + ' мм';
+          const pr = document.createElement('span'); pr.className = 'form-order-item-price'; pr.textContent = item.price.toLocaleString('ru-RU') + ' ₽';
+          info.appendChild(nm); info.appendChild(mt);
+          row.appendChild(info); row.appendChild(pr);
+          preview.appendChild(row);
         });
-        text += 'Итого: ~' + total.toLocaleString('ru-RU') + ' ₽';
-        msgEl.value = text;
+        const foot = document.createElement('div'); foot.className = 'form-order-total';
+        const lbl = document.createElement('span'); lbl.className = 'form-order-total-label'; lbl.textContent = 'Ориентировочная стоимость';
+        const sm = document.createElement('span'); sm.className = 'form-order-total-sum'; sm.textContent = total.toLocaleString('ru-RU') + ' ₽';
+        foot.appendChild(lbl); foot.appendChild(sm);
+        preview.appendChild(foot);
+        preview.className = 'form-order-preview';
+        preview.style.display = 'block';
+        const msg = document.getElementById('lead-message');
+        if (msg) msg.value = '';
       }
       document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
     }
@@ -483,13 +501,15 @@ lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLigh
       const res = await fetch('/api/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, phone: phoneEl.value, message })
+        body: JSON.stringify({ name, phone: phoneEl.value, message, cart_items: (typeof cart !== 'undefined' && cart.length ? cart.map(i => ({ type: i.typeText, profile: i.profText, glass: i.glassText, hardware: i.hwText, width: parseInt(i.width), height: parseInt(i.height), price: i.price })) : null) })
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
         setStatus('ok', data.message || 'Заявка отправлена! Мы свяжемся с вами в ближайшее время.');
         form.reset();
         clearCart();
+        const fp = document.getElementById('form-order-preview');
+        if (fp) { fp.style.display = 'none'; fp.replaceChildren(); }
         clrErr(nameEl, errName); clrErr(phoneEl, errPhone); validConsent();
         if (window.ym) ym(0, 'reachGoal', 'lead'); // цель Яндекс.Метрики (активна, когда счётчик подключён)
       } else {

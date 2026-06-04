@@ -319,6 +319,7 @@
         </div>
 
         <div class="form-card">
+          <div id="form-order-preview" style="display:none"></div>
           <form id="lead-form" class="space-y-4" novalidate>
             <div class="field">
               <label for="lead-name">Ваше имя</label>
@@ -332,7 +333,7 @@
             </div>
             <div class="field">
               <label for="lead-message">Комментарий <span style="color:var(--muted);font-weight:400">(необязательно)</span></label>
-              <textarea id="lead-message" name="message" rows="3" placeholder="Что нужно остеклить?"></textarea>
+              <textarea id="lead-message" name="message" rows="3" placeholder="Дополнительный комментарий или вопрос"></textarea>
             </div>
             <!-- honeypot для ботов -->
             <input type="text" name="company" id="lead-company" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">

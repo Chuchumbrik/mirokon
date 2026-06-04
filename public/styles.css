@@ -148,6 +148,19 @@ h1,h2,h3,h4{font-family:'Montserrat',sans-serif;letter-spacing:-.02em}
 .cart-total-sum{font-family:'Montserrat';font-weight:800;font-size:1.35rem;color:var(--ink)}
 .cart-clear-btn{background:none;border:none;cursor:pointer;color:var(--muted);font-size:.82rem;text-decoration:underline;text-underline-offset:2px}
 .cart-clear-btn:hover{color:#b91c1c}
+.form-order-preview{background:var(--ice);border:1px solid #DBEAFE;border-radius:var(--r-md);padding:16px;margin-bottom:16px}
+.form-order-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.form-order-title{font-weight:700;font-size:.95rem;color:var(--ink)}
+.form-order-edit{color:var(--accent);font-size:.82rem;cursor:pointer;background:none;border:none;text-decoration:underline;text-underline-offset:2px;padding:0}
+.form-order-item{display:flex;justify-content:space-between;align-items:flex-start;padding:7px 0;border-bottom:1px solid #DBEAFE;gap:8px}
+.form-order-item:last-of-type{border-bottom:none}
+.form-order-item-info{flex:1;min-width:0}
+.form-order-item-name{font-weight:600;font-size:.88rem;color:var(--ink)}
+.form-order-item-meta{color:var(--muted);font-size:.78rem;margin-top:2px}
+.form-order-item-price{font-weight:700;font-size:.88rem;color:var(--primary);white-space:nowrap;flex-shrink:0}
+.form-order-total{display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid #DBEAFE;margin-top:6px}
+.form-order-total-label{font-size:.85rem;color:var(--muted)}
+.form-order-total-sum{font-family:'Montserrat';font-weight:800;font-size:1.1rem;color:var(--ink)}
 .range-scale{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted);margin-top:6px}
 /* reviews */
 .reviews-sec{background:#fff}

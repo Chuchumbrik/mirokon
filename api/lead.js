@@ -5,11 +5,21 @@ const { leadText, leadKeyboard } = require('./_leads');
 
 // Дубль лида на e-mail через Resend — активируется, когда заданы ENV
 // RESEND_API_KEY, LEAD_EMAIL_TO, LEAD_EMAIL_FROM (иначе тихо пропускается).
-async function emailDubl({ name, phone, message }) {
+async function emailDubl({ name, phone, message, cart_items }) {
   const apiKey = process.env.RESEND_API_KEY;
   const to = process.env.LEAD_EMAIL_TO;
   const from = process.env.LEAD_EMAIL_FROM;
   if (!apiKey || !to || !from) return;
+  let cartText = '';
+  if (cart_items && cart_items.length) {
+    let total = 0;
+    cartText = '\n\nСостав заказа:\n';
+    cart_items.forEach((item, i) => {
+      total += item.price || 0;
+      cartText += `${i+1}. ${item.type}  ${item.width}×${item.height} мм  ~${(item.price||0).toLocaleString('ru-RU')} ₽\n`;
+    });
+    cartText += `Итого: ~${total.toLocaleString('ru-RU')} ₽`;
+  }
   try {
     await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -17,7 +27,7 @@ async function emailDubl({ name, phone, message }) {
       body: JSON.stringify({
         from, to,
         subject: `Новая заявка Mirokon: ${name}`,
-        text: `Имя: ${name}\nТелефон: ${phone}\n` + (message ? `Сообщение: ${message}\n` : '')
+        text: `Имя: ${name}\nТелефон: ${phone}\n` + (message ? `Сообщение: ${message}\n` : '') + cartText
       })
     });
   } catch (e) {
@@ -30,10 +40,11 @@ const handler = async (req, res) => {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  let { name, phone, message } = req.body || {};
+  let { name, phone, message, cart_items } = req.body || {};
   name = (name || '').toString().trim().slice(0, 80);
   phone = (phone || '').toString().trim().slice(0, 32);
   message = (message || '').toString().trim().slice(0, 2000);
+  cart_items = Array.isArray(cart_items) ? cart_items.slice(0, 50) : null;
 
   if (!name || !phone) {
     return res.status(400).json({ error: 'Укажите имя и телефон' });
@@ -63,7 +74,7 @@ const handler = async (req, res) => {
     if (SUPABASE_URL && SERVICE_KEY) {
       const dbRes = await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
         method: 'POST', headers: { ...svc, Prefer: 'return=representation' },
-        body: JSON.stringify({ name, phone, message: message || null })
+        body: JSON.stringify({ name, phone, message: message || null, cart_items: cart_items || null })
       });
       if (dbRes.ok) {
         const rows = await dbRes.json().catch(() => []);
@@ -106,7 +117,7 @@ const handler = async (req, res) => {
     }
 
     // 3) Дубль на e-mail (best-effort, не валит заявку при ошибке)
-    await emailDubl({ name, phone, message });
+    await emailDubl({ name, phone, message, cart_items });
 
     res.json({ success: true, message: 'Заявка отправлена! Мы свяжемся с вами в ближайшее время.' });
   } catch (error) {
