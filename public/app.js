@@ -514,7 +514,9 @@ lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLigh
         clearCart();
         const fp = document.getElementById('form-order-preview');
         if (fp) { fp.style.display = 'none'; fp.replaceChildren(); }
-        clrErr(nameEl, errName); clrErr(phoneEl, errPhone); validConsent();
+        clrErr(nameEl, errName); clrErr(phoneEl, errPhone);
+        if (consentLabel) consentLabel.classList.remove('invalid');
+        if (errConsent) { errConsent.classList.remove('show'); errConsent.textContent = ''; }
         if (window.ym) ym(0, 'reachGoal', 'lead'); // цель Яндекс.Метрики (активна, когда счётчик подключён)
       } else {
         setStatus('err', 'Ошибка: ' + (data.error || ('код ' + res.status)));
