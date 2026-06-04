@@ -811,11 +811,14 @@ function calcLikeThis(type) {
 
   // Тень хедера + липкая мобильная CTA-панель при прокрутке
   const mcta = document.getElementById('mobile-cta');
+  const contactSec = document.getElementById('contact');
   const onScroll = () => {
     if (header) header.classList.toggle('scrolled', window.scrollY > 8);
     if (mcta) {
-      const fromBottom = document.documentElement.scrollHeight - (window.scrollY + window.innerHeight);
-      mcta.classList.toggle('show', window.scrollY > 500 && fromBottom > 320);
+      // показываем после скролла, но прячем, когда секция контактов входит в кадр
+      // (там уже есть форма и кнопки — дублировать не нужно)
+      const contactTop = contactSec ? contactSec.getBoundingClientRect().top : Infinity;
+      mcta.classList.toggle('show', window.scrollY > 500 && contactTop > window.innerHeight * 0.55);
     }
   };
   onScroll();
