@@ -356,19 +356,58 @@ const SUPABASE_ANON = 'sb_publishable_LhXYeGG0w8wzi7JOlPx5Qg_GXd2Zc0K';
 const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON) : null;
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
+// ===== Галерея работ как кейсы =====
+let WORKS = [], PHOTOS = {}, activeCat = 'all';
+function okUrl(u) { return (u && /^(https?:\/\/|\/)/i.test(u)) ? u : ''; }
+function photosOf(w) {
+  const list = (PHOTOS[w.id] || []).slice();
+  const cover = okUrl(w.image_url);
+  if (cover && !list.includes(cover)) list.unshift(cover);
+  return list;
+}
+
 async function loadGallery() {
   const grid = document.getElementById('gallery-grid'); if (!sb || !grid) return;
-  const { data, error } = await sb.from('works').select('title,category,description,image_url').eq('published', true).order('sort');
+  const { data, error } = await sb.from('works')
+    .select('id,title,category,description,image_url,scope,system,duration_days,area,warranty,price_from,tpl_window_type,sort')
+    .eq('published', true).order('sort');
   if (error) return console.error('works:', error.message);
-  if (!data.length) { document.getElementById('gallery-empty').style.display = 'block'; return; }
-  grid.innerHTML = data.map(w => {
-    const safeImg = w.image_url && /^(https?:\/\/|\/)/i.test(w.image_url) ? w.image_url : '';
-    const media = safeImg
-      ? `<img src="${esc(safeImg)}" alt="${esc(w.title)}" loading="lazy" style="width:100%;height:100%;object-fit:cover">`
+  if (!data || !data.length) { document.getElementById('gallery-empty').style.display = 'block'; return; }
+  WORKS = data;
+  const ids = data.map(w => w.id);
+  const { data: ph } = await sb.from('work_photos').select('work_id,url,sort').in('work_id', ids).order('sort');
+  PHOTOS = {};
+  (ph || []).forEach(p => { const u = okUrl(p.url); if (u) (PHOTOS[p.work_id] = PHOTOS[p.work_id] || []).push(u); });
+  renderFilters();
+  renderGallery();
+}
+
+function renderFilters() {
+  const box = document.getElementById('gallery-filters'); if (!box) return;
+  const cats = [...new Set(WORKS.map(w => w.category).filter(Boolean))];
+  const mk = (val, label) => {
+    const b = document.createElement('button');
+    b.className = 'gallery-chip' + (activeCat === val ? ' active' : '');
+    b.textContent = label; b.type = 'button'; b.setAttribute('role', 'tab');
+    b.setAttribute('aria-selected', activeCat === val ? 'true' : 'false');
+    b.onclick = () => { activeCat = val; renderFilters(); renderGallery(); };
+    return b;
+  };
+  box.replaceChildren(mk('all', 'Все'), ...cats.map(c => mk(c, c)));
+}
+
+function renderGallery() {
+  const grid = document.getElementById('gallery-grid'); if (!grid) return;
+  const items = activeCat === 'all' ? WORKS : WORKS.filter(w => w.category === activeCat);
+  grid.innerHTML = items.map(w => {
+    const cover = photosOf(w)[0] || '';
+    const media = cover
+      ? `<img src="${esc(cover)}" alt="${esc(w.title)}" loading="lazy" style="width:100%;height:100%;object-fit:cover">`
       : `<svg><use href="#win-illus"/></svg>`;
-    return `<article class="gallery-card" tabindex="0" role="button" data-title="${esc(w.title)}" data-desc="${esc(w.description)}" data-img="${esc(safeImg)}" onclick="openLightbox(this)" onkeydown="if(event.key==='Enter')openLightbox(this)">`
-      + `<div class="gallery-img"><span class="gallery-cat">${esc(w.category||'Работа')}</span>${media}<div class="gallery-overlay"><span>Смотреть ↗</span></div></div>`
-      + `<div class="gallery-body"><h3>${esc(w.title)}</h3><p>${esc(w.description||'')}</p></div></article>`;
+    const from = w.price_from ? `<span class="gallery-from">от ${Number(w.price_from).toLocaleString('ru-RU')} ₽</span>` : '';
+    return `<article class="gallery-card" tabindex="0" role="button" data-id="${esc(w.id)}" onclick="openWork('${esc(w.id)}', this)" onkeydown="if(event.key==='Enter')openWork('${esc(w.id)}', this)">`
+      + `<div class="gallery-img"><span class="gallery-cat">${esc(w.category || 'Работа')}</span>${media}<div class="gallery-overlay"><span>Смотреть ↗</span></div></div>`
+      + `<div class="gallery-body"><h3>${esc(w.title)}</h3><p>${esc(w.description || '')}</p>${from}</div></article>`;
   }).join('');
 }
 
@@ -495,45 +534,143 @@ document.getElementById('review-form').addEventListener('submit', async (e) => {
     btn.disabled = false; btn.textContent = orig;
   }
 });
-// ===== Gallery lightbox =====
-const lightbox = document.getElementById('lightbox');
-let lbLastFocused = null;
-function lbKeydown(e) {
-  if (e.key === 'Escape') { closeLightbox(); return; }
+// ===== Детальный вид кейса (work-detail) =====
+const workModal = document.getElementById('work-detail');
+const wdCard = document.getElementById('wd-card');
+let wdLastFocused = null;
+const wdReduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function wdKeydown(e) {
+  if (e.key === 'Escape') { closeWork(); return; }
   if (e.key !== 'Tab') return;
-  const f = lightbox.querySelectorAll('button, a[href], input, textarea, [tabindex]:not([tabindex="-1"])');
+  const f = workModal.querySelectorAll('button, a[href], img.wd-thumb, .wd-rail-item, [tabindex]:not([tabindex="-1"])');
   if (!f.length) return;
   const first = f[0], last = f[f.length - 1];
   if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
   else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
 }
-function openLightbox(card) {
-  lbLastFocused = document.activeElement;
-  document.getElementById('lb-title').textContent = card.dataset.title || 'Работа';
-  document.getElementById('lb-desc').textContent = card.dataset.desc || '';
-  const box = lightbox.querySelector('.lightbox-img');
-  box.replaceChildren();
-  const imgUrl = card.dataset.img && /^(https?:\/\/|\/)/i.test(card.dataset.img) ? card.dataset.img : '';
-  if (imgUrl) {
-    const img = document.createElement('img');   // src через свойство не парсит HTML
-    img.src = imgUrl; img.alt = '';
-    img.style.cssText = 'width:100%;height:100%;object-fit:cover';
-    box.appendChild(img);
-  } else {
-    box.innerHTML = '<svg><use href="#win-illus"/></svg>';
-  }
-  lightbox.classList.remove('hidden');
+
+function wdSetHero(url) {
+  const hero = document.getElementById('wd-hero');
+  if (url) hero.src = url; else hero.removeAttribute('src');
+  workModal.querySelectorAll('.wd-thumb').forEach(t => t.classList.toggle('active', t.dataset.url === url));
+}
+
+function openWork(id, cardEl) {
+  const w = WORKS.find(x => x.id === id); if (!w) return;
+  if (!workModal.classList.contains('hidden')) cardEl = null; // переход между кейсами — без FLIP
+  else wdLastFocused = document.activeElement;
+  const photos = photosOf(w);
+
+  document.getElementById('wd-cat').textContent = w.category || 'Работа';
+  document.getElementById('wd-title').textContent = w.title || 'Работа';
+  document.getElementById('wd-desc').textContent = w.description || '';
+  document.getElementById('wd-hero').alt = w.title || '';
+
+  // миниатюры
+  const thumbs = document.getElementById('wd-thumbs');
+  thumbs.replaceChildren();
+  photos.forEach((u, i) => {
+    const img = document.createElement('img');
+    img.className = 'wd-thumb' + (i === 0 ? ' active' : '');
+    img.src = u; img.alt = ''; img.dataset.url = u; img.loading = 'lazy'; img.tabIndex = 0;
+    img.addEventListener('click', () => wdSetHero(u));
+    img.addEventListener('keydown', e => { if (e.key === 'Enter') wdSetHero(u); });
+    thumbs.appendChild(img);
+  });
+  thumbs.style.display = photos.length > 1 ? 'flex' : 'none';
+  wdSetHero(photos[0] || '');
+
+  // перечень работ
+  const scope = document.getElementById('wd-scope');
+  scope.replaceChildren();
+  (w.scope || []).forEach(s => { const li = document.createElement('li'); li.textContent = s; scope.appendChild(li); });
+
+  // мета
+  const meta = document.getElementById('wd-meta');
+  meta.replaceChildren();
+  const dur = w.duration_days ? (w.duration_days === 1 ? '1 день' : w.duration_days + ' дня') : null;
+  [[w.system, '🪟'], [dur, '🕒'], [w.area, '📍'], [w.warranty && 'Гарантия ' + w.warranty, '🛡']]
+    .filter(([t]) => t).forEach(([t, ic]) => { const s = document.createElement('span'); s.textContent = ic + ' ' + t; meta.appendChild(s); });
+
+  // цена «от»
+  const price = document.getElementById('wd-price');
+  price.replaceChildren();
+  if (w.price_from) {
+    price.append('от ' + Number(w.price_from).toLocaleString('ru-RU') + ' ₽');
+    const sm = document.createElement('small'); sm.textContent = 'ориентировочно, под ключ'; price.appendChild(sm);
+    price.style.display = '';
+  } else { price.style.display = 'none'; }
+
+  document.getElementById('wd-calc').onclick = () => calcLikeThis(w.tpl_window_type);
+
+  // правый рейл — другие работы (та же категория сначала)
+  const rail = document.getElementById('wd-rail');
+  rail.replaceChildren();
+  WORKS.filter(x => x.id !== id)
+    .sort((a, b) => (b.category === w.category) - (a.category === w.category))
+    .forEach(o => {
+      const item = document.createElement('div'); item.className = 'wd-rail-item'; item.tabIndex = 0; item.setAttribute('role', 'button');
+      const im = document.createElement('img'); const ph = photosOf(o)[0]; if (ph) im.src = ph; im.alt = ''; im.loading = 'lazy';
+      const tb = document.createElement('div');
+      const t = document.createElement('div'); t.className = 't'; t.textContent = o.title;
+      const c = document.createElement('div'); c.className = 'c'; c.textContent = o.category || '';
+      tb.append(t, c); item.append(im, tb);
+      item.addEventListener('click', () => openWork(o.id));
+      item.addEventListener('keydown', e => { if (e.key === 'Enter') openWork(o.id); });
+      rail.appendChild(item);
+    });
+
+  workModal.classList.remove('hidden');
   document.body.style.overflow = 'hidden';
-  document.addEventListener('keydown', lbKeydown);
-  lightbox.querySelector('.modal-close').focus();
+  document.addEventListener('keydown', wdKeydown);
+  wdCard.scrollTop = 0;
+  flipOpen(cardEl);
+  workModal.querySelector('.modal-close').focus();
+  if (window.ym) ym(0, 'reachGoal', 'portfolio_open');
 }
-function closeLightbox() {
-  lightbox.classList.add('hidden');
+
+// FLIP: карточка «вырастает» в оверлей. Fallback — просто показать (reduced-motion / нет rect).
+function flipOpen(cardEl) {
+  if (wdReduce || !cardEl || typeof cardEl.getBoundingClientRect !== 'function') return;
+  const first = cardEl.getBoundingClientRect();
+  const last = wdCard.getBoundingClientRect();
+  if (!first.width || !last.width) return;
+  const dx = first.left - last.left, dy = first.top - last.top;
+  const sx = first.width / last.width, sy = first.height / last.height;
+  wdCard.style.transformOrigin = 'top left';
+  wdCard.style.transform = `translate(${dx}px,${dy}px) scale(${sx},${sy})`;
+  wdCard.style.opacity = '0.5';
+  requestAnimationFrame(() => {
+    wdCard.style.transition = 'transform .42s cubic-bezier(.2,.8,.2,1), opacity .3s ease';
+    wdCard.style.transform = 'none'; wdCard.style.opacity = '1';
+  });
+  wdCard.addEventListener('transitionend', function te() {
+    wdCard.style.transition = ''; wdCard.style.transformOrigin = ''; wdCard.removeEventListener('transitionend', te);
+  }, { once: true });
+}
+
+function closeWork() {
+  workModal.classList.add('hidden');
   document.body.style.overflow = '';
-  document.removeEventListener('keydown', lbKeydown);
-  if (lbLastFocused) lbLastFocused.focus();
+  document.removeEventListener('keydown', wdKeydown);
+  if (wdLastFocused) wdLastFocused.focus();
 }
-lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+workModal.addEventListener('click', (e) => { if (e.target === workModal) closeWork(); });
+
+// CTA «Рассчитать для моей квартиры» — предвыбор типа в конструкторе + информер
+function calcLikeThis(type) {
+  closeWork();
+  const sel = document.getElementById('window-type');
+  if (sel && type && [...sel.options].some(o => o.value === type)) {
+    sel.value = type;
+    sel.dispatchEvent(new Event('change'));
+  }
+  const informer = document.getElementById('ctor-informer');
+  if (informer) informer.style.display = 'flex';
+  document.getElementById('constructor').scrollIntoView({ behavior: wdReduce ? 'auto' : 'smooth' });
+  if (window.ym) ym(0, 'reachGoal', 'portfolio_to_calculator');
+}
 
 // Lead form — маска телефона, динамическая валидация по полям, отправка в /api/lead
 (function () {
