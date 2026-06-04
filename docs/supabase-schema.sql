@@ -52,6 +52,20 @@ create index if not exists works_pub_idx    on public.works   (published, sort, 
 create index if not exists reviews_appr_idx  on public.reviews (approved, created_at desc);
 create index if not exists news_pub_idx      on public.news    (published, created_at desc);
 
+-- Заявки (лиды): хранятся для списка и статуса в боте. Доступ только service_role.
+create table if not exists public.leads (
+  id            uuid primary key default gen_random_uuid(),
+  name          text not null,
+  phone         text not null,
+  message       text,
+  processed     boolean not null default false,
+  tg_chat_id    text,
+  tg_message_id bigint,
+  created_at    timestamptz not null default now()
+);
+create index if not exists leads_idx on public.leads (processed, created_at desc);
+alter table public.leads enable row level security;  -- политик нет → публичного доступа нет
+
 -- ---------- Админы и проверка роли ----------
 create table if not exists public.app_admins (
   user_id  uuid primary key references auth.users(id) on delete cascade,
