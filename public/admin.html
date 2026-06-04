@@ -240,8 +240,9 @@ textarea{resize:vertical;min-height:70px}
     data.forEach(r => {
       const badge = el('span', { class: 'badge ' + (r.approved ? 'on' : 'off'), text: r.approved ? 'опубликован' : 'на модерации' });
       const actions = el('div', { class: 'li-actions' }, badge,
-        el('button', { class: r.approved ? 'btn btn-ghost' : 'btn btn-ok', text: r.approved ? 'Снять' : 'Одобрить', onclick: () => togglePublish('reviews', r.id, !r.approved, 'approved') }),
-        el('button', { class: 'btn btn-danger', text: 'Удалить', onclick: () => del('reviews', r.id) })
+        el('button', { class: r.approved ? 'btn btn-ghost' : 'btn btn-ok', text: r.approved ? 'Снять' : 'Одобрить',
+          onclick: () => r.approved ? togglePublish('reviews', r.id, false, 'approved') : moderateReview(r.id, 'approve') }),
+        el('button', { class: 'btn btn-danger', text: 'Удалить', onclick: () => moderateReview(r.id, 'reject') })
       );
       box.appendChild(el('div', { class: 'list-item' },
         el('div', { class: 'li-body' },
@@ -306,6 +307,27 @@ textarea{resize:vertical;min-height:70px}
     if (error) return toast('Ошибка: ' + error.message, true);
     toast('Удалено');
     table === 'works' ? loadWorks() : table === 'reviews' ? loadReviews() : loadNews();
+  }
+
+  // Модерация отзыва через сервер: меняет БД И редактирует сообщение в Telegram
+  // (убирает кнопки, дописывает «обработано в админке»).
+  async function moderateReview(id, action) {
+    if (action === 'reject' && !confirm('Удалить отзыв безвозвратно?')) return;
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) return location.replace('/landing.html');
+      const res = await fetch('/api/moderate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.access_token },
+        body: JSON.stringify({ id, action })
+      });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(d.error || ('код ' + res.status));
+      toast(action === 'approve' ? 'Одобрено' : 'Удалено');
+      loadReviews();
+    } catch (e) {
+      toast('Ошибка: ' + (e.message || e), true);
+    }
   }
 </script>
 </body>

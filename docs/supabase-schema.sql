@@ -33,6 +33,8 @@ create table if not exists public.reviews (
   rating      int  not null check (rating between 1 and 5),
   text        text not null,
   approved    boolean not null default false,   -- публикуется только после модерации
+  tg_chat_id    text,                            -- сообщение модерации в Telegram (для правки из админки)
+  tg_message_id bigint,
   created_at  timestamptz not null default now()
 );
 

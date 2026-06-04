@@ -58,7 +58,7 @@ const handler = async (req, res) => {
           { text: '🗑 Отклонить', callback_data: `rej:${reviewId}` }
         ]]
       } : undefined;
-      await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      const tgResp = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -68,6 +68,19 @@ const handler = async (req, res) => {
           disable_web_page_preview: true
         })
       });
+      // Сохраняем message_id, чтобы модерация из админки могла отредактировать это сообщение
+      if (reviewId && SUPABASE_URL && SERVICE_KEY) {
+        const tgJson = await tgResp.json().catch(() => null);
+        const mid = tgJson && tgJson.ok && tgJson.result && tgJson.result.message_id;
+        const cid = tgJson && tgJson.result && tgJson.result.chat && tgJson.result.chat.id;
+        if (mid) {
+          await fetch(`${SUPABASE_URL}/rest/v1/reviews?id=eq.${reviewId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`, Prefer: 'return=minimal' },
+            body: JSON.stringify({ tg_chat_id: String(cid), tg_message_id: mid })
+          });
+        }
+      }
     } catch (e) {
       console.error('TG notify failed:', e.message);
     }
