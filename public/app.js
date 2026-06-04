@@ -297,7 +297,12 @@
     }
 
     function submitCart() {
-      // Предупреждение только о несохранённой НОВОЙ позиции (не режим редактирования)
+      // Несохранённые изменения редактируемой позиции
+      if (editingIndex !== -1 && ctorDirty) {
+        if (confirm('Позиция ' + (editingIndex + 1) + ' открыта на редактирование с несохранёнными изменениями.\nСохранить перед отправкой?')) addToCart();
+        else cancelEdit();
+      }
+      // Несохранённая новая позиция (не в режиме редактирования)
       if (ctorDirty && editingIndex === -1) {
         const type = document.getElementById('window-type').selectedOptions[0].textContent;
         const sz   = widthSlider.value + '×' + heightSlider.value + ' мм';

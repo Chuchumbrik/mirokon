@@ -11,6 +11,9 @@ function leadText(lead) {
   let text = `🪟 Заявка #${String(lead.id).slice(0, 8)} · ${status}\n\n`
     + `👤 Имя: ${lead.name}\n`
     + `📞 Телефон: ${lead.phone}\n`;
+  if (lead.message) {
+    text += `💬 ${lead.message}\n`;
+  }
   if (lead.cart_items && lead.cart_items.length) {
     let total = 0;
     text += `\n📋 Заказ (${lead.cart_items.length} поз.):\n`;
@@ -19,8 +22,6 @@ function leadText(lead) {
       text += `${i+1}. ${item.type}  ${item.width}×${item.height} мм  ~${(item.price||0).toLocaleString('ru-RU')} ₽\n`;
     });
     text += `💰 Итого: ~${total.toLocaleString('ru-RU')} ₽\n`;
-  } else if (lead.message) {
-    text += `💬 Сообщение: ${lead.message}\n`;
   }
   if (lead.created_at) text += `\n🕒 ${fmtTime(lead.created_at)}`;
   return text;
