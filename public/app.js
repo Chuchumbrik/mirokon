@@ -417,6 +417,15 @@ async function loadReviews() {
   const { data, error } = await sb.from('reviews').select('author_name,author_city,rating,text').eq('approved', true).order('created_at', { ascending: false });
   if (error) return console.error('reviews:', error.message);
   if (!data.length) { document.getElementById('reviews-empty').style.display = 'block'; document.getElementById('reviews-swiper').style.display = 'none'; return; }
+  // агрегат рейтинга
+  const agg = document.getElementById('reviews-agg');
+  if (agg) {
+    const avg = data.reduce((s, r) => s + (r.rating || 0), 0) / data.length;
+    const full = Math.round(avg), n = data.length;
+    const word = (n % 10 === 1 && n % 100 !== 11) ? 'отзыв' : ((n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) ? 'отзыва' : 'отзывов');
+    agg.innerHTML = `<span class="stars">${'★'.repeat(full)}${'☆'.repeat(5 - full)}</span><span class="rate">${avg.toFixed(1)}</span><span class="cnt">· ${n} ${word}</span>`;
+    agg.style.display = 'flex';
+  }
   wrap.innerHTML = data.map(r => {
     const initial = esc((r.author_name || '?').trim().charAt(0).toUpperCase());
     return `<div class="swiper-slide"><div class="review-card">`
@@ -605,12 +614,21 @@ function openWork(id, cardEl) {
 
   document.getElementById('wd-calc').onclick = () => calcLikeThis(w.tpl_window_type);
 
-  // правый рейл — другие работы (та же категория сначала)
+  // правый рейл — ТОЛЬКО другие работы этой же категории
   const rail = document.getElementById('wd-rail');
+  const railAside = workModal.querySelector('.wd-rail');
+  const railTitle = workModal.querySelector('.wd-rail-title');
+  const grid = workModal.querySelector('.wd-grid');
   rail.replaceChildren();
-  WORKS.filter(x => x.id !== id)
-    .sort((a, b) => (b.category === w.category) - (a.category === w.category))
-    .forEach(o => {
+  const sameCat = WORKS.filter(x => x.id !== id && x.category === w.category);
+  if (!sameCat.length) {
+    if (railAside) railAside.style.display = 'none';
+    if (grid) grid.classList.add('no-rail');
+  } else {
+    if (railAside) railAside.style.display = '';
+    if (grid) grid.classList.remove('no-rail');
+    if (railTitle) railTitle.textContent = 'Ещё в категории «' + (w.category || 'Работы') + '»';
+    sameCat.forEach(o => {
       const item = document.createElement('div'); item.className = 'wd-rail-item'; item.tabIndex = 0; item.setAttribute('role', 'button');
       const im = document.createElement('img'); const ph = photosOf(o)[0]; if (ph) im.src = ph; im.alt = ''; im.loading = 'lazy';
       const tb = document.createElement('div');
@@ -621,6 +639,7 @@ function openWork(id, cardEl) {
       item.addEventListener('keydown', e => { if (e.key === 'Enter') openWork(o.id); });
       rail.appendChild(item);
     });
+  }
 
   workModal.classList.remove('hidden');
   document.body.style.overflow = 'hidden';
@@ -790,8 +809,15 @@ function calcLikeThis(type) {
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const header = document.querySelector('.site-header');
 
-  // Тень хедера при прокрутке
-  const onScroll = () => { if (header) header.classList.toggle('scrolled', window.scrollY > 8); };
+  // Тень хедера + липкая мобильная CTA-панель при прокрутке
+  const mcta = document.getElementById('mobile-cta');
+  const onScroll = () => {
+    if (header) header.classList.toggle('scrolled', window.scrollY > 8);
+    if (mcta) {
+      const fromBottom = document.documentElement.scrollHeight - (window.scrollY + window.innerHeight);
+      mcta.classList.toggle('show', window.scrollY > 500 && fromBottom > 320);
+    }
+  };
   onScroll();
   window.addEventListener('scroll', onScroll, { passive: true });
 
