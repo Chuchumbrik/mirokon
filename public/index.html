@@ -8,6 +8,7 @@
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
@@ -354,32 +355,8 @@ h1,h2,h3,h4{font-family:'Montserrat',sans-serif;letter-spacing:-.02em}
         <rect x="20" y="130" width="160" height="9" rx="3" fill="#cbd5e1"/>
       </symbol></svg>
 
-      <div class="gallery-grid">
-        <article class="gallery-card" tabindex="0" role="button" data-title="Гостиная" data-desc="Панорамное остекление, двухкамерный стеклопакет, тёплый профиль." onclick="openLightbox(this)" onkeydown="if(event.key==='Enter')openLightbox(this)">
-          <div class="gallery-img"><span class="gallery-cat">Гостиная</span><svg><use href="#win-illus"/></svg><div class="gallery-overlay"><span>Смотреть ↗</span></div></div>
-          <div class="gallery-body"><h3>Гостиная</h3><p>Двухкамерный стеклопакет, современный дизайн.</p></div>
-        </article>
-        <article class="gallery-card" tabindex="0" role="button" data-title="Спальня" data-desc="Энергоэффективное остекление с тёплым профилем — тишина и комфорт." onclick="openLightbox(this)" onkeydown="if(event.key==='Enter')openLightbox(this)">
-          <div class="gallery-img"><span class="gallery-cat">Спальня</span><svg><use href="#win-illus"/></svg><div class="gallery-overlay"><span>Смотреть ↗</span></div></div>
-          <div class="gallery-body"><h3>Спальня</h3><p>Энергоэффективное остекление, тёплый профиль.</p></div>
-        </article>
-        <article class="gallery-card" tabindex="0" role="button" data-title="Кухня" data-desc="Широкий профиль и шумоизоляция — комфорт даже у оживлённой улицы." onclick="openLightbox(this)" onkeydown="if(event.key==='Enter')openLightbox(this)">
-          <div class="gallery-img"><span class="gallery-cat">Кухня</span><svg><use href="#win-illus"/></svg><div class="gallery-overlay"><span>Смотреть ↗</span></div></div>
-          <div class="gallery-body"><h3>Кухня</h3><p>Широкий профиль, шумоизоляция.</p></div>
-        </article>
-        <article class="gallery-card" tabindex="0" role="button" data-title="Балкон" data-desc="Полное остекление балкона под ключ с выносом и отделкой." onclick="openLightbox(this)" onkeydown="if(event.key==='Enter')openLightbox(this)">
-          <div class="gallery-img"><span class="gallery-cat">Балкон</span><svg><use href="#win-illus"/></svg><div class="gallery-overlay"><span>Смотреть ↗</span></div></div>
-          <div class="gallery-body"><h3>Балкон</h3><p>Полное остекление балкона под ключ.</p></div>
-        </article>
-        <article class="gallery-card" tabindex="0" role="button" data-title="Лоджия" data-desc="Тёплая лоджия: монтаж, утепление и аккуратная отделка." onclick="openLightbox(this)" onkeydown="if(event.key==='Enter')openLightbox(this)">
-          <div class="gallery-img"><span class="gallery-cat">Лоджия</span><svg><use href="#win-illus"/></svg><div class="gallery-overlay"><span>Смотреть ↗</span></div></div>
-          <div class="gallery-body"><h3>Лоджия</h3><p>Тёплое остекление и отделка.</p></div>
-        </article>
-        <article class="gallery-card" tabindex="0" role="button" data-title="Детская" data-desc="Безопасное стекло и детские замки на фурнитуре." onclick="openLightbox(this)" onkeydown="if(event.key==='Enter')openLightbox(this)">
-          <div class="gallery-img"><span class="gallery-cat">Детская</span><svg><use href="#win-illus"/></svg><div class="gallery-overlay"><span>Смотреть ↗</span></div></div>
-          <div class="gallery-body"><h3>Детская</h3><p>Безопасное стекло, детские замки.</p></div>
-        </article>
-      </div>
+      <div class="gallery-grid" id="gallery-grid"></div>
+      <p class="gallery-empty" id="gallery-empty" style="display:none">Скоро здесь появятся примеры наших работ.</p>
       <p class="text-center" style="color:var(--muted);font-size:.85rem;margin-top:24px">Изображения — иллюстрации. Реальные фото работ добавим после запуска.</p>
     </div>
   </section>
@@ -403,8 +380,8 @@ h1,h2,h3,h4{font-family:'Montserrat',sans-serif;letter-spacing:-.02em}
       <div style="text-align:center;margin:0 0 40px">
         <button onclick="openReviewModal()" class="btn-ds btn-ds-secondary">Оставить отзыв</button>
       </div>
-      <div class="swiper mySwiper">
-        <div class="swiper-wrapper">
+      <div class="swiper mySwiper" id="reviews-swiper">
+        <div class="swiper-wrapper" id="reviews-wrapper">
           <div class="swiper-slide">
             <div class="review-card">
               <div class="review-stars" aria-label="5 из 5">★★★★★</div>
@@ -452,6 +429,7 @@ h1,h2,h3,h4{font-family:'Montserrat',sans-serif;letter-spacing:-.02em}
         <div class="swiper-button-next"></div>
         <div class="swiper-button-prev"></div>
       </div>
+      <p class="gallery-empty" id="reviews-empty" style="display:none;margin-top:8px">Здесь скоро появятся отзывы наших клиентов.</p>
       <p class="text-center" style="color:var(--muted);font-size:.9rem;margin-top:8px">Публикуем только проверенные отзывы после модерации.</p>
     </div>
   </section>
@@ -463,13 +441,14 @@ h1,h2,h3,h4{font-family:'Montserrat',sans-serif;letter-spacing:-.02em}
         <h2 class="text-4xl font-bold" style="color:var(--ink)">Новости</h2>
         <p style="margin-top:12px;font-size:1.1rem;color:var(--muted)">Коротко о компании, материалах и сервисе.</p>
       </div>
-      <div class="news-grid">
+      <div class="news-grid" id="news-grid">
         <article class="news-card"><span class="news-date">15 мая 2026</span><h4>Гарантия 5 лет</h4><p>Расширили гарантию на монтажные работы до 5 лет по договору.</p></article>
         <article class="news-card"><span class="news-date">28 апр 2026</span><h4>Новые стеклопакеты</h4><p>Добавили энергоэффективные пакеты с аргоном и i-стеклом.</p></article>
         <article class="news-card"><span class="news-date">20 апр 2026</span><h4>Работаем по всей МО</h4><p>Бесплатный выезд на замер в любой город Московской области.</p></article>
         <article class="news-card"><span class="news-date">10 апр 2026</span><h4>Только официально</h4><p>Договор, гарантийный талон и закрывающие документы на каждый заказ.</p></article>
       </div>
-      <p class="text-center" style="color:var(--muted);font-size:.85rem;margin-top:24px">Демо-новости. Управление лентой появится в админке.</p>
+      <p class="gallery-empty" id="news-empty" style="display:none;margin-top:0">Новостей пока нет — скоро здесь появятся обновления.</p>
+      <p class="text-center" style="color:var(--muted);font-size:.85rem;margin-top:24px">Управление лентой — через админку.</p>
     </div>
   </section>
 
@@ -722,32 +701,66 @@ h1,h2,h3,h4{font-family:'Montserrat',sans-serif;letter-spacing:-.02em}
 
     
 // Swiper reviews slider
-const swiper = new Swiper('.mySwiper', {
-slidesPerView: 1,
-spaceBetween: 30,
-loop: true,
-grabCursor: true,
-keyboard: { enabled: true },
-a11y: { enabled: true },
-pagination: {
-el: '.swiper-pagination',
-clickable: true,
-},
-navigation: {
-nextEl: '.swiper-button-next',
-prevEl: '.swiper-button-prev',
-},
-breakpoints: {
-768: {
-slidesPerView: 2,
-spaceBetween: 20,
-},
-1024: {
-slidesPerView: 3,
-spaceBetween: 30,
-},
-},
-});
+let reviewsSwiper = null;
+function initReviewsSwiper() {
+  if (reviewsSwiper) reviewsSwiper.destroy(true, true);
+  reviewsSwiper = new Swiper('.mySwiper', {
+    slidesPerView: 1, spaceBetween: 30, loop: true, grabCursor: true,
+    keyboard: { enabled: true }, a11y: { enabled: true },
+    pagination: { el: '.swiper-pagination', clickable: true },
+    navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+    breakpoints: { 768: { slidesPerView: 2, spaceBetween: 20 }, 1024: { slidesPerView: 3, spaceBetween: 30 } }
+  });
+}
+initReviewsSwiper(); // на статичном fallback; loadReviews() переинициализирует после загрузки из БД
+
+// ===== Supabase: контент из БД (только published/approved через RLS) =====
+const SUPABASE_URL = 'https://ermeokjqkzpkefqtmvif.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_LhXYeGG0w8wzi7JOlPx5Qg_GXd2Zc0K';
+const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON) : null;
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+async function loadGallery() {
+  const grid = document.getElementById('gallery-grid'); if (!sb || !grid) return;
+  const { data, error } = await sb.from('works').select('title,category,description,image_url').eq('published', true).order('sort');
+  if (error) return console.error('works:', error.message);
+  if (!data.length) { document.getElementById('gallery-empty').style.display = 'block'; return; }
+  grid.innerHTML = data.map(w => {
+    const media = w.image_url
+      ? `<img src="${esc(w.image_url)}" alt="${esc(w.title)}" loading="lazy" style="width:100%;height:100%;object-fit:cover">`
+      : `<svg><use href="#win-illus"/></svg>`;
+    return `<article class="gallery-card" tabindex="0" role="button" data-title="${esc(w.title)}" data-desc="${esc(w.description)}" data-img="${esc(w.image_url||'')}" onclick="openLightbox(this)" onkeydown="if(event.key==='Enter')openLightbox(this)">`
+      + `<div class="gallery-img"><span class="gallery-cat">${esc(w.category||'Работа')}</span>${media}<div class="gallery-overlay"><span>Смотреть ↗</span></div></div>`
+      + `<div class="gallery-body"><h3>${esc(w.title)}</h3><p>${esc(w.description||'')}</p></div></article>`;
+  }).join('');
+}
+
+async function loadReviews() {
+  const wrap = document.getElementById('reviews-wrapper'); if (!sb || !wrap) return;
+  const { data, error } = await sb.from('reviews').select('author_name,author_city,rating,text').eq('approved', true).order('created_at', { ascending: false });
+  if (error) return console.error('reviews:', error.message);
+  if (!data.length) { document.getElementById('reviews-empty').style.display = 'block'; document.getElementById('reviews-swiper').style.display = 'none'; return; }
+  wrap.innerHTML = data.map(r => {
+    const initial = esc((r.author_name || '?').trim().charAt(0).toUpperCase());
+    return `<div class="swiper-slide"><div class="review-card">`
+      + `<div class="review-stars" aria-label="${r.rating} из 5">${'★'.repeat(r.rating)}</div>`
+      + `<p class="quote">«${esc(r.text)}»</p>`
+      + `<div class="review-author"><div class="review-avatar">${initial}</div><div><h4>${esc(r.author_name)}</h4><p>${esc(r.author_city||'')}</p></div></div>`
+      + `</div></div>`;
+  }).join('');
+  initReviewsSwiper();
+}
+
+async function loadNews() {
+  const grid = document.getElementById('news-grid'); if (!sb || !grid) return;
+  const { data, error } = await sb.from('news').select('title,preview_text,created_at').eq('published', true).order('created_at', { ascending: false }).limit(8);
+  if (error) return console.error('news:', error.message);
+  if (!data.length) { document.getElementById('news-empty').style.display = 'block'; return; }
+  const fmt = d => new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' });
+  grid.innerHTML = data.map(n => `<article class="news-card"><span class="news-date">${esc(fmt(n.created_at))}</span><h4>${esc(n.title)}</h4><p>${esc(n.preview_text||'')}</p></article>`).join('');
+}
+
+loadGallery(); loadReviews(); loadNews();
 
 // ===== Review modal =====
 const reviewModal = document.getElementById('review-modal');
@@ -852,6 +865,10 @@ function openLightbox(card) {
   lbLastFocused = document.activeElement;
   document.getElementById('lb-title').textContent = card.dataset.title || 'Работа';
   document.getElementById('lb-desc').textContent = card.dataset.desc || '';
+  const box = lightbox.querySelector('.lightbox-img');
+  box.innerHTML = card.dataset.img
+    ? `<img src="${card.dataset.img}" alt="" style="width:100%;height:100%;object-fit:cover">`
+    : '<svg><use href="#win-illus"/></svg>';
   lightbox.classList.remove('hidden');
   document.body.style.overflow = 'hidden';
   document.addEventListener('keydown', lbEsc);
