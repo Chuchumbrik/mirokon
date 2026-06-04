@@ -19,7 +19,9 @@ function leadText(lead) {
     text += `\n📋 Заказ (${lead.cart_items.length} поз.):\n`;
     lead.cart_items.forEach((item, i) => {
       total += item.price || 0;
-      text += `${i+1}. ${item.type}  ${item.width}×${item.height} мм  ~${(item.price||0).toLocaleString('ru-RU')} ₽\n`;
+      const specs = [item.profile, item.glass, item.hardware].filter(Boolean).join(' · ');
+      text += `${i+1}. ${item.type || 'Окно'} — ${item.width}×${item.height} мм — ~${(item.price||0).toLocaleString('ru-RU')} ₽\n`;
+      if (specs) text += `   🔧 ${specs}\n`;
     });
     text += `💰 Итого: ~${total.toLocaleString('ru-RU')} ₽\n`;
   }

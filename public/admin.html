@@ -278,7 +278,8 @@ textarea{resize:vertical;min-height:70px}
             el('span', { class: 'lcr-name', text: item.type }),
             el('span', { class: 'lcr-price', text: '~' + (item.price || 0).toLocaleString('ru-RU') + ' ₽' })
           ));
-          row.appendChild(el('div', { class: 'lcr-size', text: item.width + '×' + item.height + ' мм' }));
+          const specs = [item.profile, item.glass, item.hardware].filter(Boolean).join(' · ');
+          row.appendChild(el('div', { class: 'lcr-size', text: item.width + '×' + item.height + ' мм' + (specs ? '  ·  ' + specs : '') }));
           cartDiv.appendChild(row);
         });
         const n = l.cart_items.length, word = n === 1 ? 'позицию' : n <= 4 ? 'позиции' : 'позиций';

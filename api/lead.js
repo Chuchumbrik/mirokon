@@ -16,7 +16,9 @@ async function emailDubl({ name, phone, message, cart_items }) {
     cartText = '\n\nСостав заказа:\n';
     cart_items.forEach((item, i) => {
       total += item.price || 0;
-      cartText += `${i+1}. ${item.type}  ${item.width}×${item.height} мм  ~${(item.price||0).toLocaleString('ru-RU')} ₽\n`;
+      const specs = [item.profile, item.glass, item.hardware].filter(Boolean).join(' · ');
+      cartText += `${i+1}. ${item.type || 'Окно'} — ${item.width}×${item.height} мм — ~${(item.price||0).toLocaleString('ru-RU')} ₽\n`;
+      if (specs) cartText += `   ${specs}\n`;
     });
     cartText += `Итого: ~${total.toLocaleString('ru-RU')} ₽`;
   }
