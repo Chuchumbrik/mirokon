@@ -111,25 +111,80 @@
       document.getElementById('menu-btn').setAttribute('aria-expanded', 'false');
     }
 
+    // ===== Мульти-корзина позиций =====
+    const cart = [];
+
     function addToCart() {
-      // Переносим параметры конструктора в заявку (ТЗ C-5)
-      const typeText = document.getElementById('window-type').selectedOptions[0].textContent;
-      const profText = document.getElementById('profile').selectedOptions[0].textContent;
-      const glassText = document.getElementById('glass').selectedOptions[0].textContent;
-      const hwText = document.getElementById('hardware').selectedOptions[0].textContent;
-      const price = priceEl.textContent;
-      const summary =
-        `Заявка из конструктора:\n` +
-        `• Тип: ${typeText}\n` +
-        `• Профиль: ${profText}\n` +
-        `• Стеклопакет: ${glassText}\n` +
-        `• Фурнитура: ${hwText}\n` +
-        `• Размер: ${widthSlider.value}×${heightSlider.value} мм\n` +
-        `• Ориентировочно: ${price}`;
-      const msg = document.getElementById('lead-message');
-      if (msg) msg.value = summary;
-      scrollToForm();
+      const price = parseInt(priceEl.dataset.v || 0) || 3000;
+      cart.push({
+        typeText:  document.getElementById('window-type').selectedOptions[0].textContent,
+        profText:  document.getElementById('profile').selectedOptions[0].textContent,
+        glassText: document.getElementById('glass').selectedOptions[0].textContent,
+        hwText:    document.getElementById('hardware').selectedOptions[0].textContent,
+        width:  widthSlider.value,
+        height: heightSlider.value,
+        price
+      });
+      renderCart();
+      document.getElementById('cart-section').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
+
+    function removeFromCart(i) { cart.splice(i, 1); renderCart(); }
+    function clearCart()       { cart.length = 0;   renderCart(); }
+
+    function renderCart() {
+      const section = document.getElementById('cart-section');
+      const itemsEl = document.getElementById('cart-items');
+      const totalEl = document.getElementById('cart-total');
+      const countEl = document.getElementById('cart-count');
+      if (!cart.length) { section.style.display = 'none'; return; }
+      section.style.display = 'block';
+      countEl.textContent = cart.length;
+      itemsEl.replaceChildren();
+      let total = 0;
+      cart.forEach((item, i) => {
+        total += item.price;
+        const row   = document.createElement('div');   row.className   = 'cart-item';
+        const body  = document.createElement('div');   body.className  = 'cart-item-body';
+        const title = document.createElement('div');   title.className = 'cart-item-title'; title.textContent = item.typeText;
+        const meta  = document.createElement('div');   meta.className  = 'cart-item-meta';  meta.textContent  = item.profText + ' · ' + item.glassText + ' · ' + item.width + '×' + item.height + ' мм';
+        const price = document.createElement('span'); price.className = 'cart-item-price'; price.textContent = item.price.toLocaleString('ru-RU') + ' ₽';
+        const rm    = document.createElement('button'); rm.className = 'cart-item-rm'; rm.textContent = '✕'; rm.title = 'Удалить позицию';
+        rm.addEventListener('click', () => removeFromCart(i));
+        body.append(title, meta);
+        row.append(body, price, rm);
+        itemsEl.appendChild(row);
+      });
+      const n = cart.length, word = n === 1 ? 'позиция' : n <= 4 ? 'позиции' : 'позиций';
+      const lbl = document.createElement('span'); lbl.className = 'cart-total-label'; lbl.textContent = 'Итого ' + n + ' ' + word;
+      const sum = document.createElement('span'); sum.className = 'cart-total-sum';   sum.textContent = total.toLocaleString('ru-RU') + ' ₽';
+      totalEl.replaceChildren(lbl, sum);
+    }
+
+    function submitCart() {
+      const msgEl = document.getElementById('lead-message');
+      if (msgEl && cart.length) {
+        let text = 'Заявка из конструктора:\n\n', total = 0;
+        cart.forEach((item, i) => {
+          total += item.price;
+          text += (i + 1) + '. ' + item.typeText + '\n';
+          text += '   Профиль: '     + item.profText  + '\n';
+          text += '   Стеклопакет: ' + item.glassText + '\n';
+          text += '   Фурнитура: '   + item.hwText    + '\n';
+          text += '   Размер: '      + item.width + '×' + item.height + ' мм\n';
+          text += '   ~' + item.price.toLocaleString('ru-RU') + ' ₽\n\n';
+        });
+        text += 'Итого: ~' + total.toLocaleString('ru-RU') + ' ₽';
+        msgEl.value = text;
+      }
+      document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function ctaOrder() {
+      if (!cart.length) addToCart();
+      submitCart();
+    }
+
     function resetCalc() {
       document.getElementById('window-type').selectedIndex = 0;
       document.getElementById('profile').selectedIndex = 0;
@@ -433,6 +488,7 @@ lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLigh
       if (res.ok) {
         setStatus('ok', data.message || 'Заявка отправлена! Мы свяжемся с вами в ближайшее время.');
         form.reset();
+        clearCart();
         clrErr(nameEl, errName); clrErr(phoneEl, errPhone); validConsent();
         if (window.ym) ym(0, 'reachGoal', 'lead'); // цель Яндекс.Метрики (активна, когда счётчик подключён)
       } else {
