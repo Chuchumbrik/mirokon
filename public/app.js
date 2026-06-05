@@ -358,7 +358,7 @@ const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 // ===== Галерея работ как кейсы =====
-let WORKS = [], PHOTOS = {}, activeCat = 'all';
+let WORKS = [], PHOTOS = {}, activeCat = 'all', CAT_ORDER = [];
 function okUrl(u) { return (u && /^(https?:\/\/|\/)/i.test(u)) ? u : ''; }
 function photosOf(w) {
   const list = (PHOTOS[w.id] || []).slice();
@@ -379,6 +379,8 @@ async function loadGallery() {
   const { data: ph } = await sb.from('work_photos').select('work_id,url,sort').in('work_id', ids).order('sort');
   PHOTOS = {};
   (ph || []).forEach(p => { const u = okUrl(p.url); if (u) (PHOTOS[p.work_id] = PHOTOS[p.work_id] || []).push(u); });
+  const { data: cats } = await sb.from('categories').select('name').order('sort');
+  CAT_ORDER = (cats || []).map(c => c.name);
   renderFilters();
   renderGallery();
 }
@@ -386,6 +388,7 @@ async function loadGallery() {
 function renderFilters() {
   const box = document.getElementById('gallery-filters'); if (!box) return;
   const cats = [...new Set(WORKS.map(w => w.category).filter(Boolean))];
+  if (CAT_ORDER.length) cats.sort((a, b) => (CAT_ORDER.indexOf(a) + 1 || 999) - (CAT_ORDER.indexOf(b) + 1 || 999));
   const mk = (val, label) => {
     const b = document.createElement('button');
     b.className = 'gallery-chip' + (activeCat === val ? ' active' : '');
