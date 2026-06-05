@@ -418,7 +418,7 @@ function renderGallery() {
 async function loadReviews() {
   const wrap = document.getElementById('reviews-wrapper'); if (!sb || !wrap) return;
   const { data, error } = await sb.from('reviews').select('author_name,author_city,rating,text').eq('approved', true).order('created_at', { ascending: false });
-  if (error) return console.error('reviews:', error.message);
+  if (error) { wrap.innerHTML = ''; document.getElementById('reviews-empty').style.display = 'block'; document.getElementById('reviews-swiper').style.display = 'none'; return console.error('reviews:', error.message); }
   if (!data.length) { document.getElementById('reviews-empty').style.display = 'block'; document.getElementById('reviews-swiper').style.display = 'none'; return; }
   // агрегат рейтинга
   const agg = document.getElementById('reviews-agg');
@@ -443,7 +443,7 @@ async function loadReviews() {
 async function loadNews() {
   const grid = document.getElementById('news-grid'); if (!sb || !grid) return;
   const { data, error } = await sb.from('news').select('title,preview_text,created_at').eq('published', true).order('created_at', { ascending: false }).limit(8);
-  if (error) return console.error('news:', error.message);
+  if (error) { grid.innerHTML = ''; document.getElementById('news-empty').style.display = 'block'; return console.error('news:', error.message); }
   if (!data.length) { grid.innerHTML = ''; document.getElementById('news-empty').style.display = 'block'; return; }
   const fmt = d => new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' });
   grid.innerHTML = data.map(n => `<article class="news-card"><span class="news-date">${esc(fmt(n.created_at))}</span><h3>${esc(n.title)}</h3><p>${esc(n.preview_text||'')}</p></article>`).join('');

@@ -327,3 +327,12 @@ html{scroll-behavior:smooth;scroll-padding-top:88px}
   .wd-main{padding:20px}
   .wd-info h3{font-size:1.4rem}
 }
+/* ===== скелетоны загрузки (отзывы/новости из БД) ===== */
+.sk{position:relative;overflow:hidden}
+.sk-line{height:12px;border-radius:6px;background:#eef2f7;margin:11px 0}
+.sk-line.sk-w30{width:30%}.sk-line.sk-w40{width:40%}.sk-line.sk-w50{width:50%}.sk-line.sk-w70{width:70%}.sk-line.sk-w80{width:80%}
+.sk-auth{display:flex;align-items:center;gap:12px;margin-top:20px}
+.sk-av{width:48px;height:48px;border-radius:50%;background:#eef2f7;flex:none}
+.sk::after{content:'';position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.65),transparent);animation:sk-shimmer 1.3s infinite}
+@keyframes sk-shimmer{100%{transform:translateX(100%)}}
+@media(prefers-reduced-motion:reduce){.sk::after{animation:none}}
