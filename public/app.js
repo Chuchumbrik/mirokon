@@ -349,7 +349,7 @@ function initReviewsSwiper() {
     breakpoints: { 768: { slidesPerView: 2, spaceBetween: 20 }, 1024: { slidesPerView: 3, spaceBetween: 30 } }
   });
 }
-initReviewsSwiper(); // на статичном fallback; loadReviews() переинициализирует после загрузки из БД
+// Swiper инициализируется в loadReviews() уже на данных из БД (на скелетоне не нужен — иначе loop-warning)
 
 // ===== Supabase: контент из БД (только published/approved через RLS) =====
 const SUPABASE_URL = 'https://ermeokjqkzpkefqtmvif.supabase.co';
