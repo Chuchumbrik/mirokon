@@ -1,3 +1,6 @@
 .vercel
 server.log
 supabase/.temp/
+.env.local
+.env
+node_modules/

@@ -343,18 +343,48 @@
       totalEl.replaceChildren(lbl, sum);
     }
 
-    function submitCart() {
+    function showCtorPrompt(text, yesLabel, noLabel) {
+      return new Promise(resolve => {
+        const box = document.getElementById('ctor-submit-prompt');
+        const textEl = document.getElementById('ctor-prompt-text');
+        const yesBtn = document.getElementById('ctor-prompt-yes');
+        const noBtn = document.getElementById('ctor-prompt-no');
+        if (!box || !textEl || !yesBtn || !noBtn) { resolve(false); return; }
+        textEl.textContent = text;
+        yesBtn.textContent = yesLabel;
+        noBtn.textContent = noLabel;
+        box.style.display = 'flex';
+        box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        const done = v => {
+          box.style.display = 'none';
+          yesBtn.onclick = null;
+          noBtn.onclick = null;
+          resolve(v);
+        };
+        yesBtn.onclick = () => done(true);
+        noBtn.onclick = () => done(false);
+      });
+    }
+
+    async function submitCart() {
       // Несохранённые изменения редактируемой позиции
       if (editingIndex !== -1 && ctorDirty) {
-        if (confirm('Позиция ' + (editingIndex + 1) + ' открыта на редактирование с несохранёнными изменениями.\nСохранить перед отправкой?')) addToCart();
-        else cancelEdit();
+        const save = await showCtorPrompt(
+          'Позиция ' + (editingIndex + 1) + ' открыта на редактирование с несохранёнными изменениями. Сохранить перед отправкой?',
+          'Сохранить', 'Продолжить без сохранения'
+        );
+        if (save) addToCart(); else cancelEdit();
       }
       // Несохранённая новая позиция (не в режиме редактирования)
       if (ctorDirty && editingIndex === -1) {
         const type = document.getElementById('window-type').selectedOptions[0].textContent;
         const sz   = widthSlider.value + '×' + heightSlider.value + ' мм';
         const p    = (parseInt(priceEl.dataset.v || 0) || 3000).toLocaleString('ru-RU');
-        if (confirm('В конструкторе настроена позиция:\n' + type + ', ' + sz + ' (~' + p + ' ₽)\n\nДобавить её в заявку?')) addToCart();
+        const add = await showCtorPrompt(
+          'В конструкторе настроена позиция: ' + type + ', ' + sz + ' (~' + p + ' ₽). Добавить её в заявку?',
+          'Добавить в заявку', 'Продолжить без неё'
+        );
+        if (add) addToCart();
       }
       const fp = document.getElementById('form-order-preview');
       if (fp && cart.length) {
@@ -365,9 +395,9 @@
       document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
     }
 
-    function ctaOrder() {
+    async function ctaOrder() {
       if (!cart.length) addToCart();
-      submitCart();
+      await submitCart();
     }
 
     function resetCalc() {
@@ -404,12 +434,96 @@ const SUPABASE_ANON = 'sb_publishable_LhXYeGG0w8wzi7JOlPx5Qg_GXd2Zc0K';
 const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON) : null;
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function okUrl(u) { return (u && /^(https?:\/\/|\/)/i.test(u)) ? u : ''; }
+function sanitizeHtml(html) {
+  if (!html) return '';
+  if (window.DOMPurify) {
+    return DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ['p', 'br', 'strong', 'b', 'em', 'i', 'u', 'a', 'ul', 'ol', 'li', 'h2', 'h3', 'h4', 'blockquote', 'span'],
+      ALLOWED_ATTR: ['href', 'target', 'rel', 'class']
+    });
+  }
+  return '<p>' + esc(html).replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
+}
+function plainToHtml(text) {
+  return '<p>' + esc(text).replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
+}
+
+function gallerySkeletonHTML(n = 6) {
+  return Array.from({ length: n }, () =>
+    '<article class="gallery-card sk" aria-hidden="true">'
+    + '<div class="gallery-img"><span class="sk-block"></span></div>'
+    + '<div class="gallery-body"><div class="sk-line sk-w70"></div><div class="sk-line"></div><div class="sk-line sk-w50"></div></div>'
+    + '</article>'
+  ).join('');
+}
+function reviewsSkeletonHTML() {
+  const card = '<div class="swiper-slide"><div class="review-card sk" aria-hidden="true"><div class="sk-line sk-w40"></div><div class="sk-line"></div><div class="sk-line sk-w80"></div><div class="sk-auth"><div class="sk-av"></div><div class="sk-line sk-w50"></div></div></div></div>';
+  return card.repeat(3);
+}
+function newsSkeletonHTML() {
+  const card = '<article class="news-card sk" aria-hidden="true"><div class="sk-line sk-w30"></div><div class="sk-line sk-w70"></div><div class="sk-line"></div></article>';
+  return card.repeat(3);
+}
+function hideSectionError(id) {
+  const el = document.getElementById(id);
+  if (el) { el.style.display = 'none'; el.replaceChildren(); }
+}
+function showSectionError(id, message, onRetry) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.replaceChildren();
+  const p = document.createElement('p');
+  p.textContent = message;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'btn-ds btn-ds-secondary section-retry';
+  btn.textContent = 'Обновить';
+  btn.addEventListener('click', onRetry);
+  el.append(p, btn);
+  el.style.display = 'block';
+}
 
 // ===== Настройки сайта из БД =====
 let SITE = null;
 function digitsPhone(p) { return String(p || '').replace(/\D/g, '').replace(/^8/, '7'); }
 function telHref(p) { const d = digitsPhone(p); return d ? 'tel:+' + d : '#'; }
 function waHref(p) { const d = digitsPhone(p); return d ? 'https://wa.me/' + d : '#'; }
+
+function updateJsonLd(s) {
+  const ld = document.querySelector('script[type="application/ld+json"]');
+  if (!ld || !s) return;
+  try {
+    const j = JSON.parse(ld.textContent);
+    if (s.company_name) j.name = s.company_name;
+    if (s.phone) j.telephone = '+' + digitsPhone(s.phone);
+    if (s.email) j.email = String(s.email).trim();
+    if (s.hours) j.openingHours = s.hours;
+    if (s.seo && s.seo.description) j.description = s.seo.description;
+    const canon = document.querySelector('link[rel="canonical"]');
+    if (canon && canon.href) j.url = canon.href;
+    const ogImg = okUrl(s.seo && s.seo.og_image);
+    if (ogImg) j.image = ogImg;
+    ld.textContent = JSON.stringify(j);
+  } catch (_) {}
+}
+
+function applySectionNav(sec) {
+  const map = { constructor: sec.constructor, gallery: sec.gallery, reviews: sec.reviews, news: sec.news, contact: sec.contact };
+  document.querySelectorAll('[data-section]').forEach(el => {
+    const key = el.dataset.section;
+    el.style.display = map[key] === false ? 'none' : '';
+  });
+  document.querySelectorAll('.nav-link[href^="#"]').forEach(a => {
+    const id = (a.getAttribute('href') || '').slice(1);
+    if (map[id] === false) a.style.display = 'none';
+    else a.style.display = '';
+  });
+  document.querySelectorAll('[data-nav-section]').forEach(el => {
+    const key = el.dataset.navSection;
+    el.style.display = map[key] === false ? 'none' : '';
+  });
+  if (typeof window._initScrollSpy === 'function') window._initScrollSpy();
+}
 
 function applySiteSettings(s) {
   if (!s) return;
@@ -431,8 +545,6 @@ function applySiteSettings(s) {
     if (ogImg) {
       let ogm = document.querySelector('meta[property="og:image"]');
       if (ogm) ogm.setAttribute('content', ogImg);
-      const ld = document.querySelector('script[type="application/ld+json"]');
-      if (ld) try { const j = JSON.parse(ld.textContent); j.image = ogImg; ld.textContent = JSON.stringify(j); } catch (_) {}
     }
   }
 
@@ -508,6 +620,28 @@ function applySiteSettings(s) {
   const mw = document.getElementById('mobile-wa');
   if (mw) mw.href = wa;
 
+  const showLink = (id, href, text) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (text) { el.href = href; el.textContent = text; el.style.display = ''; }
+    else el.style.display = 'none';
+  };
+  if (s.email) showLink('contact-email', 'mailto:' + s.email.trim(), s.email.trim());
+  else { const ce = document.getElementById('contact-email'); if (ce) ce.style.display = 'none'; }
+  if (s.email) showLink('footer-email', 'mailto:' + s.email.trim(), s.email.trim());
+  const hoursEl = document.getElementById('contact-hours');
+  if (hoursEl) {
+    if (s.hours) { hoursEl.textContent = s.hours; hoursEl.style.display = ''; }
+    else hoursEl.style.display = 'none';
+  }
+  const fh = document.getElementById('footer-hours');
+  if (fh) {
+    if (s.hours) { fh.textContent = s.hours; fh.style.display = ''; }
+    else fh.style.display = 'none';
+  }
+  const fc = document.getElementById('footer-copyright');
+  if (fc && (s.footer || {}).copyright) fc.textContent = s.footer.copyright;
+
   const soc = document.getElementById('footer-social-extra');
   if (soc) {
     soc.replaceChildren();
@@ -516,28 +650,8 @@ function applySiteSettings(s) {
   }
 
   const sec = s.sections || {};
-  document.querySelectorAll('[data-section]').forEach(el => {
-    const key = el.dataset.section;
-    if (sec[key] === false) el.style.display = 'none';
-    else el.style.display = '';
-  });
-  document.querySelectorAll('.nav-link[href="#gallery"], .nav-link[href="#reviews"], .nav-link[href="#news"]').forEach(a => {
-    const id = (a.getAttribute('href') || '').slice(1);
-    const map = { gallery: sec.gallery, reviews: sec.reviews, news: sec.news };
-    if (map[id] === false) a.style.display = 'none';
-    else a.style.display = '';
-  });
-
-  const ld = document.querySelector('script[type="application/ld+json"]');
-  if (ld && s.phone) {
-    try {
-      const j = JSON.parse(ld.textContent);
-      j.telephone = '+' + digitsPhone(s.phone);
-      if (s.hours) j.openingHours = s.hours;
-      if (s.company_name) j.name = s.company_name;
-      ld.textContent = JSON.stringify(j);
-    } catch (_) {}
-  }
+  applySectionNav(sec);
+  updateJsonLd(s);
 }
 
 async function loadSiteSettings() {
@@ -564,11 +678,21 @@ function photosOf(w) {
 async function loadGallery() {
   const grid = document.getElementById('gallery-grid'); if (!sb || !grid) return;
   if (!sectionEnabled('gallery')) return;
+  hideSectionError('gallery-error');
+  const empty = document.getElementById('gallery-empty');
+  if (empty) empty.style.display = 'none';
+  grid.innerHTML = gallerySkeletonHTML(6);
+  const filters = document.getElementById('gallery-filters');
+  if (filters) filters.replaceChildren();
   const { data, error } = await sb.from('works')
     .select('id,title,category,description,image_url,scope,system,duration_days,area,warranty,price_from,tpl_window_type,sort')
     .eq('published', true).order('sort');
-  if (error) return console.error('works:', error.message);
-  if (!data || !data.length) { document.getElementById('gallery-empty').style.display = 'block'; return; }
+  if (error) {
+    grid.innerHTML = '';
+    showSectionError('gallery-error', 'Не удалось загрузить примеры работ. Проверьте соединение и попробуйте снова.', loadGallery);
+    return console.error('works:', error.message);
+  }
+  if (!data || !data.length) { grid.innerHTML = ''; if (empty) empty.style.display = 'block'; return; }
   WORKS = data;
   const ids = data.map(w => w.id);
   const { data: ph } = await sb.from('work_photos').select('work_id,url,sort').in('work_id', ids).order('sort');
@@ -613,9 +737,20 @@ function renderGallery() {
 async function loadReviews() {
   const wrap = document.getElementById('reviews-wrapper'); if (!sb || !wrap) return;
   if (!sectionEnabled('reviews')) return;
+  hideSectionError('reviews-error');
+  const emptyEl = document.getElementById('reviews-empty');
+  const swiperEl = document.getElementById('reviews-swiper');
+  if (emptyEl) emptyEl.style.display = 'none';
+  if (swiperEl) swiperEl.style.display = '';
+  wrap.innerHTML = reviewsSkeletonHTML();
   const { data, error } = await sb.from('reviews').select('author_name,author_city,rating,text').eq('approved', true).order('created_at', { ascending: false });
-  if (error) { wrap.innerHTML = ''; document.getElementById('reviews-empty').style.display = 'block'; document.getElementById('reviews-swiper').style.display = 'none'; return console.error('reviews:', error.message); }
-  if (!data.length) { document.getElementById('reviews-empty').style.display = 'block'; document.getElementById('reviews-swiper').style.display = 'none'; return; }
+  if (error) {
+    wrap.innerHTML = '';
+    if (swiperEl) swiperEl.style.display = 'none';
+    showSectionError('reviews-error', 'Не удалось загрузить отзывы. Проверьте соединение и попробуйте снова.', loadReviews);
+    return console.error('reviews:', error.message);
+  }
+  if (!data.length) { wrap.innerHTML = ''; if (emptyEl) emptyEl.style.display = 'block'; if (swiperEl) swiperEl.style.display = 'none'; return; }
   // агрегат рейтинга
   const agg = document.getElementById('reviews-agg');
   if (agg) {
@@ -630,25 +765,98 @@ async function loadReviews() {
     return `<div class="swiper-slide"><div class="review-card">`
       + `<div class="review-stars" aria-label="${r.rating} из 5">${'★'.repeat(r.rating)}</div>`
       + `<p class="quote">«${esc(r.text)}»</p>`
-      + `<div class="review-author"><div class="review-avatar">${initial}</div><div><h4>${esc(r.author_name)}</h4><p>${esc(r.author_city||'')}</p></div></div>`
+      + `<div class="review-author"><div class="review-avatar">${initial}</div><div><p class="review-author-name">${esc(r.author_name)}</p><p>${esc(r.author_city||'')}</p></div></div>`
       + `</div></div>`;
   }).join('');
   initReviewsSwiper();
 }
 
+let NEWS_CACHE = [];
+
 async function loadNews() {
   const grid = document.getElementById('news-grid'); if (!sb || !grid) return;
   if (!sectionEnabled('news')) return;
-  const { data, error } = await sb.from('news').select('title,preview_text,image_url,created_at').eq('published', true).order('created_at', { ascending: false }).limit(8);
-  if (error) { grid.innerHTML = ''; document.getElementById('news-empty').style.display = 'block'; return console.error('news:', error.message); }
-  if (!data.length) { grid.innerHTML = ''; document.getElementById('news-empty').style.display = 'block'; return; }
+  hideSectionError('news-error');
+  const emptyEl = document.getElementById('news-empty');
+  if (emptyEl) emptyEl.style.display = 'none';
+  grid.innerHTML = newsSkeletonHTML();
+  const { data, error } = await sb.from('news').select('id,title,preview_text,body,image_url,created_at').eq('published', true).order('created_at', { ascending: false }).limit(8);
+  if (error) {
+    grid.innerHTML = '';
+    showSectionError('news-error', 'Не удалось загрузить новости. Проверьте соединение и попробуйте снова.', loadNews);
+    return console.error('news:', error.message);
+  }
+  if (!data.length) { NEWS_CACHE = []; grid.innerHTML = ''; if (emptyEl) emptyEl.style.display = 'block'; return; }
+  NEWS_CACHE = data;
+  if (emptyEl) emptyEl.style.display = 'none';
   const fmt = d => new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' });
-  grid.innerHTML = data.map(n => {
+  grid.innerHTML = data.map((n, i) => {
     const img = okUrl(n.image_url);
-    const imgHtml = img ? '<div class="news-card-img"><img src="' + esc(img) + '" alt="" loading="lazy"></div>' : '';
-    return '<article class="news-card">' + imgHtml + '<span class="news-date">' + esc(fmt(n.created_at)) + '</span><h3>' + esc(n.title) + '</h3><p>' + esc(n.preview_text||'') + '</p></article>';
+    const imgHtml = img ? '<div class="news-card-img"><img src="' + esc(img) + '" alt="' + esc(n.title || 'Новость') + '" loading="lazy"></div>' : '';
+    return '<article class="news-card news-card-clickable" data-news-idx="' + i + '" tabindex="0" role="button" aria-label="Читать: ' + esc(n.title) + '">' + imgHtml + '<span class="news-date">' + esc(fmt(n.created_at)) + '</span><h3>' + esc(n.title) + '</h3><p>' + esc(n.preview_text||'') + '</p></article>';
   }).join('');
+  grid.querySelectorAll('.news-card-clickable').forEach(card => {
+    const open = () => openNewsModal(+card.dataset.newsIdx);
+    card.addEventListener('click', open);
+    card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+  });
 }
+
+const newsModal = document.getElementById('news-modal');
+let newsLastFocused = null;
+
+function modalFocusSelector() {
+  return 'button:not([disabled]), a[href], input:not([disabled]):not(.hp), textarea:not([disabled]), select:not([disabled]), img[tabindex], [tabindex]:not([tabindex="-1"])';
+}
+function createModalKeyHandler(modal, onClose) {
+  return function modalKeyHandler(e) {
+    if (e.key === 'Escape') { onClose(); return; }
+    if (e.key !== 'Tab') return;
+    const nodes = modal.querySelectorAll(modalFocusSelector());
+    if (!nodes.length) return;
+    const first = nodes[0], last = nodes[nodes.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  };
+}
+function closeNewsModal() {
+  if (!newsModal) return;
+  newsModal.classList.add('hidden');
+  document.body.style.overflow = '';
+  if (newsModalKeyHandler) document.removeEventListener('keydown', newsModalKeyHandler);
+  if (newsLastFocused && newsLastFocused.focus) newsLastFocused.focus();
+  newsLastFocused = null;
+}
+const newsModalKeyHandler = newsModal ? createModalKeyHandler(newsModal, closeNewsModal) : null;
+
+function openNewsModal(idx) {
+  const n = NEWS_CACHE[idx]; if (!n || !newsModal) return;
+  newsLastFocused = document.activeElement;
+  const fmt = d => new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+  document.getElementById('news-modal-title').textContent = n.title || '';
+  document.getElementById('news-modal-date').textContent = fmt(n.created_at);
+  const body = document.getElementById('news-modal-body');
+  const full = (n.body || '').trim();
+  body.textContent = '';
+  if (full) {
+    if (/<[a-z][\s\S]*>/i.test(full)) body.innerHTML = sanitizeHtml(full);
+    else body.innerHTML = plainToHtml(full);
+  } else {
+    body.textContent = n.preview_text || '';
+  }
+  const imgWrap = document.getElementById('news-modal-img');
+  const img = okUrl(n.image_url);
+  if (img) { imgWrap.style.display = ''; imgWrap.innerHTML = '<img src="' + esc(img) + '" alt="' + esc(n.title || '') + '">'; }
+  else { imgWrap.style.display = 'none'; imgWrap.innerHTML = ''; }
+  newsModal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  if (newsModalKeyHandler) document.addEventListener('keydown', newsModalKeyHandler);
+  const closeBtn = newsModal.querySelector('.modal-close');
+  if (closeBtn) closeBtn.focus();
+  else document.getElementById('news-modal-title')?.focus();
+}
+
+if (newsModal) newsModal.addEventListener('click', e => { if (e.target === newsModal) closeNewsModal(); });
 
 loadSiteSettings().then(() => {
   if (typeof window._initConstructor === 'function') window._initConstructor();
@@ -670,7 +878,7 @@ function highlightStars(n) {
 function trapFocus(e) {
   if (e.key === 'Escape') { closeReviewModal(); return; }
   if (e.key !== 'Tab') return;
-  const f = reviewModal.querySelectorAll('button, input, textarea, [tabindex]:not([tabindex="-1"])');
+  const f = reviewModal.querySelectorAll(modalFocusSelector());
   if (!f.length) return;
   const first = f[0], last = f[f.length - 1];
   if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
@@ -761,7 +969,7 @@ const wdReduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 function wdKeydown(e) {
   if (e.key === 'Escape') { closeWork(); return; }
   if (e.key !== 'Tab') return;
-  const f = workModal.querySelectorAll('button, a[href], img.wd-thumb, .wd-rail-item, [tabindex]:not([tabindex="-1"])');
+  const f = workModal.querySelectorAll(modalFocusSelector());
   if (!f.length) return;
   const first = f[0], last = f[f.length - 1];
   if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
@@ -791,7 +999,9 @@ function openWork(id, cardEl) {
   photos.forEach((u, i) => {
     const img = document.createElement('img');
     img.className = 'wd-thumb' + (i === 0 ? ' active' : '');
-    img.src = u; img.alt = ''; img.dataset.url = u; img.loading = 'lazy'; img.tabIndex = 0;
+    img.src = u;
+    img.alt = (w.title || 'Работа') + (photos.length > 1 ? ' — фото ' + (i + 1) : '');
+    img.dataset.url = u; img.loading = 'lazy'; img.tabIndex = 0;
     img.addEventListener('click', () => wdSetHero(u));
     img.addEventListener('keydown', e => { if (e.key === 'Enter') wdSetHero(u); });
     thumbs.appendChild(img);
@@ -838,7 +1048,10 @@ function openWork(id, cardEl) {
     if (railTitle) railTitle.textContent = 'Ещё в категории «' + (w.category || 'Работы') + '»';
     sameCat.forEach(o => {
       const item = document.createElement('div'); item.className = 'wd-rail-item'; item.tabIndex = 0; item.setAttribute('role', 'button');
-      const im = document.createElement('img'); const ph = photosOf(o)[0]; if (ph) im.src = ph; im.alt = ''; im.loading = 'lazy';
+      const im = document.createElement('img'); const ph = photosOf(o)[0];
+      if (ph) im.src = ph;
+      im.alt = o.title || 'Работа';
+      im.loading = 'lazy';
       const tb = document.createElement('div');
       const t = document.createElement('div'); t.className = 't'; t.textContent = o.title;
       const c = document.createElement('div'); c.className = 'c'; c.textContent = o.category || '';
@@ -980,9 +1193,12 @@ function calcLikeThis(type) {
 
     const name = nameEl.value.trim();
     const message = document.getElementById('lead-message').value.trim();
-    const btn = form.querySelector('button[type="submit"]');
+    const btn = document.getElementById('lead-submit-btn') || form.querySelector('button[type="submit"]');
     const orig = btn.textContent;
-    btn.disabled = true; btn.textContent = 'Отправка...';
+    btn.disabled = true;
+    btn.classList.add('is-loading');
+    btn.setAttribute('aria-busy', 'true');
+    form.setAttribute('aria-busy', 'true');
     setStatus('', '');
     try {
       const res = await fetch('/api/lead', {
@@ -1007,7 +1223,11 @@ function calcLikeThis(type) {
     } catch (err) {
       setStatus('err', 'Не удалось отправить: ' + err.message + '. Позвоните нам напрямую.');
     } finally {
-      btn.disabled = false; btn.textContent = orig;
+      btn.disabled = false;
+      btn.classList.remove('is-loading');
+      btn.removeAttribute('aria-busy');
+      form.removeAttribute('aria-busy');
+      btn.textContent = orig;
     }
   });
 })();
@@ -1026,11 +1246,14 @@ function calcLikeThis(type) {
       // показываем после скролла, но прячем, когда секция контактов входит в кадр
       // (там уже есть форма и кнопки — дублировать не нужно)
       const contactTop = contactSec ? contactSec.getBoundingClientRect().top : Infinity;
-      mcta.classList.toggle('show', window.scrollY > 500 && contactTop > window.innerHeight * 0.55);
+      const showMcta = window.scrollY > 500 && contactTop > window.innerHeight * 0.55;
+      mcta.classList.toggle('show', showMcta);
+      document.body.classList.toggle('mobile-cta-pad', showMcta && window.innerWidth <= 767);
     }
   };
   onScroll();
   window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
 
   // Клик по бренду (лого) — всегда в самый верх страницы
   document.querySelectorAll('a.brand[href="#hero"]').forEach(a => {
@@ -1042,24 +1265,29 @@ function calcLikeThis(type) {
   });
 
   // Scroll-spy: подсветка активного пункта меню при прокрутке
-  const navLinks = [...document.querySelectorAll('.nav-link')];
-  const sections = ['constructor', 'gallery', 'reviews', 'news', 'contact']
-    .map(id => document.getElementById(id)).filter(Boolean);
-  if ('IntersectionObserver' in window && sections.length) {
-    const spy = new IntersectionObserver((entries) => {
+  let scrollSpyObserver = null;
+  window._initScrollSpy = function () {
+    if (scrollSpyObserver) scrollSpyObserver.disconnect();
+    const navLinks = [...document.querySelectorAll('.nav-link')].filter(a => getComputedStyle(a).display !== 'none');
+    const sections = ['constructor', 'gallery', 'reviews', 'news', 'contact']
+      .map(id => document.getElementById(id))
+      .filter(el => el && getComputedStyle(el).display !== 'none');
+    if (!('IntersectionObserver' in window) || !sections.length || !navLinks.length) return;
+    scrollSpyObserver = new IntersectionObserver((entries) => {
       entries.forEach(e => {
         if (e.isIntersecting) {
           navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id));
         }
       });
     }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
-    sections.forEach(s => spy.observe(s));
-  }
+    sections.forEach(s => scrollSpyObserver.observe(s));
+  };
+  window._initScrollSpy();
 
   // Плавное появление секций при прокрутке (с уважением к prefers-reduced-motion)
   if (!reduce && 'IntersectionObserver' in window) {
-    const sel = ['#constructor .text-center', '#constructor .grid', '#gallery .text-center', '.gallery-grid',
-      '#reviews .text-center', '#news .text-center', '.news-grid', '#contact .lead-copy', '#contact .form-card'];
+    const sel = ['#constructor .sec-head', '#constructor .grid', '#gallery .sec-head', '.gallery-grid',
+      '#reviews .sec-head', '#news .sec-head', '.news-grid', '#contact .lead-copy', '#contact .form-card'];
     const targets = sel.flatMap(s => [...document.querySelectorAll(s)]);
     targets.forEach(el => el.classList.add('reveal'));
     const io = new IntersectionObserver((entries, obs) => {

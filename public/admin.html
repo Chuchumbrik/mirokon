@@ -7,6 +7,7 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/pricing-defaults.js"></script>
+<script src="/admin-validate.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
@@ -115,9 +116,42 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
 @media(hover:none){.ph-ov{opacity:1}}
 .lb-single .lb-arr,.lb-single .lb-cnt{display:none}
 .pricing-table{display:flex;flex-direction:column;gap:8px}
-.pr-row{display:grid;grid-template-columns:28px 1fr 100px;gap:8px;align-items:center;padding:8px 10px;background:#f8fafc;border-radius:10px;border:1px solid var(--border)}
+.pr-row{display:grid;grid-template-columns:28px 84px 1fr 88px 36px;gap:8px;align-items:center;padding:8px 10px;background:#f8fafc;border-radius:10px;border:1px solid var(--border)}
+.pr-row .pr-id{font-size:.78rem}
+.pr-row .pr-rm{padding:6px 8px;min-width:0}
+.input-invalid{border-color:#dc2626!important;box-shadow:0 0 0 3px rgba(220,38,38,.12)!important}
+.field-err{color:#dc2626;font-size:.8rem;margin-top:4px}
+.field-warn{color:#b45309;font-size:.8rem;margin-top:4px}
+.input-warn{border-color:#f59e0b!important;box-shadow:0 0 0 3px rgba(245,158,11,.15)!important}
+.toast.err{background:#991b1b}
+.toast.warn{background:#b45309}
+.list-loading{text-align:center;color:var(--muted);padding:36px 20px;font-size:.95rem}
+.list-loading::before{content:'';display:inline-block;width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:adm-spin .7s linear infinite;vertical-align:middle;margin-right:10px}
+@keyframes adm-spin{to{transform:rotate(360deg)}}
+.settings-nav{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.settings-nav a{padding:8px 14px;border:1px solid var(--border);border-radius:10px;background:#fff;font-size:.85rem;font-weight:600;color:var(--muted);text-decoration:none;transition:.15s}
+.settings-nav a:hover{border-color:var(--accent);color:var(--primary)}
+.settings-block{scroll-margin-top:96px}
+.ph-hint{color:var(--muted);font-size:.82rem;margin:0 0 10px;line-height:1.45}
+.inline-modal-back{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:120;display:none;align-items:center;justify-content:center;padding:16px}
+.inline-modal-box{background:#fff;border-radius:16px;box-shadow:var(--sh);padding:24px;max-width:420px;width:100%}
+.inline-modal-box h3{font-family:'Montserrat';font-size:1.15rem;margin-bottom:12px}
+.inline-modal-actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.list-item.dragging{opacity:.45}
+.drag-handle{cursor:grab;color:var(--muted);font-size:1.1rem;padding:4px 8px;user-select:none;flex:none}
+.drag-handle:active{cursor:grabbing}
+.work-sort-hint{color:var(--muted);font-size:.82rem;margin:0 0 10px}
+.privacy-editor{min-height:320px;font-family:ui-monospace,Consolas,monospace;font-size:.85rem;line-height:1.5}
 .pr-row label{font-size:.82rem;margin:0;font-weight:500}
 .pr-row input[type=number],.pr-row input[type=text]{padding:8px 10px;font-size:.88rem}
+@media(max-width:640px){
+  .pr-row{grid-template-columns:1fr 1fr;grid-template-areas:"en en" "id lbl" "price rm"}
+  .pr-row .pr-en{grid-area:en;justify-self:start}
+  .pr-row .pr-id{grid-area:id}
+  .pr-row .pr-label{grid-area:lbl}
+  .pr-row .pr-price{grid-area:price}
+  .pr-row .pr-rm{grid-area:rm;justify-self:end}
+}
 </style>
 </head>
 <body>
@@ -136,6 +170,7 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
       <button class="tab" data-tab="news" onclick="switchTab('news')">Новости</button>
       <button class="tab" data-tab="settings" onclick="switchTab('settings')">Настройки</button>
       <button class="tab" data-tab="pricing" onclick="switchTab('pricing')">Прайс</button>
+      <button class="tab" data-tab="privacy" onclick="switchTab('privacy')">Политика</button>
     </div>
 
     <!-- LEADS -->
@@ -164,7 +199,6 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
           </div>
         </div>
         <label>Описание</label><textarea id="w-desc" placeholder="Двухкамерный стеклопакет…"></textarea>
-        <div><label>Порядок</label><input type="number" id="w-sort" value="0" style="max-width:140px"></div>
         <div class="row2" style="margin-top:8px">
           <div><label>Система (профиль)</label><input id="w-system" placeholder="VEKA Softline 70"></div>
           <div><label>Цена «от», ₽</label><input type="number" id="w-pricefrom" placeholder="38000"></div>
@@ -200,6 +234,7 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
         </div>
         <div id="w-photos-section" style="display:none;margin-top:14px">
           <label style="margin-bottom:8px">Фото галереи</label>
+          <p class="ph-hint">★ «Обложкой» — главное фото в карточке на сайте. ↑↓ — порядок в карусели. Порядок карточек на главной — перетащите в списке «Работы на сайте» ниже.</p>
           <div class="ph-grid" id="w-photo-grid"></div>
           <div class="ph-add-zone" id="w-add-zone" onclick="$('w-multi-input').click()"
                ondragover="event.preventDefault();this.classList.add('drag')"
@@ -213,7 +248,8 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
           <button class="btn btn-ghost" onclick="resetWorkForm()">Очистить</button>
         </div>
       </div>
-      <h2>Работы</h2>
+      <h2>Работы на сайте</h2>
+      <p class="work-sort-hint">Перетащите карточки за ⋮⋮, чтобы изменить порядок на сайте (сохраняется автоматически).</p>
       <div id="works-list"></div>
     </section>
 
@@ -234,7 +270,8 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
     <!-- REVIEWS -->
     <section class="panel" id="panel-reviews">
       <div class="card">
-        <h3>Добавить отзыв вручную</h3>
+        <h3 id="rv-form-title">Добавить отзыв вручную</h3>
+        <input type="hidden" id="rv-edit-id">
         <div class="row2">
           <div><label>Имя *</label><input id="rv-name" placeholder="Алексей"></div>
           <div><label>Город</label><input id="rv-city" placeholder="Химки"></div>
@@ -247,8 +284,11 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
             <label class="check" style="margin:0"><input type="checkbox" id="rv-approved" checked> Сразу опубликовать</label>
           </div>
         </div>
-        <label>Текст отзыва *</label><textarea id="rv-text" placeholder="Расскажите о работе…"></textarea>
-        <button class="btn btn-primary" style="margin-top:12px" onclick="saveManualReview()">Добавить отзыв</button>
+        <label>Текст отзыва *</label><textarea id="rv-text" placeholder="Расскажите о работе…" rows="4"></textarea>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" id="rv-save-btn" onclick="saveManualReview()">Добавить отзыв</button>
+          <button class="btn btn-ghost" id="rv-cancel-btn" style="display:none" onclick="cancelReviewEdit()">Отмена</button>
+        </div>
       </div>
       <h2>Отзывы</h2>
       <div class="filters">
@@ -285,10 +325,20 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
 
     <!-- SETTINGS -->
     <section class="panel" id="panel-settings">
+      <nav class="settings-nav" aria-label="Разделы настроек">
+        <a href="#settings-contacts">Контакты</a>
+        <a href="#settings-hero">Hero</a>
+        <a href="#settings-footer">Футер</a>
+        <a href="#settings-seo">SEO</a>
+        <a href="#settings-copy">Тексты</a>
+        <a href="#settings-scope">Кейсы</a>
+        <a href="#settings-logo">Логотип</a>
+        <a href="#settings-sections">Секции</a>
+      </nav>
       <div class="card">
         <h2>Настройки сайта</h2>
         <p style="color:var(--muted);font-size:.88rem;margin:-8px 0 16px">Контакты, тексты Hero, SEO и видимость секций. Изменения появятся на сайте после обновления страницы.</p>
-        <h3>Контакты</h3>
+        <h3 class="settings-block" id="settings-contacts">Контакты</h3>
         <div class="row2">
           <div><label>Название компании</label><input id="s-company" placeholder="Mirokon"></div>
           <div><label>Телефон (цифры)</label><input id="s-phone" placeholder="79991234567"></div>
@@ -303,7 +353,7 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
         </div>
         <label>Часы работы</label><input id="s-hours" placeholder="Пн–Вс 09:00–21:00">
 
-        <h3 style="margin-top:20px">Hero (первый экран)</h3>
+        <h3 class="settings-block" id="settings-hero" style="margin-top:20px">Hero (первый экран)</h3>
         <label>Метка над заголовком</label><input id="s-hero-eyebrow">
         <div class="row2">
           <div><label>Заголовок (начало)</label><input id="s-hero-t1" placeholder="Окна, которые"></div>
@@ -317,46 +367,52 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
         <label>Чипы доверия (по одному на строку)</label><textarea id="s-hero-chips" rows="3" placeholder="Гарантия 5 лет&#10;Договор&#10;Монтаж за 1 день"></textarea>
         <label>Статистика (формат: значение | подпись, по строке)</label><textarea id="s-hero-stats" rows="3" placeholder="1500+ | окон установлено&#10;8 лет | на рынке"></textarea>
 
-        <h3 style="margin-top:20px">Футер и соцсети</h3>
+        <h3 class="settings-block" id="settings-footer" style="margin-top:20px">Футер и соцсети</h3>
         <label>О компании (футер)</label><textarea id="s-footer-about"></textarea>
+        <label>Копирайт (нижняя строка футера)</label><input id="s-footer-copy" placeholder="© 2026 Mirokon · Москва и МО">
         <div class="row2">
           <div><label>VK (ссылка)</label><input id="s-vk" placeholder="https://vk.com/..."></div>
           <div><label>Avito (ссылка)</label><input id="s-avito" placeholder="https://avito.ru/..."></div>
         </div>
 
-        <h3 style="margin-top:20px">SEO</h3>
+        <h3 class="settings-block" id="settings-seo" style="margin-top:20px">SEO</h3>
         <label>Title страницы</label><input id="s-seo-title">
         <label>Meta description</label><textarea id="s-seo-desc" rows="2"></textarea>
         <label>OG-картинка (1200×630, JPG/PNG)</label>
+        <p style="color:var(--muted);font-size:.82rem;margin:0 0 8px">Рекомендуемый размер: <b>1200×630</b> px для соцсетей и мессенджеров.</p>
         <input type="file" id="s-og-image" accept="image/*">
         <div id="s-og-preview" style="margin-top:8px"></div>
+        <p id="s-og-size-hint" style="color:var(--muted);font-size:.8rem;margin-top:6px"></p>
         <input type="hidden" id="s-og-image-url">
 
-        <h3 style="margin-top:20px">Тексты секций</h3>
+        <h3 class="settings-block" id="settings-copy" style="margin-top:20px">Тексты секций</h3>
         <div class="row2"><div><label>Конструктор — заголовок</label><input id="s-copy-ctor-t"></div><div><label>Конструктор — подзаголовок</label><input id="s-copy-ctor-s"></div></div>
         <div class="row2"><div><label>Работы — заголовок</label><input id="s-copy-gal-t"></div><div><label>Работы — подзаголовок</label><input id="s-copy-gal-s"></div></div>
         <div class="row2"><div><label>Отзывы — заголовок</label><input id="s-copy-rev-t"></div><div><label>Отзывы — подзаголовок</label><input id="s-copy-rev-s"></div></div>
         <div class="row2"><div><label>Новости — заголовок</label><input id="s-copy-news-t"></div><div><label>Новости — подзаголовок</label><input id="s-copy-news-s"></div></div>
         <div class="row2"><div><label>Контакты — заголовок</label><input id="s-copy-con-t"></div><div><label>Контакты — подзаголовок</label><input id="s-copy-con-s"></div></div>
 
-        <h3 style="margin-top:20px">Перечень работ в кейсах</h3>
+        <h3 class="settings-block" id="settings-scope" style="margin-top:20px">Перечень работ в кейсах</h3>
         <label>Пункты чеклиста (по одному на строку)</label>
         <textarea id="s-scope-items" rows="4" placeholder="Демонтаж старого&#10;Монтаж окна"></textarea>
 
-        <h3 style="margin-top:20px">Логотип</h3>
+        <h3 class="settings-block" id="settings-logo" style="margin-top:20px">Логотип</h3>
         <input type="file" id="s-logo" accept="image/*">
         <div id="s-logo-preview" style="margin-top:8px"></div>
         <input type="hidden" id="s-logo-url">
 
-        <h3 style="margin-top:20px">Секции на сайте</h3>
+        <h3 class="settings-block" id="settings-sections" style="margin-top:20px">Секции на сайте</h3>
         <div class="scope-checks">
+          <label class="check"><input type="checkbox" id="s-sec-constructor" checked> Конструктор</label>
           <label class="check"><input type="checkbox" id="s-sec-gallery" checked> Примеры работ</label>
           <label class="check"><input type="checkbox" id="s-sec-reviews" checked> Отзывы</label>
           <label class="check"><input type="checkbox" id="s-sec-news" checked> Новости</label>
+          <label class="check"><input type="checkbox" id="s-sec-contact" checked> Форма заявки</label>
         </div>
 
         <div style="margin-top:20px;display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-primary" id="s-save" onclick="saveSiteSettings()">Сохранить настройки</button>
+          <button class="btn btn-primary" id="s-save-all" onclick="saveAllSiteConfig()">Сохранить настройки и прайс</button>
           <a href="/" target="_blank" rel="noopener" class="btn btn-ghost" style="text-decoration:none">Открыть сайт ↗</a>
         </div>
       </div>
@@ -387,18 +443,49 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
         <h3 style="margin-top:16px">Типы конструкций</h3>
         <p style="color:var(--muted);font-size:.82rem;margin:0 0 8px">Снимите галочку, чтобы скрыть тип на сайте.</p>
         <div id="p-types" class="pricing-table"></div>
+        <button type="button" class="btn btn-ghost" style="margin-top:6px" onclick="addPricingRow('p-types','surcharge')">+ Добавить тип</button>
         <h3 style="margin-top:16px">Профили (надбавка ₽/м периметра)</h3>
         <div id="p-profiles" class="pricing-table"></div>
+        <button type="button" class="btn btn-ghost" style="margin-top:6px" onclick="addPricingRow('p-profiles','price')">+ Добавить профиль</button>
         <h3 style="margin-top:16px">Стеклопакеты (₽/м²)</h3>
         <div id="p-glass" class="pricing-table"></div>
+        <button type="button" class="btn btn-ghost" style="margin-top:6px" onclick="addPricingRow('p-glass','price')">+ Добавить стеклопакет</button>
         <h3 style="margin-top:16px">Фурнитура (фикс. ₽)</h3>
         <div id="p-hardware" class="pricing-table"></div>
+        <button type="button" class="btn btn-ghost" style="margin-top:6px" onclick="addPricingRow('p-hardware','price')">+ Добавить фурнитуру</button>
         <div style="margin-top:20px;display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-primary" id="p-save" onclick="savePricing()">Сохранить прайс</button>
           <a href="/#constructor" target="_blank" rel="noopener" class="btn btn-ghost" style="text-decoration:none">Проверить на сайте ↗</a>
         </div>
       </div>
     </section>
+
+    <!-- PRIVACY -->
+    <section class="panel" id="panel-privacy">
+      <div class="card">
+        <h2>Политика конфиденциальности</h2>
+        <p style="color:var(--muted);font-size:.88rem;margin:-8px 0 16px">HTML содержимое страницы <a href="/privacy.html" target="_blank" rel="noopener">/privacy.html</a>. Если пусто — показывается встроенный черновик из файла.</p>
+        <label>HTML-текст политики</label>
+        <textarea id="s-privacy-html" class="privacy-editor" rows="16" placeholder="<h2>1. Общие положения</h2>&#10;<p>…</p>"></textarea>
+        <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="savePrivacy()">Сохранить политику</button>
+          <a href="/privacy.html" target="_blank" rel="noopener" class="btn btn-ghost" style="text-decoration:none">Предпросмотр ↗</a>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- inline prompt (категории) -->
+  <div class="inline-modal-back" id="inline-prompt" style="display:none">
+    <div class="inline-modal-box" role="dialog" aria-modal="true" aria-labelledby="inline-prompt-title">
+      <h3 id="inline-prompt-title">Название</h3>
+      <label for="inline-prompt-input" style="margin-top:0">Введите значение</label>
+      <input id="inline-prompt-input" autocomplete="off">
+      <div class="inline-modal-actions">
+        <button type="button" class="btn btn-primary" id="inline-prompt-ok">OK</button>
+        <button type="button" class="btn btn-ghost" id="inline-prompt-cancel">Отмена</button>
+      </div>
+    </div>
   </div>
 
   <div class="toast" id="toast"></div>
@@ -428,833 +515,6 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
     <span class="lb-cnt" id="lb-cnt"></span>
   </div>
 
-<script>
-  const SUPABASE_URL = 'https://ermeokjqkzpkefqtmvif.supabase.co';
-  const SUPABASE_ANON = 'sb_publishable_LhXYeGG0w8wzi7JOlPx5Qg_GXd2Zc0K';
-  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
-  const $ = id => document.getElementById(id);
-  const safeUrl = u => (u && /^(https?:\/\/|\/)/i.test(u)) ? u : '';
-
-  function toast(msg, isErr) {
-    const t = $('toast'); t.textContent = msg; t.className = 'toast show' + (isErr ? ' err' : '');
-    setTimeout(() => { t.className = 'toast'; }, 2600);
-  }
-  // безопасный конструктор элементов (текст через textContent)
-  function el(tag, opts, ...kids) {
-    const e = document.createElement(tag); opts = opts || {};
-    if (opts.class) e.className = opts.class;
-    if (opts.text != null) e.textContent = opts.text;
-    if (opts.html === 'svg-win') e.innerHTML = '🪟';
-    Object.entries(opts).forEach(([k, v]) => { if (['class','text','html'].includes(k)) return; if (k.startsWith('on')) e.addEventListener(k.slice(2), v); else e.setAttribute(k, v); });
-    kids.forEach(k => k && e.appendChild(k));
-    return e;
-  }
-
-  // ---- Auth guard ----
-  (async () => {
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session) return location.replace('/landing.html');
-    const { data: admin, error } = await sb.rpc('is_admin');
-    if (error || !admin) { await sb.auth.signOut(); alert('Нет прав администратора'); return location.replace('/landing.html'); }
-    $('admin-email').textContent = session.user.email;
-    loadLeads(); loadWorks(); loadCategories(); loadReviews(); loadNews(); loadSiteSettingsForm();
-  })();
-
-  async function logout() { await sb.auth.signOut(); location.replace('/landing.html'); }
-
-  function switchTab(name) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
-    document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + name));
-  }
-
-  // ================= LEADS (заявки) =================
-  let leadFilter = 'new';
-  function setLeadFilter(f) {
-    leadFilter = f;
-    document.querySelectorAll('.filters .f[data-lf]').forEach(x => x.classList.toggle('active', x.dataset.lf === f));
-    loadLeads();
-  }
-  async function loadLeads() {
-    const box = $('leads-list'); box.replaceChildren();
-    let q = sb.from('leads').select('*').order('created_at', { ascending: false });
-    if (leadFilter === 'new') q = q.eq('processed', false);
-    else if (leadFilter === 'processed') q = q.eq('processed', true);
-    const { data, error } = await q;
-    if (error) return toast('Ошибка загрузки заявок', true);
-    if (!data.length) { box.appendChild(el('div', { class: 'empty', text: 'Нет заявок в этой категории' })); return; }
-    data.forEach(l => {
-      const badge = el('span', { class: 'badge ' + (l.processed ? 'on' : 'off'), text: l.processed ? 'обработана' : 'новая' });
-      const head = el('div', { class: 'lead-card-head' },
-        el('div', { class: 'lead-card-name', text: l.name || '—' }),
-        el('div', { class: 'lead-card-acts' },
-          badge,
-          el('button', { class: l.processed ? 'btn btn-ghost' : 'btn btn-ok', text: l.processed ? 'Вернуть' : 'Обработана',
-            onclick: () => moderateLead(l.id, l.processed ? 'unprocess' : 'process') }),
-          el('button', { class: 'btn btn-danger', text: 'Удалить', onclick: () => moderateLead(l.id, 'delete') })
-        )
-      );
-      const body = el('div', { class: 'lead-card-body' },
-        el('a', { class: 'lead-card-phone', href: 'tel:' + (l.phone || '').replace(/[^\d+]/g, ''), text: l.phone || '—' })
-      );
-      if (l.message) body.appendChild(el('div', { class: 'lead-card-msg', text: l.message }));
-      if (l.cart_items && l.cart_items.length) {
-        const cartDiv = el('div', { class: 'lead-cart' });
-        let total = 0;
-        l.cart_items.forEach((item, i) => {
-          total += item.price || 0;
-          const row = el('div', { class: 'lead-cart-row' });
-          row.appendChild(el('div', { class: 'lcr-main' },
-            el('span', { class: 'lcr-idx', text: (i + 1) + '.' }),
-            el('span', { class: 'lcr-name', text: item.type }),
-            el('span', { class: 'lcr-price', text: '~' + (item.price || 0).toLocaleString('ru-RU') + ' ₽' })
-          ));
-          const specs = [item.profile, item.glass, item.hardware].filter(Boolean).join(' · ');
-          row.appendChild(el('div', { class: 'lcr-size', text: item.width + '×' + item.height + ' мм' + (specs ? '  ·  ' + specs : '') }));
-          cartDiv.appendChild(row);
-        });
-        const n = l.cart_items.length, word = n === 1 ? 'позицию' : n <= 4 ? 'позиции' : 'позиций';
-        cartDiv.appendChild(el('div', { class: 'lead-cart-total' },
-          el('span', { class: 'lct-lbl', text: 'Итого за ' + n + ' ' + word }),
-          el('span', { class: 'lct-sum', text: '~' + total.toLocaleString('ru-RU') + ' ₽' })
-        ));
-        body.appendChild(cartDiv);
-      }
-      body.appendChild(el('div', { class: 'lead-card-when', text: new Date(l.created_at).toLocaleString('ru-RU') }));
-      box.appendChild(el('div', { class: 'lead-card' }, head, body));
-    });
-  }
-  async function moderateLead(id, action) {
-    if (action === 'delete' && !confirm('Удалить заявку безвозвратно?')) return;
-    try {
-      const { data: { session } } = await sb.auth.getSession();
-      if (!session) return location.replace('/landing.html');
-      const res = await fetch('/api/moderate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.access_token },
-        body: JSON.stringify({ type: 'lead', id, action })
-      });
-      const d = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(d.error || ('код ' + res.status));
-      toast(action === 'delete' ? 'Удалено' : action === 'process' ? 'Обработана' : 'Возвращено в работу');
-      loadLeads();
-    } catch (e) {
-      toast('Ошибка: ' + (e.message || e), true);
-    }
-  }
-
-  // ================= WORKS =================
-  async function loadWorks() {
-    const box = $('works-list'); box.replaceChildren();
-    const { data, error } = await sb.from('works').select('*, work_photos(id)').order('sort').order('created_at', { ascending: false });
-    if (error) return toast('Ошибка загрузки работ', true);
-    if (!data.length) { box.appendChild(el('div', { class: 'empty', text: 'Пока нет работ' })); return; }
-    data.forEach(w => {
-      const img = safeUrl(w.image_url);
-      const thumb = img ? el('img', { class: 'thumb', src: img, alt: '' }) : el('div', { class: 'thumb', text: '🪟' });
-      const badge = el('span', { class: 'badge ' + (w.published ? 'on' : 'off'), text: w.published ? 'на сайте' : 'черновик' });
-      const photoCount = w.work_photos?.length || 0;
-      const meta = [w.category, w.description].filter(Boolean).join(' · ');
-      const actions = el('div', { class: 'li-actions' },
-        badge,
-        el('button', { class: 'btn btn-ghost', text: w.published ? 'Снять' : 'Опубликовать', onclick: () => togglePublish('works', w.id, !w.published) }),
-        el('button', { class: 'btn btn-ghost', text: 'Изменить', onclick: () => editWork(w) }),
-        el('button', { class: 'btn btn-ghost', text: 'Дублировать', onclick: () => duplicateWork(w) }),
-        el('button', { class: 'btn btn-danger', text: 'Удалить', onclick: () => del('works', w.id) })
-      );
-      box.appendChild(el('div', { class: 'list-item' }, thumb,
-        el('div', { class: 'li-body' },
-          el('div', { class: 't', text: w.title }),
-          el('div', { class: 'm', text: [meta, photoCount ? photoCount + ' фото' : ''].filter(Boolean).join(' · ') })),
-        actions));
-    });
-  }
-  function editWork(w) {
-    $('w-id').value = w.id; $('w-title').value = w.title || ''; $('w-category').value = w.category || '';
-    $('w-desc').value = w.description || ''; $('w-sort').value = w.sort || 0; $('w-published').checked = !!w.published;
-    $('w-system').value = w.system || ''; $('w-pricefrom').value = w.price_from || ''; $('w-duration').value = w.duration_days || '';
-    $('w-area').value = w.area || ''; $('w-warranty').value = w.warranty || ''; $('w-tpltype').value = w.tpl_window_type || '';
-    const scopeSet = new Set(w.scope || []);
-    $('w-scope').querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = scopeSet.has(cb.value));
-    $('works-form-title').textContent = 'Изменить работу';
-    $('w-newphoto-wrap').style.display = 'none';
-    $('w-photos-section').style.display = 'block';
-    wCoverUrl = w.image_url || null;
-    loadWorkPhotos(w.id);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-  // создать новую работу на основе существующей (поля копируются, фото — нет)
-  function duplicateWork(w) {
-    resetWorkForm();
-    $('w-title').value = (w.title || '') + ' (копия)';
-    $('w-category').value = w.category || '';
-    $('w-desc').value = w.description || '';
-    $('w-system').value = w.system || ''; $('w-pricefrom').value = w.price_from || ''; $('w-duration').value = w.duration_days || '';
-    $('w-area').value = w.area || ''; $('w-warranty').value = w.warranty || ''; $('w-tpltype').value = w.tpl_window_type || '';
-    const scopeSet = new Set(w.scope || []);
-    $('w-scope').querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = scopeSet.has(cb.value));
-    $('w-published').checked = false;
-    $('works-form-title').textContent = 'Новая работа на основе «' + (w.title || '') + '»';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    toast('Заполнено по образцу — добавьте фото и сохраните');
-  }
-  function resetWorkForm() {
-    ['w-id','w-title','w-category','w-desc','w-photo','w-system','w-pricefrom','w-duration','w-area','w-warranty'].forEach(i => $(i).value = '');
-    $('w-tpltype').value = '';
-    $('w-scope').querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false);
-    $('w-sort').value = 0; $('w-published').checked = false; $('works-form-title').textContent = 'Добавить работу';
-    $('w-newphoto-wrap').style.display = 'block';
-    $('w-photos-section').style.display = 'none';
-    wpCache = []; wCoverUrl = null; $('w-photo-grid').replaceChildren();
-    const z = $('w-add-zone'); if (z) { z.textContent = '⬆ Перетащите фото сюда или нажмите, чтобы выбрать'; z.style.pointerEvents = ''; }
-  }
-  async function saveWork() {
-    const title = $('w-title').value.trim();
-    if (!title) return toast('Укажите название', true);
-    const btn = $('w-save'); btn.disabled = true; btn.textContent = 'Сохранение…';
-    try {
-      const id = $('w-id').value;
-      let image_url = null, coverPath = null;
-      if (!id) {
-        const file = $('w-photo').files[0];
-        if (file) {
-          if (file.size > 15 * 1024 * 1024) throw new Error('Файл больше 15 МБ');
-          const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-          coverPath = `${crypto.randomUUID()}.${ext}`;
-          const up = await sb.storage.from('works').upload(coverPath, file, { cacheControl: '3600', upsert: false });
-          if (up.error) throw up.error;
-          image_url = sb.storage.from('works').getPublicUrl(coverPath).data.publicUrl;
-        }
-      }
-      const scope = [...$('w-scope').querySelectorAll('input[type=checkbox]:checked')].map(cb => cb.value);
-      const row = { title, category: $('w-category').value.trim() || null, description: $('w-desc').value.trim() || null,
-        sort: parseInt($('w-sort').value, 10) || 0, published: $('w-published').checked,
-        system: $('w-system').value.trim() || null,
-        price_from: parseInt($('w-pricefrom').value, 10) || null,
-        duration_days: parseInt($('w-duration').value, 10) || null,
-        area: $('w-area').value.trim() || null,
-        warranty: $('w-warranty').value.trim() || null,
-        tpl_window_type: $('w-tpltype').value || null,
-        scope: scope.length ? scope : null };
-      if (image_url) row.image_url = image_url;
-      if (id) {
-        const res = await sb.from('works').update(row).eq('id', id);
-        if (res.error) throw res.error;
-        toast('Сохранено'); loadWorks();
-      } else {
-        const res = await sb.from('works').insert(row).select('id').single();
-        if (res.error) throw res.error;
-        const newId = res.data.id;
-        if (image_url) {
-          const ins = await sb.from('work_photos').insert({ work_id: newId, url: image_url, storage_path: coverPath, sort: 0 });
-          if (ins.error) toast('Фото сохранено, но не добавлено в галерею: ' + ins.error.message, true);
-        }
-        $('w-id').value = newId;
-        $('works-form-title').textContent = 'Изменить работу';
-        $('w-newphoto-wrap').style.display = 'none';
-        $('w-photos-section').style.display = 'block';
-        $('w-photo').value = '';
-        await loadWorkPhotos(newId);
-        toast('Сохранено — теперь можно добавить больше фото'); loadWorks();
-      }
-    } catch (e) { toast('Ошибка: ' + (e.message || e), true); }
-    finally { btn.disabled = false; btn.textContent = 'Сохранить'; }
-  }
-
-  // ================= PHOTO GALLERY =================
-  let wpCache = [], lbPhotos = [], lbIdx = 0, wpMoving = false, wCoverUrl = null;
-
-  async function loadWorkPhotos(workId) {
-    const { data, error } = await sb.from('work_photos').select('*').eq('work_id', workId).order('sort').order('created_at');
-    if (error) { toast('Ошибка загрузки фото', true); return; }
-    wpCache = data || [];
-    renderWpGrid();
-  }
-
-  function renderWpGrid() {
-    const grid = $('w-photo-grid'); grid.replaceChildren();
-    if (!wCoverUrl && wpCache.length) wCoverUrl = wpCache[0].url; // дефолт — первое фото
-    wpCache.forEach((ph, i) => {
-      const isCover = ph.url === wCoverUrl;
-      const card = document.createElement('div'); card.className = 'ph-card';
-      const img = el('img', { src: safeUrl(ph.url), alt: '' });
-      img.addEventListener('click', () => openLb(i));
-      const ov = el('div', { class: 'ph-ov' });
-      const topRow = el('div', { class: 'ph-row' });
-      if (i > 0) topRow.appendChild(el('button', { class: 'ph-b', text: '↑', title: 'Выше', onclick: (e) => { e.stopPropagation(); moveWp(ph.id, -1); } }));
-      if (i < wpCache.length - 1) topRow.appendChild(el('button', { class: 'ph-b', text: '↓', title: 'Ниже', onclick: (e) => { e.stopPropagation(); moveWp(ph.id, 1); } }));
-      const botRow = el('div', { class: 'ph-row' });
-      if (!isCover) botRow.appendChild(el('button', { class: 'ph-b cover', text: '★ Обложкой', title: 'Сделать обложкой', onclick: (e) => { e.stopPropagation(); setCover(ph.url); } }));
-      botRow.appendChild(el('button', { class: 'ph-b rm', text: '✕', title: 'Удалить', onclick: (e) => { e.stopPropagation(); delWp(ph.id, ph.storage_path); } }));
-      ov.appendChild(topRow); ov.appendChild(botRow);
-      card.appendChild(img); card.appendChild(ov);
-      if (isCover) card.appendChild(el('div', { class: 'ph-cover-badge', text: '★ Обложка' }));
-      grid.appendChild(card);
-    });
-  }
-  async function setCover(url) {
-    const workId = $('w-id').value; if (!workId) return;
-    const { error } = await sb.from('works').update({ image_url: url }).eq('id', workId);
-    if (error) return toast('Ошибка: ' + error.message, true);
-    wCoverUrl = url; renderWpGrid(); loadWorks(); toast('Обложка обновлена');
-  }
-
-  async function addWorkPhotos(files) {
-    if (!files.length) return;
-    const workId = $('w-id').value;
-    if (!workId) { toast('Сначала сохраните работу', true); return; }
-    const MAX = 15 * 1024 * 1024;
-    for (const f of files) {
-      if (f.size > MAX) return toast(`"${f.name}" больше 15 МБ`, true);
-    }
-    const zone = $('w-add-zone');
-    const wasEmpty = wpCache.length === 0;
-    let nextSort = wpCache.length ? Math.max(...wpCache.map(p => p.sort)) + 1 : 0;
-    let done = 0;
-    zone.textContent = `Загрузка 0 / ${files.length}…`;
-    zone.style.pointerEvents = 'none';
-    for (let i = 0; i < files.length; i++) {
-      try {
-        const ext = (files[i].name.split('.').pop() || 'jpg').toLowerCase();
-        const storagePath = `${crypto.randomUUID()}.${ext}`;
-        const up = await sb.storage.from('works').upload(storagePath, files[i], { cacheControl: '3600', upsert: false });
-        if (up.error) throw up.error;
-        const url = sb.storage.from('works').getPublicUrl(storagePath).data.publicUrl;
-        const ins = await sb.from('work_photos').insert({ work_id: workId, url, storage_path: storagePath, sort: nextSort++ });
-        if (ins.error) { await sb.storage.from('works').remove([storagePath]); throw ins.error; }
-        done++;
-        zone.textContent = `Загрузка ${done} / ${files.length}…`;
-      } catch (e) { toast('Ошибка: ' + (e.message || e), true); }
-    }
-    zone.textContent = '⬆ Перетащите фото сюда или нажмите, чтобы выбрать';
-    zone.style.pointerEvents = '';
-    $('w-multi-input').value = '';
-    await loadWorkPhotos(workId);
-    if (wasEmpty && wpCache.length > 0) { wCoverUrl = wpCache[0].url; await sb.from('works').update({ image_url: wCoverUrl }).eq('id', workId); }
-    if (done > 0) toast(done > 1 ? `Добавлено ${done} фото` : 'Фото добавлено');
-    loadWorks();
-  }
-
-  async function delWp(photoId, storagePath) {
-    if (!confirm('Удалить фото?')) return;
-    const { error } = await sb.from('work_photos').delete().eq('id', photoId);
-    if (error) return toast('Ошибка удаления', true);
-    if (storagePath) await sb.storage.from('works').remove([storagePath]);
-    const delUrl = (wpCache.find(p => p.id === photoId) || {}).url;
-    wpCache = wpCache.filter(p => p.id !== photoId);
-    const workId = $('w-id').value;
-    if (delUrl === wCoverUrl) { // удалили обложку — назначаем новую (первое фото)
-      wCoverUrl = wpCache.length ? wpCache[0].url : null;
-      await sb.from('works').update({ image_url: wCoverUrl }).eq('id', workId);
-    }
-    renderWpGrid(); loadWorks(); toast('Удалено');
-  }
-
-  async function moveWp(photoId, dir) {
-    if (wpMoving) return;
-    wpMoving = true;
-    try {
-      const idx = wpCache.findIndex(p => p.id === photoId);
-      const swap = idx + dir;
-      if (swap < 0 || swap >= wpCache.length) return;
-      [wpCache[idx], wpCache[swap]] = [wpCache[swap], wpCache[idx]];
-      const results = await Promise.all(wpCache.map((p, i) => sb.from('work_photos').update({ sort: i }).eq('id', p.id)));
-      if (results.some(r => r.error)) {
-        toast('Ошибка сортировки', true);
-        await loadWorkPhotos($('w-id').value);
-        return;
-      }
-      wpCache.forEach((p, i) => p.sort = i);
-      renderWpGrid(); loadWorks(); // порядок ≠ обложка: обложку меняет только кнопка «★ Обложкой»
-    } finally { wpMoving = false; }
-  }
-
-  function openLb(idx) {
-    lbPhotos = wpCache; lbIdx = idx;
-    $('lb-img').src = safeUrl(lbPhotos[idx].url);
-    $('lb-cnt').textContent = (idx + 1) + ' / ' + lbPhotos.length;
-    $('lightbox').classList.toggle('lb-single', lbPhotos.length === 1);
-    $('lightbox').classList.add('open');
-    document.addEventListener('keydown', lbKey);
-  }
-  function closeLb() {
-    $('lightbox').classList.remove('open');
-    document.removeEventListener('keydown', lbKey);
-  }
-  function lbBgClick(e) { if (e.target === $('lightbox')) closeLb(); }
-  function lbNav(dir) {
-    lbIdx = (lbIdx + dir + lbPhotos.length) % lbPhotos.length;
-    $('lb-img').src = safeUrl(lbPhotos[lbIdx].url);
-    $('lb-cnt').textContent = (lbIdx + 1) + ' / ' + lbPhotos.length;
-  }
-  function lbKey(e) {
-    if (e.key === 'ArrowLeft') lbNav(-1);
-    else if (e.key === 'ArrowRight') lbNav(1);
-    else if (e.key === 'Escape') closeLb();
-  }
-
-  // ================= CATEGORIES (справочник) =================
-  let CATS = [];
-  function workWord(n) { return (n % 10 === 1 && n % 100 !== 11) ? 'работа' : ((n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) ? 'работы' : 'работ'); }
-  async function loadCategories() {
-    const { data, error } = await sb.from('categories').select('*').order('sort');
-    if (error) { CATS = []; return toast('Ошибка загрузки категорий', true); }
-    CATS = data || [];
-    fillCategorySelect();
-    renderCatsList();
-  }
-  function fillCategorySelect() {
-    const sel = $('w-category'); if (!sel) return;
-    const cur = sel.value;
-    sel.replaceChildren();
-    sel.appendChild(el('option', { value: '', text: '— выберите —' }));
-    CATS.forEach(c => sel.appendChild(el('option', { value: c.name, text: c.name })));
-    sel.value = (cur && CATS.some(c => c.name === cur)) ? cur : '';
-  }
-  async function addCategory(name, selectAfter) {
-    name = (typeof name === 'string' ? name : $('c-new').value || '').trim();
-    if (!name) return toast('Введите название', true);
-    if (CATS.some(c => c.name.toLowerCase() === name.toLowerCase())) return toast('Такая категория уже есть', true);
-    const sort = CATS.length ? Math.max(...CATS.map(c => c.sort)) + 1 : 0;
-    const { error } = await sb.from('categories').insert({ name, sort });
-    if (error) return toast('Ошибка: ' + error.message, true);
-    if ($('c-new')) $('c-new').value = '';
-    await loadCategories();
-    if (selectAfter && $('w-category')) $('w-category').value = name;
-    toast('Категория добавлена');
-  }
-  function newCategoryInline() {
-    const name = prompt('Название новой категории:');
-    if (name && name.trim()) addCategory(name.trim(), true);
-  }
-  async function moveCategory(id, dir) {
-    const idx = CATS.findIndex(c => c.id === id); const sw = idx + dir;
-    if (sw < 0 || sw >= CATS.length) return;
-    [CATS[idx], CATS[sw]] = [CATS[sw], CATS[idx]];
-    const res = await Promise.all(CATS.map((c, i) => sb.from('categories').update({ sort: i }).eq('id', c.id)));
-    if (res.some(r => r.error)) toast('Ошибка сортировки', true);
-    await loadCategories();
-  }
-  async function renameCategory(c) {
-    const name = prompt('Новое название категории «' + c.name + '»:', c.name);
-    if (!name || !name.trim() || name.trim() === c.name) return;
-    const nn = name.trim();
-    if (CATS.some(x => x.id !== c.id && x.name.toLowerCase() === nn.toLowerCase())) return toast('Такая категория уже есть', true);
-    const r1 = await sb.from('categories').update({ name: nn }).eq('id', c.id);
-    if (r1.error) return toast('Ошибка: ' + r1.error.message, true);
-    await sb.from('works').update({ category: nn }).eq('category', c.name); // синхрон works
-    await loadCategories(); loadWorks();
-    toast('Переименовано');
-  }
-  async function catCount(name) {
-    const { count } = await sb.from('works').select('id', { count: 'exact', head: true }).eq('category', name);
-    return count || 0;
-  }
-  async function renderCatsList() {
-    const box = $('cats-list'); box.replaceChildren();
-    if (!CATS.length) { box.appendChild(el('div', { class: 'empty', text: 'Категорий пока нет' })); return; }
-    for (const c of CATS) {
-      const n = await catCount(c.name);
-      const actions = el('div', { class: 'li-actions' },
-        el('span', { class: 'badge ' + (n ? 'on' : 'off'), text: n + ' ' + workWord(n) }),
-        el('button', { class: 'btn btn-ghost', text: '↑', title: 'Выше', onclick: () => moveCategory(c.id, -1) }),
-        el('button', { class: 'btn btn-ghost', text: '↓', title: 'Ниже', onclick: () => moveCategory(c.id, 1) }),
-        el('button', { class: 'btn btn-ghost', text: 'Переименовать', onclick: () => renameCategory(c) }),
-        el('button', { class: 'btn btn-danger', text: 'Удалить', onclick: () => delCategory(c, n) })
-      );
-      box.appendChild(el('div', { class: 'list-item' }, el('div', { class: 'li-body' }, el('div', { class: 't', text: c.name })), actions));
-    }
-  }
-  // удаление категории с предупреждением
-  let cdTarget = null;
-  async function delCategory(c, n) {
-    if (n === 0) {
-      if (!confirm('Удалить категорию «' + c.name + '»?')) return;
-      return doDelCat(c);
-    }
-    cdTarget = c;
-    $('cd-name').textContent = c.name;
-    $('cd-info').textContent = 'В категории ' + n + ' ' + workWord(n) + '. Выберите, что сделать:';
-    const sel = $('cd-to'); sel.replaceChildren();
-    const others = CATS.filter(x => x.id !== c.id);
-    others.forEach(o => sel.appendChild(el('option', { value: o.name, text: o.name })));
-    $('cd-reassign').style.display = others.length ? 'block' : 'none';
-    $('cat-del').style.display = 'flex';
-  }
-  function closeCatDel() { $('cat-del').style.display = 'none'; cdTarget = null; }
-  async function catDelReassign() {
-    const c = cdTarget, to = $('cd-to').value; if (!c || !to) return;
-    const r = await sb.from('works').update({ category: to }).eq('category', c.name);
-    if (r.error) return toast('Ошибка: ' + r.error.message, true);
-    closeCatDel(); await doDelCat(c); loadWorks();
-    toast('Работы перенесены в «' + to + '»');
-  }
-  async function catDelWithWorks() {
-    const c = cdTarget; if (!c) return;
-    if (!confirm('Удалить категорию «' + c.name + '» ВМЕСТЕ со всеми её работами? Безвозвратно.')) return;
-    const r = await sb.from('works').delete().eq('category', c.name); // CASCADE удалит work_photos
-    if (r.error) return toast('Ошибка: ' + r.error.message, true);
-    closeCatDel(); await doDelCat(c); loadWorks();
-    toast('Категория и работы удалены');
-  }
-  async function doDelCat(c) {
-    const { error } = await sb.from('categories').delete().eq('id', c.id);
-    if (error) return toast('Ошибка: ' + error.message, true);
-    await loadCategories();
-  }
-
-  // ================= REVIEWS =================
-  let reviewFilter = 'pending';
-  function setReviewFilter(f) {
-    reviewFilter = f;
-    document.querySelectorAll('.filters .f[data-rf]').forEach(x => x.classList.toggle('active', x.dataset.rf === f));
-    loadReviews();
-  }
-  async function loadReviews() {
-    const box = $('reviews-list'); box.replaceChildren();
-    let q = sb.from('reviews').select('*').order('created_at', { ascending: false });
-    if (reviewFilter === 'pending') q = q.eq('approved', false);
-    else if (reviewFilter === 'approved') q = q.eq('approved', true);
-    const { data, error } = await q;
-    if (error) return toast('Ошибка загрузки отзывов', true);
-    if (!data.length) { box.appendChild(el('div', { class: 'empty', text: 'Нет отзывов в этой категории' })); return; }
-    data.forEach(r => {
-      const badge = el('span', { class: 'badge ' + (r.approved ? 'on' : 'off'), text: r.approved ? 'опубликован' : 'на модерации' });
-      const actions = el('div', { class: 'li-actions' }, badge,
-        el('button', { class: r.approved ? 'btn btn-ghost' : 'btn btn-ok', text: r.approved ? 'Снять' : 'Одобрить',
-          onclick: () => r.approved ? togglePublish('reviews', r.id, false, 'approved') : moderateReview(r.id, 'approve') }),
-        el('button', { class: 'btn btn-danger', text: 'Удалить', onclick: () => moderateReview(r.id, 'reject') })
-      );
-      box.appendChild(el('div', { class: 'list-item' },
-        el('div', { class: 'li-body' },
-          el('div', { class: 't' }, el('span', { class: 'stars', text: '★'.repeat(r.rating) }), document.createTextNode('  ' + (r.author_name || '') + (r.author_city ? ' · ' + r.author_city : ''))),
-          el('div', { class: 'm', text: r.text })),
-        actions));
-    });
-  }
-
-  // ================= NEWS =================
-  async function loadNews() {
-    const box = $('news-list'); box.replaceChildren();
-    const { data, error } = await sb.from('news').select('*').order('created_at', { ascending: false });
-    if (error) return toast('Ошибка загрузки новостей', true);
-    if (!data.length) { box.appendChild(el('div', { class: 'empty', text: 'Пока нет новостей' })); return; }
-    data.forEach(n => {
-      const badge = el('span', { class: 'badge ' + (n.published ? 'on' : 'off'), text: n.published ? 'на сайте' : 'черновик' });
-      const actions = el('div', { class: 'li-actions' }, badge,
-        el('button', { class: 'btn btn-ghost', text: n.published ? 'Снять' : 'Опубликовать', onclick: () => togglePublish('news', n.id, !n.published) }),
-        el('button', { class: 'btn btn-ghost', text: 'Изменить', onclick: () => editNews(n) }),
-        el('button', { class: 'btn btn-danger', text: 'Удалить', onclick: () => del('news', n.id) })
-      );
-      box.appendChild(el('div', { class: 'list-item' },
-        el('div', { class: 'li-body' }, el('div', { class: 't', text: n.title }), el('div', { class: 'm', text: n.preview_text || '' })),
-        actions));
-    });
-  }
-  function editNews(n) {
-    $('n-id').value = n.id; $('n-title').value = n.title || ''; $('n-preview').value = n.preview_text || '';
-    $('n-body').value = n.body || ''; $('n-published').checked = !!n.published;
-    $('n-image-url').value = n.image_url || '';
-    $('n-photo').value = '';
-    const prev = $('n-photo-preview');
-    prev.replaceChildren();
-    if (n.image_url) prev.appendChild(el('img', { src: safeUrl(n.image_url), alt: '', style: 'max-width:200px;border-radius:8px' }));
-    $('news-form-title').textContent = 'Изменить новость'; window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-  function resetNewsForm() {
-    ['n-id','n-title','n-preview','n-body','n-image-url'].forEach(i => $(i).value = '');
-    $('n-photo').value = ''; $('n-photo-preview').replaceChildren();
-    $('n-published').checked = false; $('news-form-title').textContent = 'Добавить новость';
-  }
-  async function saveNews() {
-    const title = $('n-title').value.trim();
-    if (!title) return toast('Укажите заголовок', true);
-    const btn = $('n-save'); btn.disabled = true; btn.textContent = 'Сохранение…';
-    try {
-      let image_url = $('n-image-url').value.trim() || null;
-      const file = $('n-photo').files[0];
-      if (file) {
-        if (file.size > 15 * 1024 * 1024) throw new Error('Файл больше 15 МБ');
-        const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-        const path = 'news/' + crypto.randomUUID() + '.' + ext;
-        const up = await sb.storage.from('works').upload(path, file, { cacheControl: '3600', upsert: false });
-        if (up.error) throw up.error;
-        image_url = sb.storage.from('works').getPublicUrl(path).data.publicUrl;
-      }
-      const row = { title, preview_text: $('n-preview').value.trim() || null, body: $('n-body').value.trim() || null, published: $('n-published').checked, image_url };
-      const id = $('n-id').value;
-      const res = id ? await sb.from('news').update(row).eq('id', id) : await sb.from('news').insert(row);
-      if (res.error) throw res.error;
-      toast('Сохранено'); resetNewsForm(); loadNews();
-    } catch (e) { toast('Ошибка: ' + (e.message || e), true); }
-    finally { btn.disabled = false; btn.textContent = 'Сохранить'; }
-  }
-
-  // ================= SETTINGS =================
-  let settingsCache = {};
-  function cloneDef(obj) { return JSON.parse(JSON.stringify(obj || {})); }
-
-  function renderScopeChecks() {
-    const box = $('w-scope'); if (!box) return;
-    const items = settingsCache.scope_items || window.DEFAULT_SCOPE_ITEMS || [];
-    box.replaceChildren();
-    items.forEach(v => {
-      const cb = document.createElement('input'); cb.type = 'checkbox'; cb.value = v;
-      box.appendChild(el('label', { class: 'check' }, cb, document.createTextNode(' ' + v)));
-    });
-  }
-
-  function renderPricingRow(container, item, priceKey, priceLabel) {
-    const row = el('div', { class: 'pr-row', 'data-id': item.id });
-    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.className = 'pr-en'; cb.checked = item.enabled !== false;
-    const lbl = document.createElement('input'); lbl.type = 'text'; lbl.className = 'pr-label'; lbl.value = item.label || '';
-    const pr = document.createElement('input'); pr.type = 'number'; pr.className = 'pr-price'; pr.value = item[priceKey] != null ? item[priceKey] : 0;
-    row.append(cb, lbl, pr);
-    container.appendChild(row);
-  }
-
-  function collectPricingRows(container, priceKey) {
-    return [...container.querySelectorAll('.pr-row')].map(row => ({
-      id: row.dataset.id,
-      label: row.querySelector('.pr-label').value.trim(),
-      [priceKey]: parseInt(row.querySelector('.pr-price').value, 10) || 0,
-      enabled: row.querySelector('.pr-en').checked
-    })).filter(i => i.label);
-  }
-
-  function loadPricingForm() {
-    const p = settingsCache.pricing || cloneDef(window.DEFAULT_PRICING);
-    $('p-base').value = p.base_per_m ?? 2500;
-    $('p-min').value = p.min_price ?? 3000;
-    const w = p.width || {}, h = p.height || {};
-    $('p-w-min').value = w.min ?? 800; $('p-w-max').value = w.max ?? 2000; $('p-w-def').value = w.default ?? 1400;
-    $('p-h-min').value = h.min ?? 600; $('p-h-max').value = h.max ?? 2400; $('p-h-def').value = h.default ?? 1400;
-    const defs = window.DEFAULT_PRICING || {};
-    const fill = (id, items, key, fallback) => {
-      const box = $(id); box.replaceChildren();
-      (items && items.length ? items : fallback).forEach(i => renderPricingRow(box, i, key, key));
-    };
-    fill('p-types', p.types, 'surcharge', defs.types);
-    fill('p-profiles', p.profiles, 'price', defs.profiles);
-    fill('p-glass', p.glass, 'price', defs.glass);
-    fill('p-hardware', p.hardware, 'price', defs.hardware);
-  }
-
-  async function savePricing() {
-    const btn = $('p-save'); btn.disabled = true; btn.textContent = 'Сохранение…';
-    try {
-      const { data: row } = await sb.from('site_settings').select('data').eq('id', 1).maybeSingle();
-      if (row && row.data) settingsCache = row.data;
-      settingsCache.pricing = {
-        base_per_m: parseInt($('p-base').value, 10) || 2500,
-        min_price: parseInt($('p-min').value, 10) || 3000,
-        width: { min: +$('p-w-min').value || 800, max: +$('p-w-max').value || 2000, step: 10, default: +$('p-w-def').value || 1400 },
-        height: { min: +$('p-h-min').value || 600, max: +$('p-h-max').value || 2400, step: 10, default: +$('p-h-def').value || 1400 },
-        types: collectPricingRows($('p-types'), 'surcharge'),
-        profiles: collectPricingRows($('p-profiles'), 'price'),
-        glass: collectPricingRows($('p-glass'), 'price'),
-        hardware: collectPricingRows($('p-hardware'), 'price')
-      };
-      const { error } = await sb.from('site_settings').upsert({ id: 1, data: settingsCache, updated_at: new Date().toISOString() });
-      if (error) throw error;
-      toast('Прайс сохранён');
-      loadPricingForm();
-    } catch (e) { toast('Ошибка: ' + (e.message || e), true); }
-    finally { btn.disabled = false; btn.textContent = 'Сохранить прайс'; }
-  }
-
-  function parseStatsLines(text) {
-    return String(text || '').split('\n').map(l => l.trim()).filter(Boolean).map(l => {
-      const p = l.split('|').map(x => x.trim());
-      return { value: p[0] || '', label: p[1] || '' };
-    }).filter(s => s.value);
-  }
-  function statsToLines(stats) {
-    return (stats || []).map(s => (s.value || '') + ' | ' + (s.label || '')).join('\n');
-  }
-  async function loadSiteSettingsForm() {
-    const { data, error } = await sb.from('site_settings').select('data').eq('id', 1).maybeSingle();
-    if (error) return toast('Не удалось загрузить настройки', true);
-    settingsCache = (data && data.data) || {};
-    const s = settingsCache, h = s.hero || {}, f = s.footer || {}, seo = s.seo || {}, soc = s.social || {}, sec = s.sections || {}, copy = s.copy || window.DEFAULT_SECTION_COPY || {};
-    $('s-company').value = s.company_name || '';
-    $('s-phone').value = s.phone || '';
-    $('s-phone-disp').value = s.phone_display || '';
-    $('s-wa').value = s.whatsapp || '';
-    $('s-tg').value = s.telegram || '';
-    $('s-email').value = s.email || '';
-    $('s-hours').value = s.hours || '';
-    $('s-hero-eyebrow').value = h.eyebrow || '';
-    $('s-hero-t1').value = h.title_before || '';
-    $('s-hero-t2').value = h.title_em || '';
-    $('s-hero-lead').value = h.lead || '';
-    $('s-hero-price').value = h.price_from || '';
-    $('s-hero-profiles').value = (h.profiles || []).join(', ');
-    $('s-hero-chips').value = (h.chips || []).join('\n');
-    $('s-hero-stats').value = statsToLines(h.stats);
-    $('s-footer-about').value = f.about || '';
-    $('s-vk').value = soc.vk || '';
-    $('s-avito').value = soc.avito || '';
-    $('s-seo-title').value = seo.title || '';
-    $('s-seo-desc').value = seo.description || '';
-    $('s-og-image-url').value = seo.og_image || '';
-    const ogp = $('s-og-preview'); ogp.replaceChildren();
-    if (seo.og_image) ogp.appendChild(el('img', { src: safeUrl(seo.og_image), alt: '', style: 'max-width:200px;border-radius:8px' }));
-    $('s-copy-ctor-t').value = (copy.constructor || {}).title || '';
-    $('s-copy-ctor-s').value = (copy.constructor || {}).subtitle || '';
-    $('s-copy-gal-t').value = (copy.gallery || {}).title || '';
-    $('s-copy-gal-s').value = (copy.gallery || {}).subtitle || '';
-    $('s-copy-rev-t').value = (copy.reviews || {}).title || '';
-    $('s-copy-rev-s').value = (copy.reviews || {}).subtitle || '';
-    $('s-copy-news-t').value = (copy.news || {}).title || '';
-    $('s-copy-news-s').value = (copy.news || {}).subtitle || '';
-    $('s-copy-con-t').value = (copy.contact || {}).title || '';
-    $('s-copy-con-s').value = (copy.contact || {}).subtitle || '';
-    $('s-scope-items').value = (s.scope_items || window.DEFAULT_SCOPE_ITEMS || []).join('\n');
-    $('s-logo-url').value = s.logo_url || '';
-    $('s-sec-gallery').checked = sec.gallery !== false;
-    $('s-sec-reviews').checked = sec.reviews !== false;
-    $('s-sec-news').checked = sec.news !== false;
-    const lp = $('s-logo-preview'); lp.replaceChildren();
-    if (s.logo_url) lp.appendChild(el('img', { src: safeUrl(s.logo_url), alt: '', style: 'max-height:48px;border-radius:6px' }));
-    loadPricingForm();
-    renderScopeChecks();
-  }
-  async function saveSiteSettings() {
-    const btn = $('s-save'); btn.disabled = true; btn.textContent = 'Сохранение…';
-    try {
-      let logo_url = $('s-logo-url').value.trim() || settingsCache.logo_url || null;
-      const logoFile = $('s-logo').files[0];
-      if (logoFile) {
-        if (logoFile.size > 5 * 1024 * 1024) throw new Error('Логотип больше 5 МБ');
-        const ext = (logoFile.name.split('.').pop() || 'png').toLowerCase();
-        const path = 'site/logo-' + Date.now() + '.' + ext;
-        const up = await sb.storage.from('works').upload(path, logoFile, { cacheControl: '3600', upsert: true });
-        if (up.error) throw up.error;
-        logo_url = sb.storage.from('works').getPublicUrl(path).data.publicUrl;
-      }
-      let og_image = $('s-og-image-url').value.trim() || (settingsCache.seo || {}).og_image || null;
-      const ogFile = $('s-og-image').files[0];
-      if (ogFile) {
-        if (ogFile.size > 5 * 1024 * 1024) throw new Error('OG-картинка больше 5 МБ');
-        const ext = (ogFile.name.split('.').pop() || 'jpg').toLowerCase();
-        const path = 'site/og-' + Date.now() + '.' + ext;
-        const up = await sb.storage.from('works').upload(path, ogFile, { cacheControl: '3600', upsert: true });
-        if (up.error) throw up.error;
-        og_image = sb.storage.from('works').getPublicUrl(path).data.publicUrl;
-      }
-      const profiles = $('s-hero-profiles').value.split(',').map(x => x.trim()).filter(Boolean);
-      const chips = $('s-hero-chips').value.split('\n').map(x => x.trim()).filter(Boolean);
-      const scope_items = $('s-scope-items').value.split('\n').map(x => x.trim()).filter(Boolean);
-      const data = Object.assign({}, settingsCache, {
-        company_name: $('s-company').value.trim() || 'Mirokon',
-        phone: $('s-phone').value.replace(/\D/g, '') || '',
-        phone_display: $('s-phone-disp').value.trim() || '',
-        whatsapp: $('s-wa').value.replace(/\D/g, '') || $('s-phone').value.replace(/\D/g, ''),
-        telegram: $('s-tg').value.trim().replace(/^@/, ''),
-        email: $('s-email').value.trim(),
-        hours: $('s-hours').value.trim(),
-        logo_url,
-        scope_items: scope_items.length ? scope_items : window.DEFAULT_SCOPE_ITEMS,
-        hero: {
-          eyebrow: $('s-hero-eyebrow').value.trim(),
-          title_before: $('s-hero-t1').value.trim(),
-          title_em: $('s-hero-t2').value.trim(),
-          lead: $('s-hero-lead').value.trim(),
-          price_from: parseInt($('s-hero-price').value, 10) || 0,
-          chips,
-          stats: parseStatsLines($('s-hero-stats').value),
-          profiles
-        },
-        footer: { about: $('s-footer-about').value.trim() },
-        seo: { title: $('s-seo-title').value.trim(), description: $('s-seo-desc').value.trim(), og_image },
-        social: { vk: $('s-vk').value.trim(), avito: $('s-avito').value.trim() },
-        sections: {
-          gallery: $('s-sec-gallery').checked,
-          reviews: $('s-sec-reviews').checked,
-          news: $('s-sec-news').checked
-        },
-        copy: {
-          constructor: { title: $('s-copy-ctor-t').value.trim(), subtitle: $('s-copy-ctor-s').value.trim() },
-          gallery: { title: $('s-copy-gal-t').value.trim(), subtitle: $('s-copy-gal-s').value.trim() },
-          reviews: { title: $('s-copy-rev-t').value.trim(), subtitle: $('s-copy-rev-s').value.trim() },
-          news: { title: $('s-copy-news-t').value.trim(), subtitle: $('s-copy-news-s').value.trim() },
-          contact: { title: $('s-copy-con-t').value.trim(), subtitle: $('s-copy-con-s').value.trim() }
-        }
-      });
-      const { error } = await sb.from('site_settings').upsert({ id: 1, data, updated_at: new Date().toISOString() });
-      if (error) throw error;
-      settingsCache = data;
-      $('s-logo').value = '';
-      $('s-og-image').value = '';
-      toast('Настройки сохранены');
-      loadSiteSettingsForm();
-    } catch (e) { toast('Ошибка: ' + (e.message || e), true); }
-    finally { btn.disabled = false; btn.textContent = 'Сохранить настройки'; }
-  }
-
-  async function saveManualReview() {
-    const name = $('rv-name').value.trim();
-    const text = $('rv-text').value.trim();
-    const rating = parseInt($('rv-rating').value, 10) || 5;
-    if (!name || !text) return toast('Укажите имя и текст', true);
-    const { error } = await sb.from('reviews').insert({
-      author_name: name,
-      author_city: $('rv-city').value.trim() || null,
-      rating,
-      text,
-      approved: $('rv-approved').checked
-    });
-    if (error) return toast('Ошибка: ' + error.message, true);
-    ['rv-name','rv-city','rv-text'].forEach(i => $(i).value = '');
-    $('rv-rating').value = '5'; $('rv-approved').checked = true;
-    toast('Отзыв добавлен');
-    loadReviews();
-  }
-
-  // ================= общие =================
-  async function togglePublish(table, id, value, field) {
-    const f = field || 'published';
-    const { error } = await sb.from(table).update({ [f]: value }).eq('id', id);
-    if (error) return toast('Ошибка: ' + error.message, true);
-    toast(value ? 'Опубликовано' : 'Снято с публикации');
-    table === 'works' ? loadWorks() : table === 'reviews' ? loadReviews() : loadNews();
-  }
-  async function del(table, id) {
-    if (!confirm('Удалить запись безвозвратно?')) return;
-    if (table === 'works') {
-      const { data: photos } = await sb.from('work_photos').select('storage_path').eq('work_id', id);
-      if (photos && photos.length) {
-        const paths = photos.map(p => p.storage_path).filter(Boolean);
-        if (paths.length) await sb.storage.from('works').remove(paths);
-      }
-      if ($('w-id').value === id) resetWorkForm();
-    }
-    const { error } = await sb.from(table).delete().eq('id', id);
-    if (error) return toast('Ошибка: ' + error.message, true);
-    toast('Удалено');
-    table === 'works' ? loadWorks() : table === 'reviews' ? loadReviews() : loadNews();
-  }
-
-  // Модерация отзыва через сервер: меняет БД И редактирует сообщение в Telegram
-  // (убирает кнопки, дописывает «обработано в админке»).
-  async function moderateReview(id, action) {
-    if (action === 'reject' && !confirm('Удалить отзыв безвозвратно?')) return;
-    try {
-      const { data: { session } } = await sb.auth.getSession();
-      if (!session) return location.replace('/landing.html');
-      const res = await fetch('/api/moderate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.access_token },
-        body: JSON.stringify({ id, action })
-      });
-      const d = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(d.error || ('код ' + res.status));
-      toast(action === 'approve' ? 'Одобрено' : 'Удалено');
-      loadReviews();
-    } catch (e) {
-      toast('Ошибка: ' + (e.message || e), true);
-    }
-  }
-</script>
+<script src="/admin.js"></script>
 </body>
 </html>

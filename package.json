@@ -1,0 +1,17 @@
+{
+  "name": "mirokon",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "migrate": "node scripts/migrate.mjs",
+    "create-test-admin": "node scripts/create-test-admin.mjs",
+    "verify-test-admin": "node scripts/verify-test-admin.mjs",
+    "admin-e2e": "node scripts/admin-e2e.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1"
+  },
+  "devDependencies": {
+    "pg": "^8.13.1"
+  }
+}

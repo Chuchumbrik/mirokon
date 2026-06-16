@@ -4,32 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Политика конфиденциальности — Mirokon</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
-<style>
-:root{--ink:#0F172A;--primary:#1E40AF;--muted:#64748B;--border:#E2E8F0;--ice:#EFF6FF}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:#fff;line-height:1.7}
-.wrap{max-width:820px;margin:0 auto;padding:48px 24px 80px}
-a.back{display:inline-flex;align-items:center;gap:8px;color:var(--primary);text-decoration:none;font-weight:500;margin-bottom:28px}
-h1{font-family:'Montserrat';font-weight:800;letter-spacing:-.02em;font-size:2.2rem;margin-bottom:8px}
-.upd{color:var(--muted);font-size:.9rem;margin-bottom:32px}
-h2{font-family:'Montserrat';font-weight:700;font-size:1.25rem;margin:28px 0 10px}
-p,li{color:#334155;margin-bottom:10px}
-ul{padding-left:22px}
-.note{background:var(--ice);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin:24px 0;font-size:.92rem;color:var(--muted)}
-footer{border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.9rem}
-</style>
+<link rel="stylesheet" href="/styles.css">
 </head>
-<body>
-<div class="wrap">
-  <a class="back" href="/">← На главную</a>
+<body class="legal-page min-h-screen">
+<div class="legal-wrap">
+  <a class="legal-back" href="/">← На главную</a>
   <h1>Политика обработки персональных данных</h1>
-  <p class="upd">Действует для сайта Mirokon · Москва и Московская область</p>
+  <p class="legal-upd">Действует для сайта Mirokon · Москва и Московская область</p>
 
-  <div class="note">⚠️ Черновик-заглушка на период тестов. Перед публичным релизом заменить реквизиты Оператора (наименование, ИНН/ОГРН, адрес, e-mail) на реальные.</div>
-
+  <div class="legal-note" id="privacy-note">⚠️ Черновик-заглушка на период тестов. Перед публичным релизом заменить реквизиты Оператора (наименование, ИНН/ОГРН, адрес, e-mail) на реальные.</div>
+  <div id="privacy-content" class="legal-content">
   <h2>1. Общие положения</h2>
   <p>Настоящая Политика определяет порядок обработки и защиты персональных данных пользователей сайта (далее — Сайт) и составлена в соответствии с Федеральным законом от 27.07.2006 № 152-ФЗ «О персональных данных».</p>
   <p>Оператор: <b>Mirokon</b> (реквизиты уточняются), далее — «Оператор».</p>
@@ -56,7 +44,36 @@ footer{border-top:1px solid var(--border);padding:24px;text-align:center;color:v
 
   <h2>7. Изменения политики</h2>
   <p>Оператор вправе изменять настоящую Политику. Актуальная редакция всегда размещена на данной странице.</p>
+  </div>
 </div>
-<footer>© Mirokon · Москва и МО</footer>
+<footer class="legal-footer">© Mirokon · Москва и МО</footer>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.4/dist/purify.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function () {
+  const URL = 'https://ermeokjqkzpkefqtmvif.supabase.co';
+  const ANON = 'sb_publishable_LhXYeGG0w8wzi7JOlPx5Qg_GXd2Zc0K';
+  function sanitizeHtml(html) {
+    if (!html) return '';
+    if (window.DOMPurify) {
+      return DOMPurify.sanitize(html, {
+        ALLOWED_TAGS: ['p', 'br', 'strong', 'b', 'em', 'i', 'u', 'a', 'ul', 'ol', 'li', 'h2', 'h3', 'h4', 'blockquote', 'span'],
+        ALLOWED_ATTR: ['href', 'target', 'rel', 'class']
+      });
+    }
+    return '';
+  }
+  if (!window.supabase) return;
+  const sb = window.supabase.createClient(URL, ANON);
+  sb.from('site_settings').select('data').eq('id', 1).maybeSingle().then(({ data }) => {
+    const html = data?.data?.privacy_html;
+    if (!html || !html.trim()) return;
+    const box = document.getElementById('privacy-content');
+    const note = document.getElementById('privacy-note');
+    if (box) box.innerHTML = sanitizeHtml(html);
+    if (note) note.style.display = 'none';
+  });
+})();
+</script>
 </body>
 </html>
