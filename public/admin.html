@@ -129,6 +129,7 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
       <button class="tab" data-tab="cats" onclick="switchTab('cats')">Категории</button>
       <button class="tab" data-tab="reviews" onclick="switchTab('reviews')">Отзывы</button>
       <button class="tab" data-tab="news" onclick="switchTab('news')">Новости</button>
+      <button class="tab" data-tab="settings" onclick="switchTab('settings')">Настройки</button>
     </div>
 
     <!-- LEADS -->
@@ -226,6 +227,23 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
 
     <!-- REVIEWS -->
     <section class="panel" id="panel-reviews">
+      <div class="card">
+        <h3>Добавить отзыв вручную</h3>
+        <div class="row2">
+          <div><label>Имя *</label><input id="rv-name" placeholder="Алексей"></div>
+          <div><label>Город</label><input id="rv-city" placeholder="Химки"></div>
+        </div>
+        <div class="row2">
+          <div><label>Оценка</label>
+            <select id="rv-rating"><option value="5">5 ★</option><option value="4">4 ★</option><option value="3">3 ★</option><option value="2">2 ★</option><option value="1">1 ★</option></select>
+          </div>
+          <div style="display:flex;align-items:flex-end;padding-bottom:4px">
+            <label class="check" style="margin:0"><input type="checkbox" id="rv-approved" checked> Сразу опубликовать</label>
+          </div>
+        </div>
+        <label>Текст отзыва *</label><textarea id="rv-text" placeholder="Расскажите о работе…"></textarea>
+        <button class="btn btn-primary" style="margin-top:12px" onclick="saveManualReview()">Добавить отзыв</button>
+      </div>
       <h2>Отзывы</h2>
       <div class="filters">
         <div class="f active" data-rf="pending" onclick="setReviewFilter('pending')">На модерации</div>
@@ -243,6 +261,12 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
         <label>Заголовок *</label><input id="n-title" placeholder="Гарантия 5 лет">
         <label>Краткий текст (в карточке)</label><textarea id="n-preview" placeholder="Коротко…"></textarea>
         <label>Полный текст (опционально)</label><textarea id="n-body"></textarea>
+        <div id="n-photo-wrap">
+          <label>Картинка (в карточке на сайте)</label>
+          <input type="file" id="n-photo" accept="image/*">
+          <div id="n-photo-preview" style="margin-top:8px"></div>
+        </div>
+        <input type="hidden" id="n-image-url">
         <label class="check"><input type="checkbox" id="n-published"> Опубликовать</label>
         <div style="margin-top:16px;display:flex;gap:8px">
           <button class="btn btn-primary" id="n-save" onclick="saveNews()">Сохранить</button>
@@ -251,6 +275,70 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
       </div>
       <h2>Новости</h2>
       <div id="news-list"></div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="panel" id="panel-settings">
+      <div class="card">
+        <h2>Настройки сайта</h2>
+        <p style="color:var(--muted);font-size:.88rem;margin:-8px 0 16px">Контакты, тексты Hero, SEO и видимость секций. Изменения появятся на сайте после обновления страницы.</p>
+        <h3>Контакты</h3>
+        <div class="row2">
+          <div><label>Название компании</label><input id="s-company" placeholder="Mirokon"></div>
+          <div><label>Телефон (цифры)</label><input id="s-phone" placeholder="79991234567"></div>
+        </div>
+        <div class="row2">
+          <div><label>Телефон (как показывать)</label><input id="s-phone-disp" placeholder="+7 (999) 123-45-67"></div>
+          <div><label>WhatsApp (цифры)</label><input id="s-wa" placeholder="79991234567"></div>
+        </div>
+        <div class="row2">
+          <div><label>Telegram (username без @)</label><input id="s-tg" placeholder="mirokon_bot"></div>
+          <div><label>Email</label><input id="s-email" type="email" placeholder="info@company.ru"></div>
+        </div>
+        <label>Часы работы</label><input id="s-hours" placeholder="Пн–Вс 09:00–21:00">
+
+        <h3 style="margin-top:20px">Hero (первый экран)</h3>
+        <label>Метка над заголовком</label><input id="s-hero-eyebrow">
+        <div class="row2">
+          <div><label>Заголовок (начало)</label><input id="s-hero-t1" placeholder="Окна, которые"></div>
+          <div><label>Заголовок (акцент)</label><input id="s-hero-t2" placeholder="служат десятилетия"></div>
+        </div>
+        <label>Подзаголовок</label><textarea id="s-hero-lead"></textarea>
+        <div class="row2">
+          <div><label>Цена «от», ₽</label><input type="number" id="s-hero-price"></div>
+          <div><label>Профили (через запятую)</label><input id="s-hero-profiles" placeholder="WHS, VEKA, REHAU"></div>
+        </div>
+        <label>Чипы доверия (по одному на строку)</label><textarea id="s-hero-chips" rows="3" placeholder="Гарантия 5 лет&#10;Договор&#10;Монтаж за 1 день"></textarea>
+        <label>Статистика (формат: значение | подпись, по строке)</label><textarea id="s-hero-stats" rows="3" placeholder="1500+ | окон установлено&#10;8 лет | на рынке"></textarea>
+
+        <h3 style="margin-top:20px">Футер и соцсети</h3>
+        <label>О компании (футер)</label><textarea id="s-footer-about"></textarea>
+        <div class="row2">
+          <div><label>VK (ссылка)</label><input id="s-vk" placeholder="https://vk.com/..."></div>
+          <div><label>Avito (ссылка)</label><input id="s-avito" placeholder="https://avito.ru/..."></div>
+        </div>
+
+        <h3 style="margin-top:20px">SEO</h3>
+        <label>Title страницы</label><input id="s-seo-title">
+        <label>Meta description</label><textarea id="s-seo-desc" rows="2"></textarea>
+
+        <h3 style="margin-top:20px">Логотип</h3>
+        <input type="file" id="s-logo" accept="image/*">
+        <div id="s-logo-preview" style="margin-top:8px"></div>
+        <input type="hidden" id="s-logo-url">
+
+        <h3 style="margin-top:20px">Секции на сайте</h3>
+        <div class="scope-checks">
+          <label class="check"><input type="checkbox" id="s-sec-gallery" checked> Примеры работ</label>
+          <label class="check"><input type="checkbox" id="s-sec-reviews" checked> Отзывы</label>
+          <label class="check"><input type="checkbox" id="s-sec-news" checked> Новости</label>
+        </div>
+
+        <div style="margin-top:20px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" id="s-save" onclick="saveSiteSettings()">Сохранить настройки</button>
+          <a href="/" target="_blank" rel="noopener" class="btn btn-ghost" style="text-decoration:none">Открыть сайт ↗</a>
+        </div>
+      </div>
     </section>
   </div>
 
@@ -310,7 +398,7 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
     const { data: admin, error } = await sb.rpc('is_admin');
     if (error || !admin) { await sb.auth.signOut(); alert('Нет прав администратора'); return location.replace('/landing.html'); }
     $('admin-email').textContent = session.user.email;
-    loadLeads(); loadWorks(); loadCategories(); loadReviews(); loadNews();
+    loadLeads(); loadWorks(); loadCategories(); loadReviews(); loadNews(); loadSiteSettingsForm();
   })();
 
   async function logout() { await sb.auth.signOut(); location.replace('/landing.html'); }
@@ -806,10 +894,16 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
   function editNews(n) {
     $('n-id').value = n.id; $('n-title').value = n.title || ''; $('n-preview').value = n.preview_text || '';
     $('n-body').value = n.body || ''; $('n-published').checked = !!n.published;
+    $('n-image-url').value = n.image_url || '';
+    $('n-photo').value = '';
+    const prev = $('n-photo-preview');
+    prev.replaceChildren();
+    if (n.image_url) prev.appendChild(el('img', { src: safeUrl(n.image_url), alt: '', style: 'max-width:200px;border-radius:8px' }));
     $('news-form-title').textContent = 'Изменить новость'; window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   function resetNewsForm() {
-    ['n-id','n-title','n-preview','n-body'].forEach(i => $(i).value = '');
+    ['n-id','n-title','n-preview','n-body','n-image-url'].forEach(i => $(i).value = '');
+    $('n-photo').value = ''; $('n-photo-preview').replaceChildren();
     $('n-published').checked = false; $('news-form-title').textContent = 'Добавить новость';
   }
   async function saveNews() {
@@ -817,13 +911,137 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
     if (!title) return toast('Укажите заголовок', true);
     const btn = $('n-save'); btn.disabled = true; btn.textContent = 'Сохранение…';
     try {
-      const row = { title, preview_text: $('n-preview').value.trim() || null, body: $('n-body').value.trim() || null, published: $('n-published').checked };
+      let image_url = $('n-image-url').value.trim() || null;
+      const file = $('n-photo').files[0];
+      if (file) {
+        if (file.size > 15 * 1024 * 1024) throw new Error('Файл больше 15 МБ');
+        const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+        const path = 'news/' + crypto.randomUUID() + '.' + ext;
+        const up = await sb.storage.from('works').upload(path, file, { cacheControl: '3600', upsert: false });
+        if (up.error) throw up.error;
+        image_url = sb.storage.from('works').getPublicUrl(path).data.publicUrl;
+      }
+      const row = { title, preview_text: $('n-preview').value.trim() || null, body: $('n-body').value.trim() || null, published: $('n-published').checked, image_url };
       const id = $('n-id').value;
       const res = id ? await sb.from('news').update(row).eq('id', id) : await sb.from('news').insert(row);
       if (res.error) throw res.error;
       toast('Сохранено'); resetNewsForm(); loadNews();
     } catch (e) { toast('Ошибка: ' + (e.message || e), true); }
     finally { btn.disabled = false; btn.textContent = 'Сохранить'; }
+  }
+
+  // ================= SETTINGS =================
+  let settingsCache = {};
+  function parseStatsLines(text) {
+    return String(text || '').split('\n').map(l => l.trim()).filter(Boolean).map(l => {
+      const p = l.split('|').map(x => x.trim());
+      return { value: p[0] || '', label: p[1] || '' };
+    }).filter(s => s.value);
+  }
+  function statsToLines(stats) {
+    return (stats || []).map(s => (s.value || '') + ' | ' + (s.label || '')).join('\n');
+  }
+  async function loadSiteSettingsForm() {
+    const { data, error } = await sb.from('site_settings').select('data').eq('id', 1).maybeSingle();
+    if (error) return toast('Не удалось загрузить настройки', true);
+    settingsCache = (data && data.data) || {};
+    const s = settingsCache, h = s.hero || {}, f = s.footer || {}, seo = s.seo || {}, soc = s.social || {}, sec = s.sections || {};
+    $('s-company').value = s.company_name || '';
+    $('s-phone').value = s.phone || '';
+    $('s-phone-disp').value = s.phone_display || '';
+    $('s-wa').value = s.whatsapp || '';
+    $('s-tg').value = s.telegram || '';
+    $('s-email').value = s.email || '';
+    $('s-hours').value = s.hours || '';
+    $('s-hero-eyebrow').value = h.eyebrow || '';
+    $('s-hero-t1').value = h.title_before || '';
+    $('s-hero-t2').value = h.title_em || '';
+    $('s-hero-lead').value = h.lead || '';
+    $('s-hero-price').value = h.price_from || '';
+    $('s-hero-profiles').value = (h.profiles || []).join(', ');
+    $('s-hero-chips').value = (h.chips || []).join('\n');
+    $('s-hero-stats').value = statsToLines(h.stats);
+    $('s-footer-about').value = f.about || '';
+    $('s-vk').value = soc.vk || '';
+    $('s-avito').value = soc.avito || '';
+    $('s-seo-title').value = seo.title || '';
+    $('s-seo-desc').value = seo.description || '';
+    $('s-logo-url').value = s.logo_url || '';
+    $('s-sec-gallery').checked = sec.gallery !== false;
+    $('s-sec-reviews').checked = sec.reviews !== false;
+    $('s-sec-news').checked = sec.news !== false;
+    const lp = $('s-logo-preview'); lp.replaceChildren();
+    if (s.logo_url) lp.appendChild(el('img', { src: safeUrl(s.logo_url), alt: '', style: 'max-height:48px;border-radius:6px' }));
+  }
+  async function saveSiteSettings() {
+    const btn = $('s-save'); btn.disabled = true; btn.textContent = 'Сохранение…';
+    try {
+      let logo_url = $('s-logo-url').value.trim() || null;
+      const logoFile = $('s-logo').files[0];
+      if (logoFile) {
+        if (logoFile.size > 5 * 1024 * 1024) throw new Error('Логотип больше 5 МБ');
+        const ext = (logoFile.name.split('.').pop() || 'png').toLowerCase();
+        const path = 'site/logo-' + Date.now() + '.' + ext;
+        const up = await sb.storage.from('works').upload(path, logoFile, { cacheControl: '3600', upsert: true });
+        if (up.error) throw up.error;
+        logo_url = sb.storage.from('works').getPublicUrl(path).data.publicUrl;
+      }
+      const profiles = $('s-hero-profiles').value.split(',').map(x => x.trim()).filter(Boolean);
+      const chips = $('s-hero-chips').value.split('\n').map(x => x.trim()).filter(Boolean);
+      const data = {
+        company_name: $('s-company').value.trim() || 'Mirokon',
+        phone: $('s-phone').value.replace(/\D/g, '') || '',
+        phone_display: $('s-phone-disp').value.trim() || '',
+        whatsapp: $('s-wa').value.replace(/\D/g, '') || $('s-phone').value.replace(/\D/g, ''),
+        telegram: $('s-tg').value.trim().replace(/^@/, ''),
+        email: $('s-email').value.trim(),
+        hours: $('s-hours').value.trim(),
+        logo_url,
+        hero: {
+          eyebrow: $('s-hero-eyebrow').value.trim(),
+          title_before: $('s-hero-t1').value.trim(),
+          title_em: $('s-hero-t2').value.trim(),
+          lead: $('s-hero-lead').value.trim(),
+          price_from: parseInt($('s-hero-price').value, 10) || 0,
+          chips,
+          stats: parseStatsLines($('s-hero-stats').value),
+          profiles
+        },
+        footer: { about: $('s-footer-about').value.trim() },
+        seo: { title: $('s-seo-title').value.trim(), description: $('s-seo-desc').value.trim() },
+        social: { vk: $('s-vk').value.trim(), avito: $('s-avito').value.trim() },
+        sections: {
+          gallery: $('s-sec-gallery').checked,
+          reviews: $('s-sec-reviews').checked,
+          news: $('s-sec-news').checked
+        }
+      };
+      const { error } = await sb.from('site_settings').upsert({ id: 1, data, updated_at: new Date().toISOString() });
+      if (error) throw error;
+      $('s-logo').value = '';
+      toast('Настройки сохранены');
+      loadSiteSettingsForm();
+    } catch (e) { toast('Ошибка: ' + (e.message || e), true); }
+    finally { btn.disabled = false; btn.textContent = 'Сохранить настройки'; }
+  }
+
+  async function saveManualReview() {
+    const name = $('rv-name').value.trim();
+    const text = $('rv-text').value.trim();
+    const rating = parseInt($('rv-rating').value, 10) || 5;
+    if (!name || !text) return toast('Укажите имя и текст', true);
+    const { error } = await sb.from('reviews').insert({
+      author_name: name,
+      author_city: $('rv-city').value.trim() || null,
+      rating,
+      text,
+      approved: $('rv-approved').checked
+    });
+    if (error) return toast('Ошибка: ' + error.message, true);
+    ['rv-name','rv-city','rv-text'].forEach(i => $(i).value = '');
+    $('rv-rating').value = '5'; $('rv-approved').checked = true;
+    toast('Отзыв добавлен');
+    loadReviews();
   }
 
   // ================= общие =================

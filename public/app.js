@@ -356,10 +356,134 @@ const SUPABASE_URL = 'https://ermeokjqkzpkefqtmvif.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_LhXYeGG0w8wzi7JOlPx5Qg_GXd2Zc0K';
 const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON) : null;
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function okUrl(u) { return (u && /^(https?:\/\/|\/)/i.test(u)) ? u : ''; }
+
+// ===== Настройки сайта из БД =====
+let SITE = null;
+function digitsPhone(p) { return String(p || '').replace(/\D/g, '').replace(/^8/, '7'); }
+function telHref(p) { const d = digitsPhone(p); return d ? 'tel:+' + d : '#'; }
+function waHref(p) { const d = digitsPhone(p); return d ? 'https://wa.me/' + d : '#'; }
+
+function applySiteSettings(s) {
+  if (!s) return;
+  SITE = s;
+  const pd = s.phone_display || (s.phone ? '+7 (' + digitsPhone(s.phone).slice(1, 4) + ') ' + digitsPhone(s.phone).slice(4, 7) + '-' + digitsPhone(s.phone).slice(7, 9) + '-' + digitsPhone(s.phone).slice(9, 11) : '');
+  const tel = telHref(s.phone);
+  const wa = waHref(s.whatsapp || s.phone);
+  const tg = s.telegram ? 'https://t.me/' + String(s.telegram).replace(/^@/, '') : '';
+
+  if (s.seo) {
+    if (s.seo.title) document.title = s.seo.title;
+    const md = document.querySelector('meta[name="description"]');
+    if (md && s.seo.description) md.setAttribute('content', s.seo.description);
+    const ogt = document.querySelector('meta[property="og:title"]');
+    if (ogt && s.seo.title) ogt.setAttribute('content', s.seo.title.split('|')[0].trim());
+    const ogd = document.querySelector('meta[property="og:description"]');
+    if (ogd && s.seo.description) ogd.setAttribute('content', s.seo.description);
+  }
+
+  const logo = okUrl(s.logo_url);
+  if (logo) {
+    ['site-brand', 'footer-brand'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = '<img src="' + esc(logo) + '" alt="' + esc(s.company_name || 'Mirokon') + '" style="height:36px;width:auto;display:block">';
+    });
+  }
+
+  const h = s.hero || {};
+  const set = (id, v) => { const el = document.getElementById(id); if (el && v != null && v !== '') el.textContent = v; };
+  set('hero-eyebrow', h.eyebrow);
+  set('hero-title-before', h.title_before);
+  set('hero-title-em', h.title_em);
+  set('hero-lead', h.lead);
+  if (h.price_from) {
+    const pf = document.getElementById('hero-price-from');
+    if (pf) pf.textContent = 'от ' + Number(h.price_from).toLocaleString('ru-RU') + ' ₽';
+  }
+  if (h.chips && h.chips.length) {
+    document.querySelectorAll('#hero-chips .chip-txt').forEach((el, i) => { if (h.chips[i]) el.textContent = h.chips[i]; });
+  }
+  if (h.stats && h.stats.length) {
+    const box = document.getElementById('hero-stats');
+    if (box) box.innerHTML = h.stats.map(st => '<div class="hs"><span class="hs-n">' + esc(st.value) + '</span><span class="hs-l">' + esc(st.label) + '</span></div>').join('');
+  }
+  if (h.profiles && h.profiles.length) {
+    const row = document.getElementById('hero-profiles');
+    if (row) {
+      const lbl = row.querySelector('.lbl');
+      row.replaceChildren();
+      if (lbl) row.appendChild(lbl);
+      else row.appendChild(Object.assign(document.createElement('span'), { className: 'lbl', textContent: 'Работаем с системами:' }));
+      h.profiles.forEach(p => row.appendChild(Object.assign(document.createElement('b'), { textContent: p })));
+    }
+  }
+
+  set('footer-about', (s.footer || {}).about);
+  [['contact-phone', pd], ['footer-phone', pd], ['footer-phone-2', pd]].forEach(([id, text]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.href = tel;
+    const svg = el.querySelector('svg');
+    if (svg) { el.replaceChildren(svg, document.createTextNode(' ' + text)); }
+    else el.textContent = text;
+  });
+  const cwa = document.getElementById('contact-wa');
+  if (cwa) cwa.href = wa + '?text=' + encodeURIComponent('Здравствуйте! Хочу рассчитать окна');
+  const fwa = document.getElementById('footer-wa');
+  if (fwa) fwa.href = wa;
+  const ftg = document.getElementById('footer-tg');
+  if (ftg && tg) ftg.href = tg;
+  const mc = document.getElementById('mobile-call');
+  if (mc) mc.href = tel;
+  const mw = document.getElementById('mobile-wa');
+  if (mw) mw.href = wa;
+
+  const soc = document.getElementById('footer-social-extra');
+  if (soc) {
+    soc.replaceChildren();
+    if (s.social && s.social.vk) soc.appendChild(Object.assign(document.createElement('a'), { href: s.social.vk, target: '_blank', rel: 'noopener', textContent: 'VK' }));
+    if (s.social && s.social.avito) soc.appendChild(Object.assign(document.createElement('a'), { href: s.social.avito, target: '_blank', rel: 'noopener', textContent: 'Avito' }));
+  }
+
+  const sec = s.sections || {};
+  document.querySelectorAll('[data-section]').forEach(el => {
+    const key = el.dataset.section;
+    if (sec[key] === false) el.style.display = 'none';
+    else el.style.display = '';
+  });
+  document.querySelectorAll('.nav-link[href="#gallery"], .nav-link[href="#reviews"], .nav-link[href="#news"]').forEach(a => {
+    const id = (a.getAttribute('href') || '').slice(1);
+    const map = { gallery: sec.gallery, reviews: sec.reviews, news: sec.news };
+    if (map[id] === false) a.style.display = 'none';
+    else a.style.display = '';
+  });
+
+  const ld = document.querySelector('script[type="application/ld+json"]');
+  if (ld && s.phone) {
+    try {
+      const j = JSON.parse(ld.textContent);
+      j.telephone = '+' + digitsPhone(s.phone);
+      if (s.hours) j.openingHours = s.hours;
+      if (s.company_name) j.name = s.company_name;
+      ld.textContent = JSON.stringify(j);
+    } catch (_) {}
+  }
+}
+
+async function loadSiteSettings() {
+  if (!sb) return;
+  const { data, error } = await sb.from('site_settings').select('data').eq('id', 1).maybeSingle();
+  if (error) { console.warn('site_settings:', error.message); return; }
+  if (data && data.data) applySiteSettings(data.data);
+}
+
+function sectionEnabled(name) {
+  if (!SITE || !SITE.sections) return true;
+  return SITE.sections[name] !== false;
+}
 
 // ===== Галерея работ как кейсы =====
 let WORKS = [], PHOTOS = {}, activeCat = 'all', CAT_ORDER = [];
-function okUrl(u) { return (u && /^(https?:\/\/|\/)/i.test(u)) ? u : ''; }
 function photosOf(w) {
   const list = (PHOTOS[w.id] || []).slice();
   const cover = okUrl(w.image_url);
@@ -369,6 +493,7 @@ function photosOf(w) {
 
 async function loadGallery() {
   const grid = document.getElementById('gallery-grid'); if (!sb || !grid) return;
+  if (!sectionEnabled('gallery')) return;
   const { data, error } = await sb.from('works')
     .select('id,title,category,description,image_url,scope,system,duration_days,area,warranty,price_from,tpl_window_type,sort')
     .eq('published', true).order('sort');
@@ -417,6 +542,7 @@ function renderGallery() {
 
 async function loadReviews() {
   const wrap = document.getElementById('reviews-wrapper'); if (!sb || !wrap) return;
+  if (!sectionEnabled('reviews')) return;
   const { data, error } = await sb.from('reviews').select('author_name,author_city,rating,text').eq('approved', true).order('created_at', { ascending: false });
   if (error) { wrap.innerHTML = ''; document.getElementById('reviews-empty').style.display = 'block'; document.getElementById('reviews-swiper').style.display = 'none'; return console.error('reviews:', error.message); }
   if (!data.length) { document.getElementById('reviews-empty').style.display = 'block'; document.getElementById('reviews-swiper').style.display = 'none'; return; }
@@ -442,14 +568,19 @@ async function loadReviews() {
 
 async function loadNews() {
   const grid = document.getElementById('news-grid'); if (!sb || !grid) return;
-  const { data, error } = await sb.from('news').select('title,preview_text,created_at').eq('published', true).order('created_at', { ascending: false }).limit(8);
+  if (!sectionEnabled('news')) return;
+  const { data, error } = await sb.from('news').select('title,preview_text,image_url,created_at').eq('published', true).order('created_at', { ascending: false }).limit(8);
   if (error) { grid.innerHTML = ''; document.getElementById('news-empty').style.display = 'block'; return console.error('news:', error.message); }
   if (!data.length) { grid.innerHTML = ''; document.getElementById('news-empty').style.display = 'block'; return; }
   const fmt = d => new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' });
-  grid.innerHTML = data.map(n => `<article class="news-card"><span class="news-date">${esc(fmt(n.created_at))}</span><h3>${esc(n.title)}</h3><p>${esc(n.preview_text||'')}</p></article>`).join('');
+  grid.innerHTML = data.map(n => {
+    const img = okUrl(n.image_url);
+    const imgHtml = img ? '<div class="news-card-img"><img src="' + esc(img) + '" alt="" loading="lazy"></div>' : '';
+    return '<article class="news-card">' + imgHtml + '<span class="news-date">' + esc(fmt(n.created_at)) + '</span><h3>' + esc(n.title) + '</h3><p>' + esc(n.preview_text||'') + '</p></article>';
+  }).join('');
 }
 
-loadGallery(); loadReviews(); loadNews();
+loadSiteSettings().then(() => { loadGallery(); loadReviews(); loadNews(); });
 
 // ===== Review modal =====
 const reviewModal = document.getElementById('review-modal');
