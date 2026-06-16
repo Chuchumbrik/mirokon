@@ -6,12 +6,57 @@
     const widthVal = document.getElementById('width-val');
     const heightVal = document.getElementById('height-val');
 
-    // Prices — ТЕСТОВЫЕ значения (тестовая фаза, см. docs/business-requirements.md)
-    const BASE_PER_M = 2500;                 // базовая цена за метр периметра
-    const TYPE_PRICE = {                     // надбавка за тип конструкции
-      'single-turn': 0, 'single-deaf': -1500, 'double-deaf-turn': 3500,
-      'double-turn': 5000, 'triple': 8000, 'balcony': 12000
-    };
+    // Prices — из site_settings.pricing (fallback: pricing-defaults.js)
+    let PRICING = JSON.parse(JSON.stringify(window.DEFAULT_PRICING || { base_per_m: 2500, min_price: 3000, types: [], profiles: [], glass: [], hardware: [] }));
+
+    function rebuildConstructorSelects() {
+      const p = PRICING;
+      const mk = (sel, items, priceKey) => {
+        if (!sel || !items) return;
+        const cur = sel.value;
+        sel.replaceChildren();
+        items.filter(i => i.enabled !== false).forEach(i => {
+          const o = document.createElement('option');
+          o.value = i.id; o.textContent = i.label;
+          o.dataset.price = i[priceKey] != null ? i[priceKey] : 0;
+          sel.appendChild(o);
+        });
+        if (cur && [...sel.options].some(o => o.value === cur)) sel.value = cur;
+      };
+      mk(document.getElementById('window-type'), p.types, 'surcharge');
+      mk(document.getElementById('profile'), p.profiles, 'price');
+      mk(document.getElementById('glass'), p.glass, 'price');
+      mk(document.getElementById('hardware'), p.hardware, 'price');
+      if (p.width && widthSlider) {
+        widthSlider.min = p.width.min; widthSlider.max = p.width.max;
+        widthSlider.step = p.width.step || 10; widthSlider.value = p.width.default || widthSlider.value;
+        updateVal(widthSlider, widthVal);
+      }
+      if (p.height && heightSlider) {
+        heightSlider.min = p.height.min; heightSlider.max = p.height.max;
+        heightSlider.step = p.height.step || 10; heightSlider.value = p.height.default || heightSlider.value;
+        updateVal(heightSlider, heightVal);
+      }
+    }
+
+    function applyPricing(p) {
+      if (!p) return;
+      const d = window.DEFAULT_PRICING || {};
+      PRICING = {
+        base_per_m: p.base_per_m ?? d.base_per_m ?? 2500,
+        min_price: p.min_price ?? d.min_price ?? 3000,
+        width: Object.assign({}, d.width, p.width),
+        height: Object.assign({}, d.height, p.height),
+        types: (p.types && p.types.length) ? p.types : d.types,
+        profiles: (p.profiles && p.profiles.length) ? p.profiles : d.profiles,
+        glass: (p.glass && p.glass.length) ? p.glass : d.glass,
+        hardware: (p.hardware && p.hardware.length) ? p.hardware : d.hardware
+      };
+      rebuildConstructorSelects();
+      drawWindow();
+      calcPrice();
+    }
+    window.applyPricing = applyPricing;
 
     function updateVal(slider, valEl) { valEl.textContent = slider.value; }
 
@@ -39,8 +84,10 @@
       const prof = parseFloat(document.getElementById('profile').selectedOptions[0].dataset.price || 0);
       const gl = parseFloat(document.getElementById('glass').selectedOptions[0].dataset.price || 0);
       const hw = parseFloat(document.getElementById('hardware').selectedOptions[0].dataset.price || 0);
-      let total = BASE_PER_M * perim + prof * perim + gl * (w * h) + hw + (TYPE_PRICE[type] || 0);
-      total = Math.max(total, 3000);
+      const typeItem = (PRICING.types || []).find(t => t.id === type);
+      const typeAdd = typeItem ? Number(typeItem.surcharge) || 0 : 0;
+      let total = (PRICING.base_per_m || 2500) * perim + prof * perim + gl * (w * h) + hw + typeAdd;
+      total = Math.max(total, PRICING.min_price || 3000);
       animatePrice(Math.round(total));
     }
 
@@ -93,9 +140,8 @@
     widthSlider.addEventListener('input', () => { ctorDirty = true; updateVal(widthSlider, widthVal); drawWindow(); calcPrice(); });
     heightSlider.addEventListener('input', () => { ctorDirty = true; updateVal(heightSlider, heightVal); drawWindow(); calcPrice(); });
 
-    // Init
-    drawWindow();
-    calcPrice();
+    // Init конструктора — после loadSiteSettings (см. конец файла)
+    window._initConstructor = function () { rebuildConstructorSelects(); drawWindow(); calcPrice(); };
 
     function scrollToForm() {
       document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
@@ -330,7 +376,8 @@
       document.getElementById('profile').selectedIndex = 0;
       document.getElementById('glass').selectedIndex = 0;
       document.getElementById('hardware').selectedIndex = 0;
-      widthSlider.value = 1400; heightSlider.value = 1400;
+      widthSlider.value = (PRICING.width && PRICING.width.default) || 1400;
+      heightSlider.value = (PRICING.height && PRICING.height.default) || 1400;
       updateVal(widthSlider, widthVal); updateVal(heightSlider, heightVal);
       ctorDirty = false;
       drawWindow(); calcPrice();
@@ -380,7 +427,30 @@ function applySiteSettings(s) {
     if (ogt && s.seo.title) ogt.setAttribute('content', s.seo.title.split('|')[0].trim());
     const ogd = document.querySelector('meta[property="og:description"]');
     if (ogd && s.seo.description) ogd.setAttribute('content', s.seo.description);
+    const ogImg = okUrl(s.seo.og_image);
+    if (ogImg) {
+      let ogm = document.querySelector('meta[property="og:image"]');
+      if (ogm) ogm.setAttribute('content', ogImg);
+      const ld = document.querySelector('script[type="application/ld+json"]');
+      if (ld) try { const j = JSON.parse(ld.textContent); j.image = ogImg; ld.textContent = JSON.stringify(j); } catch (_) {}
+    }
   }
+
+  const copy = s.copy || window.DEFAULT_SECTION_COPY;
+  if (copy) {
+    const map = { constructor: 'copy-constructor', gallery: 'copy-gallery', reviews: 'copy-reviews', news: 'copy-news', contact: 'copy-contact' };
+    Object.entries(map).forEach(([key, id]) => {
+      const box = document.getElementById(id);
+      const block = copy[key];
+      if (!box || !block) return;
+      const h = box.querySelector('h2');
+      const p = box.querySelector('p');
+      if (h && block.title) h.textContent = block.title;
+      if (p && block.subtitle) p.textContent = block.subtitle;
+    });
+  }
+
+  if (s.pricing && typeof window.applyPricing === 'function') window.applyPricing(s.pricing);
 
   const logo = okUrl(s.logo_url);
   if (logo) {
@@ -580,7 +650,11 @@ async function loadNews() {
   }).join('');
 }
 
-loadSiteSettings().then(() => { loadGallery(); loadReviews(); loadNews(); });
+loadSiteSettings().then(() => {
+  if (typeof window._initConstructor === 'function') window._initConstructor();
+  else { drawWindow(); calcPrice(); }
+  loadGallery(); loadReviews(); loadNews();
+});
 
 // ===== Review modal =====
 const reviewModal = document.getElementById('review-modal');

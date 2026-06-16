@@ -6,6 +6,7 @@
 <title>Mirokon — Админка</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/pricing-defaults.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
@@ -113,6 +114,10 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
 .lct-sum{font-weight:800;color:var(--primary);font-size:.95rem}
 @media(hover:none){.ph-ov{opacity:1}}
 .lb-single .lb-arr,.lb-single .lb-cnt{display:none}
+.pricing-table{display:flex;flex-direction:column;gap:8px}
+.pr-row{display:grid;grid-template-columns:28px 1fr 100px;gap:8px;align-items:center;padding:8px 10px;background:#f8fafc;border-radius:10px;border:1px solid var(--border)}
+.pr-row label{font-size:.82rem;margin:0;font-weight:500}
+.pr-row input[type=number],.pr-row input[type=text]{padding:8px 10px;font-size:.88rem}
 </style>
 </head>
 <body>
@@ -130,6 +135,7 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
       <button class="tab" data-tab="reviews" onclick="switchTab('reviews')">Отзывы</button>
       <button class="tab" data-tab="news" onclick="switchTab('news')">Новости</button>
       <button class="tab" data-tab="settings" onclick="switchTab('settings')">Настройки</button>
+      <button class="tab" data-tab="pricing" onclick="switchTab('pricing')">Прайс</button>
     </div>
 
     <!-- LEADS -->
@@ -321,6 +327,21 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
         <h3 style="margin-top:20px">SEO</h3>
         <label>Title страницы</label><input id="s-seo-title">
         <label>Meta description</label><textarea id="s-seo-desc" rows="2"></textarea>
+        <label>OG-картинка (1200×630, JPG/PNG)</label>
+        <input type="file" id="s-og-image" accept="image/*">
+        <div id="s-og-preview" style="margin-top:8px"></div>
+        <input type="hidden" id="s-og-image-url">
+
+        <h3 style="margin-top:20px">Тексты секций</h3>
+        <div class="row2"><div><label>Конструктор — заголовок</label><input id="s-copy-ctor-t"></div><div><label>Конструктор — подзаголовок</label><input id="s-copy-ctor-s"></div></div>
+        <div class="row2"><div><label>Работы — заголовок</label><input id="s-copy-gal-t"></div><div><label>Работы — подзаголовок</label><input id="s-copy-gal-s"></div></div>
+        <div class="row2"><div><label>Отзывы — заголовок</label><input id="s-copy-rev-t"></div><div><label>Отзывы — подзаголовок</label><input id="s-copy-rev-s"></div></div>
+        <div class="row2"><div><label>Новости — заголовок</label><input id="s-copy-news-t"></div><div><label>Новости — подзаголовок</label><input id="s-copy-news-s"></div></div>
+        <div class="row2"><div><label>Контакты — заголовок</label><input id="s-copy-con-t"></div><div><label>Контакты — подзаголовок</label><input id="s-copy-con-s"></div></div>
+
+        <h3 style="margin-top:20px">Перечень работ в кейсах</h3>
+        <label>Пункты чеклиста (по одному на строку)</label>
+        <textarea id="s-scope-items" rows="4" placeholder="Демонтаж старого&#10;Монтаж окна"></textarea>
 
         <h3 style="margin-top:20px">Логотип</h3>
         <input type="file" id="s-logo" accept="image/*">
@@ -337,6 +358,44 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
         <div style="margin-top:20px;display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-primary" id="s-save" onclick="saveSiteSettings()">Сохранить настройки</button>
           <a href="/" target="_blank" rel="noopener" class="btn btn-ghost" style="text-decoration:none">Открыть сайт ↗</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRICING -->
+    <section class="panel" id="panel-pricing">
+      <div class="card">
+        <h2>Прайс конструктора</h2>
+        <p style="color:var(--muted);font-size:.88rem;margin:-8px 0 16px">Ориентировочные цены для калькулятора на сайте. Точная смета — после замера.</p>
+        <div class="row2">
+          <div><label>База, ₽/м периметра</label><input type="number" id="p-base"></div>
+          <div><label>Минимальная цена, ₽</label><input type="number" id="p-min"></div>
+        </div>
+        <h3 style="margin-top:16px">Размеры (мм)</h3>
+        <div class="row2">
+          <div><label>Ширина: мин</label><input type="number" id="p-w-min"></div>
+          <div><label>Ширина: макс</label><input type="number" id="p-w-max"></div>
+        </div>
+        <div class="row2">
+          <div><label>Ширина: по умолчанию</label><input type="number" id="p-w-def"></div>
+          <div><label>Высота: мин</label><input type="number" id="p-h-min"></div>
+        </div>
+        <div class="row2">
+          <div><label>Высота: макс</label><input type="number" id="p-h-max"></div>
+          <div><label>Высота: по умолчанию</label><input type="number" id="p-h-def"></div>
+        </div>
+        <h3 style="margin-top:16px">Типы конструкций</h3>
+        <p style="color:var(--muted);font-size:.82rem;margin:0 0 8px">Снимите галочку, чтобы скрыть тип на сайте.</p>
+        <div id="p-types" class="pricing-table"></div>
+        <h3 style="margin-top:16px">Профили (надбавка ₽/м периметра)</h3>
+        <div id="p-profiles" class="pricing-table"></div>
+        <h3 style="margin-top:16px">Стеклопакеты (₽/м²)</h3>
+        <div id="p-glass" class="pricing-table"></div>
+        <h3 style="margin-top:16px">Фурнитура (фикс. ₽)</h3>
+        <div id="p-hardware" class="pricing-table"></div>
+        <div style="margin-top:20px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" id="p-save" onclick="savePricing()">Сохранить прайс</button>
+          <a href="/#constructor" target="_blank" rel="noopener" class="btn btn-ghost" style="text-decoration:none">Проверить на сайте ↗</a>
         </div>
       </div>
     </section>
@@ -932,6 +991,77 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
 
   // ================= SETTINGS =================
   let settingsCache = {};
+  function cloneDef(obj) { return JSON.parse(JSON.stringify(obj || {})); }
+
+  function renderScopeChecks() {
+    const box = $('w-scope'); if (!box) return;
+    const items = settingsCache.scope_items || window.DEFAULT_SCOPE_ITEMS || [];
+    box.replaceChildren();
+    items.forEach(v => {
+      const cb = document.createElement('input'); cb.type = 'checkbox'; cb.value = v;
+      box.appendChild(el('label', { class: 'check' }, cb, document.createTextNode(' ' + v)));
+    });
+  }
+
+  function renderPricingRow(container, item, priceKey, priceLabel) {
+    const row = el('div', { class: 'pr-row', 'data-id': item.id });
+    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.className = 'pr-en'; cb.checked = item.enabled !== false;
+    const lbl = document.createElement('input'); lbl.type = 'text'; lbl.className = 'pr-label'; lbl.value = item.label || '';
+    const pr = document.createElement('input'); pr.type = 'number'; pr.className = 'pr-price'; pr.value = item[priceKey] != null ? item[priceKey] : 0;
+    row.append(cb, lbl, pr);
+    container.appendChild(row);
+  }
+
+  function collectPricingRows(container, priceKey) {
+    return [...container.querySelectorAll('.pr-row')].map(row => ({
+      id: row.dataset.id,
+      label: row.querySelector('.pr-label').value.trim(),
+      [priceKey]: parseInt(row.querySelector('.pr-price').value, 10) || 0,
+      enabled: row.querySelector('.pr-en').checked
+    })).filter(i => i.label);
+  }
+
+  function loadPricingForm() {
+    const p = settingsCache.pricing || cloneDef(window.DEFAULT_PRICING);
+    $('p-base').value = p.base_per_m ?? 2500;
+    $('p-min').value = p.min_price ?? 3000;
+    const w = p.width || {}, h = p.height || {};
+    $('p-w-min').value = w.min ?? 800; $('p-w-max').value = w.max ?? 2000; $('p-w-def').value = w.default ?? 1400;
+    $('p-h-min').value = h.min ?? 600; $('p-h-max').value = h.max ?? 2400; $('p-h-def').value = h.default ?? 1400;
+    const defs = window.DEFAULT_PRICING || {};
+    const fill = (id, items, key, fallback) => {
+      const box = $(id); box.replaceChildren();
+      (items && items.length ? items : fallback).forEach(i => renderPricingRow(box, i, key, key));
+    };
+    fill('p-types', p.types, 'surcharge', defs.types);
+    fill('p-profiles', p.profiles, 'price', defs.profiles);
+    fill('p-glass', p.glass, 'price', defs.glass);
+    fill('p-hardware', p.hardware, 'price', defs.hardware);
+  }
+
+  async function savePricing() {
+    const btn = $('p-save'); btn.disabled = true; btn.textContent = 'Сохранение…';
+    try {
+      const { data: row } = await sb.from('site_settings').select('data').eq('id', 1).maybeSingle();
+      if (row && row.data) settingsCache = row.data;
+      settingsCache.pricing = {
+        base_per_m: parseInt($('p-base').value, 10) || 2500,
+        min_price: parseInt($('p-min').value, 10) || 3000,
+        width: { min: +$('p-w-min').value || 800, max: +$('p-w-max').value || 2000, step: 10, default: +$('p-w-def').value || 1400 },
+        height: { min: +$('p-h-min').value || 600, max: +$('p-h-max').value || 2400, step: 10, default: +$('p-h-def').value || 1400 },
+        types: collectPricingRows($('p-types'), 'surcharge'),
+        profiles: collectPricingRows($('p-profiles'), 'price'),
+        glass: collectPricingRows($('p-glass'), 'price'),
+        hardware: collectPricingRows($('p-hardware'), 'price')
+      };
+      const { error } = await sb.from('site_settings').upsert({ id: 1, data: settingsCache, updated_at: new Date().toISOString() });
+      if (error) throw error;
+      toast('Прайс сохранён');
+      loadPricingForm();
+    } catch (e) { toast('Ошибка: ' + (e.message || e), true); }
+    finally { btn.disabled = false; btn.textContent = 'Сохранить прайс'; }
+  }
+
   function parseStatsLines(text) {
     return String(text || '').split('\n').map(l => l.trim()).filter(Boolean).map(l => {
       const p = l.split('|').map(x => x.trim());
@@ -945,7 +1075,7 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
     const { data, error } = await sb.from('site_settings').select('data').eq('id', 1).maybeSingle();
     if (error) return toast('Не удалось загрузить настройки', true);
     settingsCache = (data && data.data) || {};
-    const s = settingsCache, h = s.hero || {}, f = s.footer || {}, seo = s.seo || {}, soc = s.social || {}, sec = s.sections || {};
+    const s = settingsCache, h = s.hero || {}, f = s.footer || {}, seo = s.seo || {}, soc = s.social || {}, sec = s.sections || {}, copy = s.copy || window.DEFAULT_SECTION_COPY || {};
     $('s-company').value = s.company_name || '';
     $('s-phone').value = s.phone || '';
     $('s-phone-disp').value = s.phone_display || '';
@@ -966,17 +1096,33 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
     $('s-avito').value = soc.avito || '';
     $('s-seo-title').value = seo.title || '';
     $('s-seo-desc').value = seo.description || '';
+    $('s-og-image-url').value = seo.og_image || '';
+    const ogp = $('s-og-preview'); ogp.replaceChildren();
+    if (seo.og_image) ogp.appendChild(el('img', { src: safeUrl(seo.og_image), alt: '', style: 'max-width:200px;border-radius:8px' }));
+    $('s-copy-ctor-t').value = (copy.constructor || {}).title || '';
+    $('s-copy-ctor-s').value = (copy.constructor || {}).subtitle || '';
+    $('s-copy-gal-t').value = (copy.gallery || {}).title || '';
+    $('s-copy-gal-s').value = (copy.gallery || {}).subtitle || '';
+    $('s-copy-rev-t').value = (copy.reviews || {}).title || '';
+    $('s-copy-rev-s').value = (copy.reviews || {}).subtitle || '';
+    $('s-copy-news-t').value = (copy.news || {}).title || '';
+    $('s-copy-news-s').value = (copy.news || {}).subtitle || '';
+    $('s-copy-con-t').value = (copy.contact || {}).title || '';
+    $('s-copy-con-s').value = (copy.contact || {}).subtitle || '';
+    $('s-scope-items').value = (s.scope_items || window.DEFAULT_SCOPE_ITEMS || []).join('\n');
     $('s-logo-url').value = s.logo_url || '';
     $('s-sec-gallery').checked = sec.gallery !== false;
     $('s-sec-reviews').checked = sec.reviews !== false;
     $('s-sec-news').checked = sec.news !== false;
     const lp = $('s-logo-preview'); lp.replaceChildren();
     if (s.logo_url) lp.appendChild(el('img', { src: safeUrl(s.logo_url), alt: '', style: 'max-height:48px;border-radius:6px' }));
+    loadPricingForm();
+    renderScopeChecks();
   }
   async function saveSiteSettings() {
     const btn = $('s-save'); btn.disabled = true; btn.textContent = 'Сохранение…';
     try {
-      let logo_url = $('s-logo-url').value.trim() || null;
+      let logo_url = $('s-logo-url').value.trim() || settingsCache.logo_url || null;
       const logoFile = $('s-logo').files[0];
       if (logoFile) {
         if (logoFile.size > 5 * 1024 * 1024) throw new Error('Логотип больше 5 МБ');
@@ -986,9 +1132,20 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
         if (up.error) throw up.error;
         logo_url = sb.storage.from('works').getPublicUrl(path).data.publicUrl;
       }
+      let og_image = $('s-og-image-url').value.trim() || (settingsCache.seo || {}).og_image || null;
+      const ogFile = $('s-og-image').files[0];
+      if (ogFile) {
+        if (ogFile.size > 5 * 1024 * 1024) throw new Error('OG-картинка больше 5 МБ');
+        const ext = (ogFile.name.split('.').pop() || 'jpg').toLowerCase();
+        const path = 'site/og-' + Date.now() + '.' + ext;
+        const up = await sb.storage.from('works').upload(path, ogFile, { cacheControl: '3600', upsert: true });
+        if (up.error) throw up.error;
+        og_image = sb.storage.from('works').getPublicUrl(path).data.publicUrl;
+      }
       const profiles = $('s-hero-profiles').value.split(',').map(x => x.trim()).filter(Boolean);
       const chips = $('s-hero-chips').value.split('\n').map(x => x.trim()).filter(Boolean);
-      const data = {
+      const scope_items = $('s-scope-items').value.split('\n').map(x => x.trim()).filter(Boolean);
+      const data = Object.assign({}, settingsCache, {
         company_name: $('s-company').value.trim() || 'Mirokon',
         phone: $('s-phone').value.replace(/\D/g, '') || '',
         phone_display: $('s-phone-disp').value.trim() || '',
@@ -997,6 +1154,7 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
         email: $('s-email').value.trim(),
         hours: $('s-hours').value.trim(),
         logo_url,
+        scope_items: scope_items.length ? scope_items : window.DEFAULT_SCOPE_ITEMS,
         hero: {
           eyebrow: $('s-hero-eyebrow').value.trim(),
           title_before: $('s-hero-t1').value.trim(),
@@ -1008,17 +1166,26 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
           profiles
         },
         footer: { about: $('s-footer-about').value.trim() },
-        seo: { title: $('s-seo-title').value.trim(), description: $('s-seo-desc').value.trim() },
+        seo: { title: $('s-seo-title').value.trim(), description: $('s-seo-desc').value.trim(), og_image },
         social: { vk: $('s-vk').value.trim(), avito: $('s-avito').value.trim() },
         sections: {
           gallery: $('s-sec-gallery').checked,
           reviews: $('s-sec-reviews').checked,
           news: $('s-sec-news').checked
+        },
+        copy: {
+          constructor: { title: $('s-copy-ctor-t').value.trim(), subtitle: $('s-copy-ctor-s').value.trim() },
+          gallery: { title: $('s-copy-gal-t').value.trim(), subtitle: $('s-copy-gal-s').value.trim() },
+          reviews: { title: $('s-copy-rev-t').value.trim(), subtitle: $('s-copy-rev-s').value.trim() },
+          news: { title: $('s-copy-news-t').value.trim(), subtitle: $('s-copy-news-s').value.trim() },
+          contact: { title: $('s-copy-con-t').value.trim(), subtitle: $('s-copy-con-s').value.trim() }
         }
-      };
+      });
       const { error } = await sb.from('site_settings').upsert({ id: 1, data, updated_at: new Date().toISOString() });
       if (error) throw error;
+      settingsCache = data;
       $('s-logo').value = '';
+      $('s-og-image').value = '';
       toast('Настройки сохранены');
       loadSiteSettingsForm();
     } catch (e) { toast('Ошибка: ' + (e.message || e), true); }

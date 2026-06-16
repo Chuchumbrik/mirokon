@@ -48,6 +48,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/styles.css">
+<script src="/pricing-defaults.js" defer></script>
 <script src="/app.js" defer></script>
 </head>
 <body class="min-h-screen">
@@ -139,7 +140,7 @@
   <!-- Constructor -->
   <section id="constructor" class="ctor py-24">
     <div class="container mx-auto px-4">
-      <div class="sec-head">
+      <div class="sec-head" id="copy-constructor">
         <h2 class="text-4xl font-bold">Конструктор окон</h2>
         <p>Подберите параметры и узнайте ориентировочную стоимость за минуту.</p>
       </div>
@@ -236,7 +237,7 @@
   <!-- Gallery -->
   <section id="gallery" class="gallery-sec py-24" data-section="gallery">
     <div class="container mx-auto px-4">
-      <div class="sec-head">
+      <div class="sec-head" id="copy-gallery">
         <h2 class="text-4xl font-bold">Примеры работ</h2>
         <p>Остекление квартир, домов и балконов в Москве и области.</p>
       </div>
@@ -292,7 +293,7 @@
   <!-- Reviews -->
   <section id="reviews" class="reviews-sec py-24" data-section="reviews">
     <div class="container mx-auto px-4">
-      <div class="sec-head" style="margin-bottom:28px">
+      <div class="sec-head" style="margin-bottom:28px" id="copy-reviews">
         <h2 class="text-4xl font-bold">Отзывы клиентов</h2>
         <p>Нам доверяют остекление квартир, домов и балконов в Москве и области.</p>
       </div>
@@ -318,7 +319,7 @@
   <!-- News -->
   <section id="news" class="news-sec py-24" data-section="news">
     <div class="container mx-auto px-4">
-      <div class="sec-head">
+      <div class="sec-head" id="copy-news">
         <h2 class="text-4xl font-bold">Новости</h2>
         <p>Коротко о компании, материалах и сервисе.</p>
       </div>
@@ -334,7 +335,7 @@
   <section id="contact" class="lead-section py-24">
     <div class="container mx-auto px-4">
       <div class="lead-grid">
-        <div class="lead-copy">
+        <div class="lead-copy" id="copy-contact">
           <h2>Бесплатный замер и точный расчёт</h2>
           <p>Оставьте заявку — перезвоним в течение 15 минут, ответим на вопросы и рассчитаем стоимость без обязательств.</p>
           <a href="tel:+79991234567" class="lead-phone" id="contact-phone">
