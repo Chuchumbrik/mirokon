@@ -148,10 +148,7 @@ INSERT INTO site_settings (id, data) VALUES (1, JSON_OBJECT(
       JSON_OBJECT('id', 'balcony', 'label', 'Балконный блок', 'surcharge', 12000, 'enabled', true)
     ),
     'profiles', JSON_ARRAY(
-      JSON_OBJECT('id', 'whs60', 'label', 'WHS 60', 'price', 500, 'enabled', true),
-      JSON_OBJECT('id', 'veka70', 'label', 'VEKA Softline 70', 'price', 700, 'enabled', true),
-      JSON_OBJECT('id', 'rehau-delight', 'label', 'REHAU Delight', 'price', 800, 'enabled', true),
-      JSON_OBJECT('id', 'salamander', 'label', 'Salamander', 'price', 900, 'enabled', true)
+      JSON_OBJECT('id', 'rehau-delight', 'label', 'REHAU Delight', 'price', 800, 'enabled', true)
     ),
     'glass', JSON_ARRAY(
       JSON_OBJECT('id', '24mm', 'label', '24 мм (1-камерный)', 'price', 200, 'enabled', true),

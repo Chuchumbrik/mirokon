@@ -13,10 +13,7 @@ window.DEFAULT_PRICING = {
     { id: 'balcony', label: 'Балконный блок', surcharge: 12000, enabled: true }
   ],
   profiles: [
-    { id: 'whs60', label: 'WHS 60', price: 500, enabled: true },
-    { id: 'veka70', label: 'VEKA Softline 70', price: 700, enabled: true },
-    { id: 'rehau-delight', label: 'REHAU Delight', price: 800, enabled: true },
-    { id: 'salamander', label: 'Salamander', price: 900, enabled: true }
+    { id: 'rehau-delight', label: 'REHAU Delight', price: 800, enabled: true }
   ],
   glass: [
     { id: '24mm', label: '24 мм (1-камерный)', price: 200, enabled: true },
