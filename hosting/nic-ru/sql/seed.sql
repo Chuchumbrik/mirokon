@@ -123,7 +123,7 @@ INSERT INTO site_settings (id, data) VALUES (1, JSON_OBJECT(
       JSON_OBJECT('value', '8 лет', 'label', 'на рынке'),
       JSON_OBJECT('value', '★ 4.9', 'label', 'рейтинг клиентов')
     ),
-    'profiles', JSON_ARRAY('WHS', 'VEKA', 'REHAU', 'Salamander')
+    'profiles', JSON_ARRAY('REHAU')
   ),
   'footer', JSON_OBJECT(
     'about', 'Премиальные пластиковые окна и аккуратный монтаж под ключ в Москве и Московской области.'
