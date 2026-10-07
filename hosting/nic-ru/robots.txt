@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /landing.html
+Disallow: /design-preview.html
+Disallow: /install.php
+Disallow: /api/
+Disallow: /includes/
+Disallow: /sql/
+Disallow: /config.local.php
+
+# Замените example.ru на ваш домен
+Sitemap: https://example.ru/sitemap.xml

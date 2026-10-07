@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mirokon — Админка</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<script src="/mirokon-db.js"></script>
+<script src="/pricing-defaults.js"></script>
+<script src="/admin-validate.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0F172A;--primary:#1E40AF;--accent:#3B82F6;--muted:#64748B;--border:#E2E8F0;--ice:#EFF6FF;--surface:#fff;
+  --sh:0 8px 24px rgba(15,23,42,.08)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:#f8fafc;min-height:100vh}
+.topbar{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.topbar .row{max-width:1100px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-family:'Montserrat';font-weight:800;font-size:1.2rem}
+.brand b{color:var(--primary)}
+.who{color:var(--muted);font-size:.85rem;margin-left:auto;margin-right:12px}
+.wrap{max-width:1100px;margin:0 auto;padding:24px 20px 80px}
+.tabs{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap}
+.tab{padding:10px 18px;border:1px solid var(--border);background:#fff;border-radius:12px;font-weight:600;font-size:.95rem;cursor:pointer;color:var(--muted)}
+.tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.panel{display:none}.panel.active{display:block}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:var(--sh);padding:22px;margin-bottom:18px}
+h2{font-family:'Montserrat';font-weight:700;font-size:1.3rem;margin-bottom:16px}
+h3{font-size:1.05rem;font-weight:700;margin-bottom:12px}
+label{display:block;font-weight:600;font-size:.85rem;margin:10px 0 5px}
+input,textarea,select{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:11px;font-family:'Inter';font-size:.95rem}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+textarea{resize:vertical;min-height:70px}
+.check{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:.9rem;font-weight:500}
+.scope-checks{display:grid;grid-template-columns:1fr 1fr;gap:2px 18px;margin-top:6px}
+.scope-checks .check{margin-top:6px}
+@media(max-width:560px){.scope-checks{grid-template-columns:1fr}}
+.check input{width:auto}
+.btn{display:inline-flex;align-items:center;gap:6px;border:none;cursor:pointer;font-family:'Inter';font-weight:600;font-size:.88rem;padding:9px 15px;border-radius:10px;transition:.15s}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#1D4ED8}
+.btn-ghost{background:#f1f5f9;color:var(--ink)}.btn-ghost:hover{background:#e2e8f0}
+.btn-danger{background:#fef2f2;color:#b91c1c}.btn-danger:hover{background:#fee2e2}
+.btn-ok{background:#ecfdf5;color:#047857}.btn-ok:hover{background:#d1fae5}
+.btn:disabled{opacity:.5;cursor:default}
+.list-item{display:flex;gap:14px;align-items:flex-start;padding:14px;border:1px solid var(--border);border-radius:13px;margin-bottom:10px;background:#fff}
+.thumb{width:70px;height:54px;border-radius:9px;object-fit:cover;flex:none;background:linear-gradient(135deg,#dbeafe,#eff6ff);display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:1.4rem}
+.li-body{flex:1;min-width:0}
+.li-body .t{font-weight:600}
+.li-body .m{color:var(--muted);font-size:.85rem;margin-top:2px;overflow:hidden;text-overflow:ellipsis}
+.li-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.badge{font-size:.72rem;font-weight:600;padding:3px 9px;border-radius:99px}
+.badge.on{background:#ecfdf5;color:#047857}.badge.off{background:#fef3c7;color:#92400e}
+.stars{color:#fbbf24;letter-spacing:1px}
+.filters{display:flex;gap:8px;margin-bottom:14px}
+.filters .f{padding:7px 13px;border:1px solid var(--border);border-radius:10px;background:#fff;font-size:.85rem;cursor:pointer;color:var(--muted)}
+.filters .f.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.empty{text-align:center;color:var(--muted);padding:30px;border:1px dashed var(--border);border-radius:13px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 20px;border-radius:12px;box-shadow:var(--sh);font-size:.9rem;opacity:0;transition:.3s;pointer-events:none}
+.toast.show{opacity:1}
+.toast.err{background:#b91c1c}
+.row2{display:grid;grid-template-columns:1fr 140px;gap:12px}
+@media(max-width:560px){.row2{grid-template-columns:1fr}}
+.ph-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:10px 0}
+.ph-card{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:4/3;background:#f1f5f9;border:1px solid var(--border);cursor:pointer}
+.ph-card img{width:100%;height:100%;object-fit:cover;display:block;transition:.15s}
+.ph-card:hover img{opacity:.82}
+.ph-ov{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:6px;opacity:0;transition:.15s;background:linear-gradient(to bottom,rgba(0,0,0,.35) 0,transparent 45%,transparent 55%,rgba(0,0,0,.45) 100%)}
+.ph-card:hover .ph-ov{opacity:1}
+.ph-row{display:flex;gap:4px}
+.ph-b{background:rgba(255,255,255,.88);border:none;border-radius:7px;cursor:pointer;padding:4px 8px;font-size:.75rem;font-weight:700;color:var(--ink);line-height:1.4}
+.ph-b:hover{background:#fff}
+.ph-b.rm{color:#b91c1c}
+.ph-add-zone{border:2px dashed var(--border);border-radius:10px;padding:18px;text-align:center;cursor:pointer;color:var(--muted);font-size:.88rem;margin-top:6px;transition:.15s}
+.ph-add-zone:hover,.ph-add-zone.drag{border-color:var(--accent);color:var(--accent);background:var(--ice)}
+/* нативная кнопка выбора файла — в стиле сайта */
+input[type=file]{font-size:.9rem;color:var(--muted)}
+input[type=file]::file-selector-button{font-family:'Inter';font-weight:600;font-size:.85rem;padding:8px 14px;border-radius:10px;border:none;background:var(--accent);color:#fff;cursor:pointer;margin-right:10px;transition:.15s}
+input[type=file]::file-selector-button:hover{background:#1D4ED8}
+/* кнопка «сделать обложкой» на фото */
+.ph-b.cover{color:var(--primary)}
+.ph-cover-badge{display:inline-flex;align-items:center;gap:3px}
+.lb{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:200;display:none;align-items:center;justify-content:center;flex-direction:column}
+.lb.open{display:flex}
+.lb img{max-width:90vw;max-height:82vh;border-radius:8px;object-fit:contain;display:block}
+.lb-x{position:absolute;top:14px;right:18px;color:#fff;font-size:2rem;cursor:pointer;background:none;border:none;line-height:1;opacity:.8}
+.lb-x:hover{opacity:1}
+.lb-arr{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.14);color:#fff;border:none;border-radius:50%;width:46px;height:46px;font-size:1.5rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.lb-arr:hover{background:rgba(255,255,255,.25)}
+.lb-arr.p{left:14px}.lb-arr.n{right:14px}
+.lb-cnt{color:rgba(255,255,255,.6);font-size:.82rem;margin-top:10px}
+.cat-del-back{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:120;align-items:center;justify-content:center;padding:16px}
+.cat-del-box{background:#fff;border-radius:16px;box-shadow:var(--sh);padding:24px;max-width:440px;width:100%}
+.cat-del-box h3{font-family:'Montserrat';font-size:1.2rem;margin-bottom:0}
+.ph-cover-badge{position:absolute;bottom:6px;left:6px;background:rgba(30,64,175,.85);color:#fff;font-size:.7rem;font-weight:700;padding:2px 7px;border-radius:5px;pointer-events:none;letter-spacing:.3px}
+.lead-card{background:#fff;border:1px solid var(--border);border-radius:13px;margin-bottom:10px}
+.lead-card-head{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.lead-card-name{font-weight:700;font-size:1rem;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lead-card-acts{display:flex;gap:6px;flex-shrink:0;align-items:center;flex-wrap:wrap}
+.lead-card-body{padding:12px 16px}
+.lead-card-phone{display:block;color:var(--primary);font-weight:600;font-size:.95rem;text-decoration:none;margin-bottom:4px}
+.lead-card-phone:hover{text-decoration:underline}
+.lead-card-msg{font-size:.84rem;color:var(--muted);margin-bottom:6px}
+.lead-card-when{font-size:.76rem;color:var(--muted);margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.lead-cart{margin-top:10px;border-top:1px solid var(--border);padding-top:10px}
+.lead-cart-row{margin-bottom:6px;font-size:.84rem}
+.lcr-main{display:flex;gap:5px;align-items:baseline}
+.lcr-idx{color:var(--muted);flex-shrink:0;min-width:16px}
+.lcr-name{flex:1;color:var(--ink);font-weight:500}
+.lcr-price{color:var(--ink);font-weight:700;white-space:nowrap}
+.lcr-size{color:var(--muted);font-size:.78rem;padding-left:14px;margin-top:2px}
+.lead-cart-total{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:.85rem}
+.lct-lbl{color:var(--muted)}
+.lct-sum{font-weight:800;color:var(--primary);font-size:.95rem}
+@media(hover:none){.ph-ov{opacity:1}}
+.lb-single .lb-arr,.lb-single .lb-cnt{display:none}
+.pricing-table{display:flex;flex-direction:column;gap:8px}
+.pr-row{display:grid;grid-template-columns:28px 84px 1fr 88px 36px;gap:8px;align-items:center;padding:8px 10px;background:#f8fafc;border-radius:10px;border:1px solid var(--border)}
+.pr-row .pr-id{font-size:.78rem}
+.pr-row .pr-rm{padding:6px 8px;min-width:0}
+.input-invalid{border-color:#dc2626!important;box-shadow:0 0 0 3px rgba(220,38,38,.12)!important}
+.field-err{color:#dc2626;font-size:.8rem;margin-top:4px}
+.field-warn{color:#b45309;font-size:.8rem;margin-top:4px}
+.input-warn{border-color:#f59e0b!important;box-shadow:0 0 0 3px rgba(245,158,11,.15)!important}
+.toast.err{background:#991b1b}
+.toast.warn{background:#b45309}
+.list-loading{text-align:center;color:var(--muted);padding:36px 20px;font-size:.95rem}
+.list-loading::before{content:'';display:inline-block;width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:adm-spin .7s linear infinite;vertical-align:middle;margin-right:10px}
+@keyframes adm-spin{to{transform:rotate(360deg)}}
+.settings-nav{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.settings-nav a{padding:8px 14px;border:1px solid var(--border);border-radius:10px;background:#fff;font-size:.85rem;font-weight:600;color:var(--muted);text-decoration:none;transition:.15s}
+.settings-nav a:hover{border-color:var(--accent);color:var(--primary)}
+.settings-block{scroll-margin-top:96px}
+.ph-hint{color:var(--muted);font-size:.82rem;margin:0 0 10px;line-height:1.45}
+.inline-modal-back{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:120;display:none;align-items:center;justify-content:center;padding:16px}
+.inline-modal-box{background:#fff;border-radius:16px;box-shadow:var(--sh);padding:24px;max-width:420px;width:100%}
+.inline-modal-box h3{font-family:'Montserrat';font-size:1.15rem;margin-bottom:12px}
+.inline-modal-actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.list-item.dragging{opacity:.45}
+.drag-handle{cursor:grab;color:var(--muted);font-size:1.1rem;padding:4px 8px;user-select:none;flex:none}
+.drag-handle:active{cursor:grabbing}
+.work-sort-hint{color:var(--muted);font-size:.82rem;margin:0 0 10px}
+.privacy-editor{min-height:320px;font-family:ui-monospace,Consolas,monospace;font-size:.85rem;line-height:1.5}
+.pr-row label{font-size:.82rem;margin:0;font-weight:500}
+.pr-row input[type=number],.pr-row input[type=text]{padding:8px 10px;font-size:.88rem}
+@media(max-width:640px){
+  .pr-row{grid-template-columns:1fr 1fr;grid-template-areas:"en en" "id lbl" "price rm"}
+  .pr-row .pr-en{grid-area:en;justify-self:start}
+  .pr-row .pr-id{grid-area:id}
+  .pr-row .pr-label{grid-area:lbl}
+  .pr-row .pr-price{grid-area:price}
+  .pr-row .pr-rm{grid-area:rm;justify-self:end}
+}
+</style>
+</head>
+<body>
+  <div class="topbar"><div class="row">
+    <div class="brand">MIRO<b>KON</b> · админка</div>
+    <span class="who" id="admin-email"></span>
+    <button class="btn btn-ghost" onclick="logout()">Выйти</button>
+  </div></div>
+
+  <div class="wrap">
+    <div class="tabs">
+      <button class="tab active" data-tab="leads" onclick="switchTab('leads')">Заявки</button>
+      <button class="tab" data-tab="works" onclick="switchTab('works')">Работы</button>
+      <button class="tab" data-tab="cats" onclick="switchTab('cats')">Категории</button>
+      <button class="tab" data-tab="reviews" onclick="switchTab('reviews')">Отзывы</button>
+      <button class="tab" data-tab="news" onclick="switchTab('news')">Новости</button>
+      <button class="tab" data-tab="settings" onclick="switchTab('settings')">Настройки</button>
+      <button class="tab" data-tab="pricing" onclick="switchTab('pricing')">Прайс</button>
+      <button class="tab" data-tab="privacy" onclick="switchTab('privacy')">Политика</button>
+    </div>
+
+    <!-- LEADS -->
+    <section class="panel active" id="panel-leads">
+      <h2>Заявки</h2>
+      <div class="filters">
+        <div class="f active" data-lf="new" onclick="setLeadFilter('new')">Новые</div>
+        <div class="f" data-lf="processed" onclick="setLeadFilter('processed')">Обработанные</div>
+        <div class="f" data-lf="all" onclick="setLeadFilter('all')">Все</div>
+      </div>
+      <div id="leads-list"></div>
+    </section>
+
+    <!-- WORKS -->
+    <section class="panel" id="panel-works">
+      <div class="card">
+        <h3 id="works-form-title">Добавить работу</h3>
+        <input type="hidden" id="w-id">
+        <div class="row2">
+          <div><label>Название *</label><input id="w-title" placeholder="Гостиная на Ленина"></div>
+          <div><label>Категория</label>
+            <div style="display:flex;gap:6px">
+              <select id="w-category" style="flex:1"></select>
+              <button type="button" class="btn btn-ghost" style="white-space:nowrap" onclick="newCategoryInline()">+ Новая</button>
+            </div>
+          </div>
+        </div>
+        <label>Описание</label><textarea id="w-desc" placeholder="Двухкамерный стеклопакет…"></textarea>
+        <div class="row2" style="margin-top:8px">
+          <div><label>Система (профиль)</label><input id="w-system" placeholder="VEKA Softline 70"></div>
+          <div><label>Цена «от», ₽</label><input type="number" id="w-pricefrom" placeholder="38000"></div>
+        </div>
+        <div class="row2">
+          <div><label>Срок, дней</label><input type="number" id="w-duration" placeholder="1"></div>
+          <div><label>Район / город</label><input id="w-area" placeholder="Химки"></div>
+        </div>
+        <div class="row2">
+          <div><label>Гарантия</label><input id="w-warranty" placeholder="5 лет"></div>
+          <div><label>Тип окна (для «Рассчитать»)</label>
+            <select id="w-tpltype">
+              <option value="">— не задан —</option>
+              <option value="single-turn">Одностворчатое поворотное</option>
+              <option value="single-deaf">Одностворчатое глухое</option>
+              <option value="double-deaf-turn">Двустворчатое (глухое + поворотное)</option>
+              <option value="double-turn">Двустворчатое поворотное</option>
+              <option value="triple">Трёхстворчатое</option>
+              <option value="balcony">Балконный блок</option>
+            </select>
+          </div>
+        </div>
+        <label style="margin-top:10px">Перечень работ (под ключ)</label>
+        <div class="scope-checks" id="w-scope">
+          <label class="check"><input type="checkbox" value="Демонтаж старого"> Демонтаж старого</label>
+          <label class="check"><input type="checkbox" value="Монтаж окна"> Монтаж окна</label>
+          <label class="check"><input type="checkbox" value="Откосы и подоконник"> Откосы и подоконник</label>
+          <label class="check"><input type="checkbox" value="Вынос мусора и уборка"> Вынос мусора и уборка</label>
+        </div>
+        <div id="w-newphoto-wrap" style="margin-top:12px">
+          <label>Фото (обложка)</label>
+          <input type="file" id="w-photo" accept="image/*">
+        </div>
+        <div id="w-photos-section" style="display:none;margin-top:14px">
+          <label style="margin-bottom:8px">Фото галереи</label>
+          <p class="ph-hint">★ «Обложкой» — главное фото в карточке на сайте. ↑↓ — порядок в карусели. Порядок карточек на главной — перетащите в списке «Работы на сайте» ниже.</p>
+          <div class="ph-grid" id="w-photo-grid"></div>
+          <div class="ph-add-zone" id="w-add-zone" onclick="$('w-multi-input').click()"
+               ondragover="event.preventDefault();this.classList.add('drag')"
+               ondragleave="this.classList.remove('drag')"
+               ondrop="event.preventDefault();this.classList.remove('drag');addWorkPhotos(event.dataTransfer.files)">⬆ Перетащите фото сюда или нажмите, чтобы выбрать</div>
+          <input type="file" id="w-multi-input" accept="image/*" multiple style="display:none" onchange="addWorkPhotos(this.files)">
+        </div>
+        <label class="check"><input type="checkbox" id="w-published"> Опубликовать на сайте</label>
+        <div style="margin-top:16px;display:flex;gap:8px">
+          <button class="btn btn-primary" id="w-save" onclick="saveWork()">Сохранить</button>
+          <button class="btn btn-ghost" onclick="resetWorkForm()">Очистить</button>
+        </div>
+      </div>
+      <h2>Работы на сайте</h2>
+      <p class="work-sort-hint">Перетащите карточки за ⋮⋮, чтобы изменить порядок на сайте (сохраняется автоматически).</p>
+      <div id="works-list"></div>
+    </section>
+
+    <!-- CATEGORIES -->
+    <section class="panel" id="panel-cats">
+      <div class="card">
+        <h3>Добавить категорию</h3>
+        <div class="row2">
+          <div><input id="c-new" placeholder="Например: Эркер" onkeydown="if(event.key==='Enter')addCategory()"></div>
+          <div><button class="btn btn-primary" style="margin-top:5px" onclick="addCategory()">Добавить</button></div>
+        </div>
+      </div>
+      <h2>Категории работ</h2>
+      <div id="cats-list"></div>
+      <p style="color:var(--muted);font-size:.82rem;margin-top:8px">Порядок категорий = порядок чипов-фильтров на сайте. Переименование меняет категорию у всех её работ.</p>
+    </section>
+
+    <!-- REVIEWS -->
+    <section class="panel" id="panel-reviews">
+      <div class="card">
+        <h3 id="rv-form-title">Добавить отзыв вручную</h3>
+        <input type="hidden" id="rv-edit-id">
+        <div class="row2">
+          <div><label>Имя *</label><input id="rv-name" placeholder="Алексей"></div>
+          <div><label>Город</label><input id="rv-city" placeholder="Химки"></div>
+        </div>
+        <div class="row2">
+          <div><label>Оценка</label>
+            <select id="rv-rating"><option value="5">5 ★</option><option value="4">4 ★</option><option value="3">3 ★</option><option value="2">2 ★</option><option value="1">1 ★</option></select>
+          </div>
+          <div style="display:flex;align-items:flex-end;padding-bottom:4px">
+            <label class="check" style="margin:0"><input type="checkbox" id="rv-approved" checked> Сразу опубликовать</label>
+          </div>
+        </div>
+        <label>Текст отзыва *</label><textarea id="rv-text" placeholder="Расскажите о работе…" rows="4"></textarea>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" id="rv-save-btn" onclick="saveManualReview()">Добавить отзыв</button>
+          <button class="btn btn-ghost" id="rv-cancel-btn" style="display:none" onclick="cancelReviewEdit()">Отмена</button>
+        </div>
+      </div>
+      <h2>Отзывы</h2>
+      <div class="filters">
+        <div class="f active" data-rf="pending" onclick="setReviewFilter('pending')">На модерации</div>
+        <div class="f" data-rf="approved" onclick="setReviewFilter('approved')">Опубликованные</div>
+        <div class="f" data-rf="all" onclick="setReviewFilter('all')">Все</div>
+      </div>
+      <div id="reviews-list"></div>
+    </section>
+
+    <!-- NEWS -->
+    <section class="panel" id="panel-news">
+      <div class="card">
+        <h3 id="news-form-title">Добавить новость</h3>
+        <input type="hidden" id="n-id">
+        <label>Заголовок *</label><input id="n-title" placeholder="Гарантия 5 лет">
+        <label>Краткий текст (в карточке)</label><textarea id="n-preview" placeholder="Коротко…"></textarea>
+        <label>Полный текст (опционально)</label><textarea id="n-body"></textarea>
+        <div id="n-photo-wrap">
+          <label>Картинка (в карточке на сайте)</label>
+          <input type="file" id="n-photo" accept="image/*">
+          <div id="n-photo-preview" style="margin-top:8px"></div>
+        </div>
+        <input type="hidden" id="n-image-url">
+        <label class="check"><input type="checkbox" id="n-published"> Опубликовать</label>
+        <div style="margin-top:16px;display:flex;gap:8px">
+          <button class="btn btn-primary" id="n-save" onclick="saveNews()">Сохранить</button>
+          <button class="btn btn-ghost" onclick="resetNewsForm()">Очистить</button>
+        </div>
+      </div>
+      <h2>Новости</h2>
+      <div id="news-list"></div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="panel" id="panel-settings">
+      <nav class="settings-nav" aria-label="Разделы настроек">
+        <a href="#settings-contacts">Контакты</a>
+        <a href="#settings-hero">Hero</a>
+        <a href="#settings-footer">Футер</a>
+        <a href="#settings-seo">SEO</a>
+        <a href="#settings-copy">Тексты</a>
+        <a href="#settings-scope">Кейсы</a>
+        <a href="#settings-logo">Логотип</a>
+        <a href="#settings-sections">Секции</a>
+      </nav>
+      <div class="card">
+        <h2>Настройки сайта</h2>
+        <p style="color:var(--muted);font-size:.88rem;margin:-8px 0 16px">Контакты, тексты Hero, SEO и видимость секций. Изменения появятся на сайте после обновления страницы.</p>
+        <h3 class="settings-block" id="settings-contacts">Контакты</h3>
+        <div class="row2">
+          <div><label>Название компании</label><input id="s-company" placeholder="Mirokon"></div>
+          <div><label>Телефон (цифры)</label><input id="s-phone" placeholder="79991234567"></div>
+        </div>
+        <div class="row2">
+          <div><label>Телефон (как показывать)</label><input id="s-phone-disp" placeholder="+7 (999) 123-45-67"></div>
+          <div><label>WhatsApp (цифры)</label><input id="s-wa" placeholder="79991234567"></div>
+        </div>
+        <div class="row2">
+          <div><label>Telegram (username без @)</label><input id="s-tg" placeholder="mirokon_bot"></div>
+          <div><label>Email</label><input id="s-email" type="email" placeholder="info@company.ru"></div>
+        </div>
+        <label>Часы работы</label><input id="s-hours" placeholder="Пн–Вс 09:00–21:00">
+
+        <h3 class="settings-block" id="settings-hero" style="margin-top:20px">Hero (первый экран)</h3>
+        <label>Метка над заголовком</label><input id="s-hero-eyebrow">
+        <div class="row2">
+          <div><label>Заголовок (начало)</label><input id="s-hero-t1" placeholder="Окна, которые"></div>
+          <div><label>Заголовок (акцент)</label><input id="s-hero-t2" placeholder="служат десятилетия"></div>
+        </div>
+        <label>Подзаголовок</label><textarea id="s-hero-lead"></textarea>
+        <div class="row2">
+          <div><label>Цена «от», ₽</label><input type="number" id="s-hero-price"></div>
+          <div><label>Профили (через запятую)</label><input id="s-hero-profiles" placeholder="WHS, VEKA, REHAU"></div>
+        </div>
+        <label>Чипы доверия (по одному на строку)</label><textarea id="s-hero-chips" rows="3" placeholder="Гарантия 5 лет&#10;Договор&#10;Монтаж за 1 день"></textarea>
+        <label>Статистика (формат: значение | подпись, по строке)</label><textarea id="s-hero-stats" rows="3" placeholder="1500+ | окон установлено&#10;8 лет | на рынке"></textarea>
+
+        <h3 class="settings-block" id="settings-footer" style="margin-top:20px">Футер и соцсети</h3>
+        <label>О компании (футер)</label><textarea id="s-footer-about"></textarea>
+        <label>Копирайт (нижняя строка футера)</label><input id="s-footer-copy" placeholder="© 2026 Mirokon · Москва и МО">
+        <div class="row2">
+          <div><label>VK (ссылка)</label><input id="s-vk" placeholder="https://vk.com/..."></div>
+          <div><label>Avito (ссылка)</label><input id="s-avito" placeholder="https://avito.ru/..."></div>
+        </div>
+
+        <h3 class="settings-block" id="settings-seo" style="margin-top:20px">SEO</h3>
+        <label>Title страницы</label><input id="s-seo-title">
+        <label>Meta description</label><textarea id="s-seo-desc" rows="2"></textarea>
+        <label>OG-картинка (1200×630, JPG/PNG)</label>
+        <p style="color:var(--muted);font-size:.82rem;margin:0 0 8px">Рекомендуемый размер: <b>1200×630</b> px для соцсетей и мессенджеров.</p>
+        <input type="file" id="s-og-image" accept="image/*">
+        <div id="s-og-preview" style="margin-top:8px"></div>
+        <p id="s-og-size-hint" style="color:var(--muted);font-size:.8rem;margin-top:6px"></p>
+        <input type="hidden" id="s-og-image-url">
+
+        <h3 class="settings-block" id="settings-copy" style="margin-top:20px">Тексты секций</h3>
+        <div class="row2"><div><label>Конструктор — заголовок</label><input id="s-copy-ctor-t"></div><div><label>Конструктор — подзаголовок</label><input id="s-copy-ctor-s"></div></div>
+        <div class="row2"><div><label>Работы — заголовок</label><input id="s-copy-gal-t"></div><div><label>Работы — подзаголовок</label><input id="s-copy-gal-s"></div></div>
+        <div class="row2"><div><label>Отзывы — заголовок</label><input id="s-copy-rev-t"></div><div><label>Отзывы — подзаголовок</label><input id="s-copy-rev-s"></div></div>
+        <div class="row2"><div><label>Новости — заголовок</label><input id="s-copy-news-t"></div><div><label>Новости — подзаголовок</label><input id="s-copy-news-s"></div></div>
+        <div class="row2"><div><label>Контакты — заголовок</label><input id="s-copy-con-t"></div><div><label>Контакты — подзаголовок</label><input id="s-copy-con-s"></div></div>
+
+        <h3 class="settings-block" id="settings-scope" style="margin-top:20px">Перечень работ в кейсах</h3>
+        <label>Пункты чеклиста (по одному на строку)</label>
+        <textarea id="s-scope-items" rows="4" placeholder="Демонтаж старого&#10;Монтаж окна"></textarea>
+
+        <h3 class="settings-block" id="settings-logo" style="margin-top:20px">Логотип</h3>
+        <input type="file" id="s-logo" accept="image/*">
+        <div id="s-logo-preview" style="margin-top:8px"></div>
+        <input type="hidden" id="s-logo-url">
+
+        <h3 class="settings-block" id="settings-sections" style="margin-top:20px">Секции на сайте</h3>
+        <div class="scope-checks">
+          <label class="check"><input type="checkbox" id="s-sec-constructor" checked> Конструктор</label>
+          <label class="check"><input type="checkbox" id="s-sec-gallery" checked> Примеры работ</label>
+          <label class="check"><input type="checkbox" id="s-sec-reviews" checked> Отзывы</label>
+          <label class="check"><input type="checkbox" id="s-sec-news" checked> Новости</label>
+          <label class="check"><input type="checkbox" id="s-sec-contact" checked> Форма заявки</label>
+        </div>
+
+        <div style="margin-top:20px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" id="s-save" onclick="saveSiteSettings()">Сохранить настройки</button>
+          <button class="btn btn-primary" id="s-save-all" onclick="saveAllSiteConfig()">Сохранить настройки и прайс</button>
+          <a href="/" target="_blank" rel="noopener" class="btn btn-ghost" style="text-decoration:none">Открыть сайт ↗</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRICING -->
+    <section class="panel" id="panel-pricing">
+      <div class="card">
+        <h2>Прайс конструктора</h2>
+        <p style="color:var(--muted);font-size:.88rem;margin:-8px 0 16px">Ориентировочные цены для калькулятора на сайте. Точная смета — после замера.</p>
+        <div class="row2">
+          <div><label>База, ₽/м периметра</label><input type="number" id="p-base"></div>
+          <div><label>Минимальная цена, ₽</label><input type="number" id="p-min"></div>
+        </div>
+        <h3 style="margin-top:16px">Размеры (мм)</h3>
+        <div class="row2">
+          <div><label>Ширина: мин</label><input type="number" id="p-w-min"></div>
+          <div><label>Ширина: макс</label><input type="number" id="p-w-max"></div>
+        </div>
+        <div class="row2">
+          <div><label>Ширина: по умолчанию</label><input type="number" id="p-w-def"></div>
+          <div><label>Высота: мин</label><input type="number" id="p-h-min"></div>
+        </div>
+        <div class="row2">
+          <div><label>Высота: макс</label><input type="number" id="p-h-max"></div>
+          <div><label>Высота: по умолчанию</label><input type="number" id="p-h-def"></div>
+        </div>
+        <h3 style="margin-top:16px">Типы конструкций</h3>
+        <p style="color:var(--muted);font-size:.82rem;margin:0 0 8px">Снимите галочку, чтобы скрыть тип на сайте.</p>
+        <div id="p-types" class="pricing-table"></div>
+        <button type="button" class="btn btn-ghost" style="margin-top:6px" onclick="addPricingRow('p-types','surcharge')">+ Добавить тип</button>
+        <h3 style="margin-top:16px">Профили (надбавка ₽/м периметра)</h3>
+        <div id="p-profiles" class="pricing-table"></div>
+        <button type="button" class="btn btn-ghost" style="margin-top:6px" onclick="addPricingRow('p-profiles','price')">+ Добавить профиль</button>
+        <h3 style="margin-top:16px">Стеклопакеты (₽/м²)</h3>
+        <div id="p-glass" class="pricing-table"></div>
+        <button type="button" class="btn btn-ghost" style="margin-top:6px" onclick="addPricingRow('p-glass','price')">+ Добавить стеклопакет</button>
+        <h3 style="margin-top:16px">Фурнитура (фикс. ₽)</h3>
+        <div id="p-hardware" class="pricing-table"></div>
+        <button type="button" class="btn btn-ghost" style="margin-top:6px" onclick="addPricingRow('p-hardware','price')">+ Добавить фурнитуру</button>
+        <div style="margin-top:20px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" id="p-save" onclick="savePricing()">Сохранить прайс</button>
+          <a href="/#constructor" target="_blank" rel="noopener" class="btn btn-ghost" style="text-decoration:none">Проверить на сайте ↗</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRIVACY -->
+    <section class="panel" id="panel-privacy">
+      <div class="card">
+        <h2>Политика конфиденциальности</h2>
+        <p style="color:var(--muted);font-size:.88rem;margin:-8px 0 16px">HTML содержимое страницы <a href="/privacy.html" target="_blank" rel="noopener">/privacy.html</a>. Если пусто — показывается встроенный черновик из файла.</p>
+        <label>HTML-текст политики</label>
+        <textarea id="s-privacy-html" class="privacy-editor" rows="16" placeholder="<h2>1. Общие положения</h2>&#10;<p>…</p>"></textarea>
+        <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="savePrivacy()">Сохранить политику</button>
+          <a href="/privacy.html" target="_blank" rel="noopener" class="btn btn-ghost" style="text-decoration:none">Предпросмотр ↗</a>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- inline prompt (категории) -->
+  <div class="inline-modal-back" id="inline-prompt" style="display:none">
+    <div class="inline-modal-box" role="dialog" aria-modal="true" aria-labelledby="inline-prompt-title">
+      <h3 id="inline-prompt-title">Название</h3>
+      <label for="inline-prompt-input" style="margin-top:0">Введите значение</label>
+      <input id="inline-prompt-input" autocomplete="off">
+      <div class="inline-modal-actions">
+        <button type="button" class="btn btn-primary" id="inline-prompt-ok">OK</button>
+        <button type="button" class="btn btn-ghost" id="inline-prompt-cancel">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- модалка удаления категории с работами -->
+  <div class="cat-del-back" id="cat-del" style="display:none">
+    <div class="cat-del-box">
+      <h3>Удалить категорию «<span id="cd-name"></span>»</h3>
+      <p id="cd-info" style="color:var(--muted);font-size:.9rem;margin:8px 0 16px"></p>
+      <div id="cd-reassign">
+        <label style="margin-top:0">Перенести работы в категорию:</label>
+        <select id="cd-to"></select>
+        <button class="btn btn-primary" style="margin-top:12px;width:100%" onclick="catDelReassign()">Перенести и удалить категорию</button>
+      </div>
+      <div style="border-top:1px solid var(--border);margin-top:16px;padding-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-danger" onclick="catDelWithWorks()">Удалить вместе с работами</button>
+        <button class="btn btn-ghost" onclick="closeCatDel()">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="lb" id="lightbox" onclick="lbBgClick(event)">
+    <button class="lb-x" onclick="closeLb()">&times;</button>
+    <button class="lb-arr p" onclick="lbNav(-1);event.stopPropagation()">&#8249;</button>
+    <img id="lb-img" src="" alt="">
+    <button class="lb-arr n" onclick="lbNav(1);event.stopPropagation()">&#8250;</button>
+    <span class="lb-cnt" id="lb-cnt"></span>
+  </div>
+
+<script src="/admin.js"></script>
+</body>
+</html>

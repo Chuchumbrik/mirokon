@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Политика конфиденциальности — Mirokon</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body class="legal-page min-h-screen">
+<div class="legal-wrap">
+  <a class="legal-back" href="/">← На главную</a>
+  <h1>Политика обработки персональных данных</h1>
+  <p class="legal-upd">Действует для сайта Mirokon · Москва и Московская область</p>
+
+  <div class="legal-note" id="privacy-note">⚠️ Черновик-заглушка на период тестов. Перед публичным релизом заменить реквизиты Оператора (наименование, ИНН/ОГРН, адрес, e-mail) на реальные.</div>
+  <div id="privacy-content" class="legal-content">
+  <h2>1. Общие положения</h2>
+  <p>Настоящая Политика определяет порядок обработки и защиты персональных данных пользователей сайта (далее — Сайт) и составлена в соответствии с Федеральным законом от 27.07.2006 № 152-ФЗ «О персональных данных».</p>
+  <p>Оператор: <b>Mirokon</b> (реквизиты уточняются), далее — «Оператор».</p>
+
+  <h2>2. Какие данные обрабатываются</h2>
+  <p>При отправке заявки через формы Сайта Оператор обрабатывает данные, которые пользователь предоставляет добровольно:</p>
+  <ul>
+    <li>имя;</li>
+    <li>номер телефона;</li>
+    <li>текст комментария к заявке (при наличии).</li>
+  </ul>
+
+  <h2>3. Цели обработки</h2>
+  <p>Данные обрабатываются исключительно для обратной связи: консультации, расчёта стоимости, согласования замера и оказания услуг по установке окон.</p>
+
+  <h2>4. Правовые основания</h2>
+  <p>Обработка осуществляется на основании согласия пользователя, выраженного при отправке формы (отметка о согласии), а также для исполнения договора, стороной которого является пользователь.</p>
+
+  <h2>5. Передача и хранение</h2>
+  <p>Заявки передаются ответственным сотрудникам Оператора по защищённым каналам (в т.ч. Telegram и электронная почта). Оператор не передаёт данные третьим лицам, кроме случаев, предусмотренных законодательством РФ.</p>
+
+  <h2>6. Права пользователя</h2>
+  <p>Пользователь вправе отозвать согласие на обработку персональных данных, запросить уточнение, блокирование или удаление своих данных, направив обращение по контактам Оператора.</p>
+
+  <h2>7. Изменения политики</h2>
+  <p>Оператор вправе изменять настоящую Политику. Актуальная редакция всегда размещена на данной странице.</p>
+  </div>
+</div>
+<footer class="legal-footer">© Mirokon · Москва и МО</footer>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.4/dist/purify.min.js"></script>
+<script src="/mirokon-db.js"></script>
+<script>
+(function () {
+  function sanitizeHtml(html) {
+    if (!html) return '';
+    if (window.DOMPurify) {
+      return DOMPurify.sanitize(html, {
+        ALLOWED_TAGS: ['p', 'br', 'strong', 'b', 'em', 'i', 'u', 'a', 'ul', 'ol', 'li', 'h2', 'h3', 'h4', 'blockquote', 'span'],
+        ALLOWED_ATTR: ['href', 'target', 'rel', 'class']
+      });
+    }
+    return '';
+  }
+  if (!window.createMirokonClient) return;
+  const sb = window.createMirokonClient();
+  sb.from('site_settings').select('data').eq('id', 1).maybeSingle().then(({ data }) => {
+    const html = data?.data?.privacy_html;
+    if (!html || !html.trim()) return;
+    const box = document.getElementById('privacy-content');
+    const note = document.getElementById('privacy-note');
+    if (box) box.innerHTML = sanitizeHtml(html);
+    if (note) note.style.display = 'none';
+  });
+})();
+</script>
+</body>
+</html>

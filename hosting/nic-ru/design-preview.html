@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mirokon — Дизайн-направление (preview)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0F172A; --primary:#1E40AF; --primary-700:#1D4ED8; --accent:#3B82F6;
+  --ice:#EFF6FF; --muted:#64748B; --border:#E2E8F0; --surface:#FFFFFF;
+  --r-sm:12px; --r-md:16px; --r-lg:24px; --r-full:9999px;
+  --sh-sm:0 1px 2px rgba(15,23,42,.06);
+  --sh-md:0 8px 24px rgba(15,23,42,.08);
+  --sh-lg:0 24px 48px rgba(15,23,42,.10);
+  --container:1200px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--surface);line-height:1.6;-webkit-font-smoothing:antialiased}
+h1,h2,h3,.font-head{font-family:'Montserrat',sans-serif;letter-spacing:-.02em;line-height:1.08}
+.container{max-width:var(--container);margin:0 auto;padding:0 24px}
+.muted{color:var(--muted)}
+
+/* Header */
+header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.8);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.bar{display:flex;align-items:center;justify-content:space-between;height:76px}
+.brand{font-family:'Montserrat';font-weight:800;font-size:1.4rem;letter-spacing:-.01em}
+.brand b{color:var(--primary)}
+nav{display:flex;gap:36px}
+nav a{color:var(--ink);text-decoration:none;font-weight:500;font-size:.98rem;opacity:.8;transition:opacity .2s}
+nav a:hover{opacity:1;color:var(--primary)}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:10px;border:none;cursor:pointer;font-family:'Inter';font-weight:600;
+  font-size:1rem;padding:15px 28px;border-radius:var(--r-md);text-decoration:none;transition:transform .15s,box-shadow .2s,background .2s}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 8px 20px rgba(59,130,246,.28)}
+.btn-primary:hover{background:var(--primary-700);transform:translateY(-2px);box-shadow:0 14px 28px rgba(59,130,246,.34)}
+.btn-secondary{background:transparent;color:var(--ink);border:1.5px solid var(--border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--primary)}
+.btn-ghost{background:transparent;color:var(--primary);padding:15px 8px}
+
+/* Hero */
+.hero{position:relative;overflow:hidden;background:
+  radial-gradient(1100px 520px at 78% -8%, var(--ice) 0%, rgba(239,246,255,0) 62%),
+  linear-gradient(180deg,#fff 0%, #fbfdff 100%)}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center;padding:88px 0 72px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:.85rem;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--primary);background:var(--ice);padding:8px 14px;border-radius:var(--r-full);margin-bottom:24px}
+.hero h1{font-size:clamp(2.4rem,5vw,4rem);font-weight:800}
+.hero h1 .em{color:var(--primary)}
+.hero p.lead{font-size:1.2rem;color:var(--muted);max-width:30ch;margin:22px 0 32px}
+.cta-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.trust{display:flex;gap:10px;flex-wrap:wrap;margin-top:36px}
+.chip{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);
+  box-shadow:var(--sh-sm);padding:10px 16px;border-radius:var(--r-full);font-weight:500;font-size:.92rem}
+.chip svg{width:18px;height:18px;color:var(--accent);flex:none}
+
+/* Hero visual */
+.visual{position:relative}
+.glass-card{position:relative;background:linear-gradient(150deg,#ffffff, #f3f8ff);border:1px solid var(--border);
+  border-radius:var(--r-lg);box-shadow:var(--sh-lg);padding:28px}
+.glass-card::before{content:"";position:absolute;inset:-1px;border-radius:var(--r-lg);padding:1px;
+  background:linear-gradient(160deg,rgba(59,130,246,.35),rgba(59,130,246,0) 40%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+.price-tag{position:absolute;right:-14px;bottom:26px;background:var(--ink);color:#fff;border-radius:var(--r-md);
+  padding:14px 20px;box-shadow:var(--sh-lg)}
+.price-tag .n{font-family:'Montserrat';font-weight:800;font-size:1.5rem}
+.price-tag .l{font-size:.78rem;opacity:.7}
+
+/* Profiles strip */
+.profiles{border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:#fff}
+.profiles .container{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:22px 24px;flex-wrap:wrap}
+.profiles span{font-family:'Montserrat';font-weight:700;font-size:1.15rem;color:#94a3b8;letter-spacing:.02em}
+.profiles .lbl{font-family:'Inter';font-weight:500;font-size:.85rem;color:var(--muted);letter-spacing:.02em}
+
+/* Style guide */
+.guide{padding:88px 0}
+.guide h2{font-size:2rem;font-weight:800;margin-bottom:8px}
+.guide .sub{color:var(--muted);margin-bottom:40px}
+.panel{display:grid;grid-template-columns:repeat(2,1fr);gap:24px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--sh-md);padding:28px}
+.card h3{font-size:1.15rem;margin-bottom:18px}
+.swatches{display:flex;gap:12px;flex-wrap:wrap}
+.sw{width:84px}
+.sw .box{height:56px;border-radius:var(--r-sm);border:1px solid var(--border);box-shadow:var(--sh-sm)}
+.sw small{display:block;margin-top:8px;font-size:.74rem;color:var(--muted)}
+.type-row{display:flex;align-items:baseline;gap:14px;padding:10px 0;border-bottom:1px dashed var(--border)}
+.type-row:last-child{border-bottom:none}
+.type-row .tag{font-size:.72rem;color:var(--muted);width:78px;flex:none}
+.btns{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+footer{padding:40px 0;border-top:1px solid var(--border);color:var(--muted);font-size:.9rem}
+
+@media(max-width:900px){
+  .hero-grid{grid-template-columns:1fr;gap:36px;padding:56px 0}
+  nav{display:none}
+  .panel{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container bar">
+    <div class="brand">MIRO<b>KON</b></div>
+    <nav>
+      <a href="#">Конструктор</a>
+      <a href="#">Примеры работ</a>
+      <a href="#">Отзывы</a>
+      <a href="#">Новости</a>
+    </nav>
+    <a class="btn btn-primary" href="#">Заказать звонок</a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container hero-grid">
+    <div>
+      <span class="eyebrow">● Москва и Московская область</span>
+      <h1>Окна, которые <span class="em">служат десятилетия</span></h1>
+      <p class="lead">Премиальные пластиковые окна и аккуратный монтаж под ключ. Точно, чисто, с гарантией.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="#">Рассчитать стоимость
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a class="btn btn-secondary" href="#">Примеры работ</a>
+      </div>
+      <div class="trust">
+        <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6l8-4z"/></svg> Гарантия 5 лет</span>
+        <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4M7 3h10l4 4v12a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg> Договор</span>
+        <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6v6l4 2M12 22a10 10 0 100-20 10 10 0 000 20z"/></svg> Монтаж за 1 день</span>
+      </div>
+    </div>
+
+    <div class="visual">
+      <div class="glass-card">
+        <svg viewBox="0 0 420 320" width="100%" role="img" aria-label="Современное окно">
+          <defs>
+            <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#EAF2FF"/><stop offset="0.5" stop-color="#D7E8FF"/><stop offset="1" stop-color="#F4F9FF"/>
+            </linearGradient>
+            <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#cfe4ff"/><stop offset="1" stop-color="#eef6ff"/>
+            </linearGradient>
+          </defs>
+          <!-- frame -->
+          <rect x="24" y="20" width="372" height="280" rx="14" fill="#fff" stroke="#cbd5e1" stroke-width="6"/>
+          <!-- two sashes -->
+          <rect x="40" y="36" width="166" height="248" rx="6" fill="url(#sky)" stroke="#94a3b8" stroke-width="3"/>
+          <rect x="214" y="36" width="166" height="248" rx="6" fill="url(#glass)" stroke="#94a3b8" stroke-width="3"/>
+          <!-- glass light streaks -->
+          <path d="M70 60 L150 250" stroke="#fff" stroke-width="10" opacity="0.5" stroke-linecap="round"/>
+          <path d="M240 56 L330 250" stroke="#fff" stroke-width="14" opacity="0.55" stroke-linecap="round"/>
+          <!-- handle -->
+          <rect x="200" y="150" width="10" height="34" rx="5" fill="#1E40AF"/>
+        </svg>
+      </div>
+      <div class="price-tag">
+        <div class="n">от 17 490 ₽</div>
+        <div class="l">ориентировочно · под ключ</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- profiles -->
+  <div class="profiles">
+    <div class="container">
+      <span class="lbl">Работаем с системами:</span>
+      <span>WHS</span><span>VEKA</span><span>REHAU</span><span>Salamander</span>
+    </div>
+  </div>
+</section>
+
+<!-- STYLE GUIDE -->
+<section class="guide">
+  <div class="container">
+    <h2>Дизайн-система</h2>
+    <p class="sub">Токены направления «премиальный минимализм · синий/стекло». Источник: <code>docs/design.md</code></p>
+
+    <div class="panel">
+      <div class="card">
+        <h3>Палитра</h3>
+        <div class="swatches">
+          <div class="sw"><div class="box" style="background:#0F172A"></div><small>Ink<br>#0F172A</small></div>
+          <div class="sw"><div class="box" style="background:#1E40AF"></div><small>Primary<br>#1E40AF</small></div>
+          <div class="sw"><div class="box" style="background:#3B82F6"></div><small>Accent<br>#3B82F6</small></div>
+          <div class="sw"><div class="box" style="background:#EFF6FF"></div><small>Ice<br>#EFF6FF</small></div>
+          <div class="sw"><div class="box" style="background:#64748B"></div><small>Muted<br>#64748B</small></div>
+          <div class="sw"><div class="box" style="background:#fff"></div><small>Surface<br>#FFFFFF</small></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Типографика</h3>
+        <div class="type-row"><span class="tag">display</span><span class="font-head" style="font-weight:800;font-size:1.7rem">Окна Mirokon</span></div>
+        <div class="type-row"><span class="tag">h2 · Mont 700</span><span class="font-head" style="font-weight:700;font-size:1.3rem">Конструктор окон</span></div>
+        <div class="type-row"><span class="tag">body · Inter</span><span style="font-size:1rem">Аккуратный монтаж под ключ</span></div>
+        <div class="type-row"><span class="tag">small</span><span class="muted" style="font-size:.85rem;font-weight:500">Ориентировочная стоимость</span></div>
+      </div>
+
+      <div class="card">
+        <h3>Кнопки</h3>
+        <div class="btns">
+          <button class="btn btn-primary">Primary</button>
+          <button class="btn btn-secondary">Secondary</button>
+          <button class="btn btn-ghost">Ghost →</button>
+        </div>
+        <div class="btns" style="margin-top:16px">
+          <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6l8-4z"/></svg> Trust-чип</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Карточка · тени · радиусы</h3>
+        <p class="muted" style="font-size:.95rem">Surface, граница 1px, мягкая тень <code>--sh-md</code>, радиус 24px. Скругления 12–24px, тени низкие и мягкие — премиум без тяжести.</p>
+        <div style="display:flex;gap:10px;margin-top:16px">
+          <div style="flex:1;height:44px;border-radius:12px;background:var(--ice);border:1px solid var(--border)"></div>
+          <div style="flex:1;height:44px;border-radius:16px;background:var(--ice);border:1px solid var(--border)"></div>
+          <div style="flex:1;height:44px;border-radius:24px;background:var(--ice);border:1px solid var(--border)"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">Mirokon · превью дизайн-направления (не продакшен). Премиальный минимализм · синий/стекло.</div>
+</footer>
+
+</body>
+</html>
