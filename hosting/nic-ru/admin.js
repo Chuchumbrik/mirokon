@@ -104,14 +104,28 @@ function setLeadFilter(f) {
   document.querySelectorAll('.filters .f[data-lf]').forEach(x => x.classList.toggle('active', x.dataset.lf === f));
   loadLeads();
 }
-async function loadLeads() {
-  showListLoading('leads-list');
+let leadSnap = '';
+let leadLoading = false;
+async function loadLeads(quiet) {
+  if (quiet && leadLoading) return;
+  const filter = leadFilter;
+  leadLoading = true;
   const box = $('leads-list');
+  if (!quiet) showListLoading('leads-list');
+  try {
   let q = sb.from('leads').select('*').order('created_at', { ascending: false });
-  if (leadFilter === 'new') q = q.eq('processed', false);
-  else if (leadFilter === 'processed') q = q.eq('processed', true);
+  if (filter === 'new') q = q.eq('processed', false);
+  else if (filter === 'processed') q = q.eq('processed', true);
   const { data, error } = await q;
-  if (error) return toast('Ошибка загрузки заявок', true);
+  if (filter !== leadFilter) return;
+  if (error || !data) {
+    if (!quiet) { box.replaceChildren(); toast('Ошибка загрузки заявок', true); }
+    return;
+  }
+  const snap = data.map(l => l.id + (l.processed ? 1 : 0)).join('|');
+  if (quiet && snap === leadSnap) return;
+  leadSnap = snap;
+  box.replaceChildren();
   if (!data.length) { box.appendChild(el('div', { class: 'empty', text: 'Нет заявок в этой категории' })); return; }
   data.forEach(l => {
     const badge = el('span', { class: 'badge ' + (l.processed ? 'on' : 'off'), text: l.processed ? 'обработана' : 'новая' });
@@ -153,7 +167,11 @@ async function loadLeads() {
     body.appendChild(el('div', { class: 'lead-card-when', text: new Date(l.created_at).toLocaleString('ru-RU') }));
     box.appendChild(el('div', { class: 'lead-card' }, head, body));
   });
+  } finally { leadLoading = false; }
 }
+// ponytail: poll 15s while the tab is open; SSE if it must be instant
+setInterval(() => { if (!document.hidden && activeTab === 'leads') loadLeads(true); }, 15000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && activeTab === 'leads') loadLeads(true); });
 async function moderateLead(id, action) {
   if (action === 'delete' && !confirm('Удалить заявку безвозвратно?')) return;
   try {
@@ -180,7 +198,8 @@ async function loadWorks() {
   showListLoading('works-list');
   const box = $('works-list');
   const { data, error } = await sb.from('works').select('*, work_photos(id)').order('sort').order('created_at', { ascending: false });
-  if (error) return toast('Ошибка загрузки работ', true);
+  if (error || !data) { box.replaceChildren(); return toast('Ошибка загрузки работ', true); }
+  box.replaceChildren();
   if (!data.length) { WORKS_LIST = []; box.appendChild(el('div', { class: 'empty', text: 'Пока нет работ' })); return; }
   WORKS_LIST = data;
   data.forEach(w => {
@@ -590,7 +609,8 @@ async function loadReviews() {
   if (reviewFilter === 'pending') q = q.eq('approved', false);
   else if (reviewFilter === 'approved') q = q.eq('approved', true);
   const { data, error } = await q;
-  if (error) return toast('Ошибка загрузки отзывов', true);
+  if (error || !data) { box.replaceChildren(); return toast('Ошибка загрузки отзывов', true); }
+  box.replaceChildren();
   if (!data.length) { box.appendChild(el('div', { class: 'empty', text: 'Нет отзывов в этой категории' })); return; }
   data.forEach(r => {
     const badge = el('span', { class: 'badge ' + (r.approved ? 'on' : 'off'), text: r.approved ? 'опубликован' : 'на модерации' });
@@ -613,7 +633,8 @@ async function loadNews() {
   showListLoading('news-list');
   const box = $('news-list');
   const { data, error } = await sb.from('news').select('*').order('created_at', { ascending: false });
-  if (error) return toast('Ошибка загрузки новостей', true);
+  if (error || !data) { box.replaceChildren(); return toast('Ошибка загрузки новостей', true); }
+  box.replaceChildren();
   if (!data.length) { box.appendChild(el('div', { class: 'empty', text: 'Пока нет новостей' })); return; }
   data.forEach(n => {
     const badge = el('span', { class: 'badge ' + (n.published ? 'on' : 'off'), text: n.published ? 'на сайте' : 'черновик' });
@@ -721,7 +742,7 @@ function loadPricingForm() {
   const p = settingsCache.pricing || cloneDef(window.DEFAULT_PRICING);
   pricingKnownIds = new Set();
   ['types', 'profiles', 'glass', 'hardware'].forEach(k => (p[k] || []).forEach(i => { if (i.id) pricingKnownIds.add(i.id); }));
-  $('p-base').value = p.base_per_m ?? 2500;
+  $('p-base').value = p.base_per_m ?? 25000;
   $('p-min').value = p.min_price ?? 3000;
   const w = p.width || {}, h = p.height || {};
   $('p-w-min').value = w.min ?? 800; $('p-w-max').value = w.max ?? 2000; $('p-w-def').value = w.default ?? 1400;
@@ -745,7 +766,7 @@ async function savePricing(opts) {
     const { data: row } = await sb.from('site_settings').select('data').eq('id', 1).maybeSingle();
     if (row && row.data) settingsCache = row.data;
     settingsCache.pricing = {
-      base_per_m: parseInt($('p-base').value, 10) || 2500,
+      base_per_m: parseInt($('p-base').value, 10) || 25000,
       min_price: parseInt($('p-min').value, 10) || 3000,
       width: { min: +$('p-w-min').value || 800, max: +$('p-w-max').value || 2000, step: 10, default: +$('p-w-def').value || 1400 },
       height: { min: +$('p-h-min').value || 600, max: +$('p-h-max').value || 2400, step: 10, default: +$('p-h-def').value || 1400 },

@@ -45,6 +45,20 @@ try {
     $pdo = db();
     out('✓ Подключение к MySQL OK', $cli);
 
+    $already = false;
+    try {
+        $already = (bool)$pdo->query('SELECT 1 FROM site_settings WHERE id = 1 LIMIT 1')->fetchColumn();
+    } catch (Throwable $e) {
+        $already = false;
+    }
+    if ($already) {
+        out('Уже установлено. Данные не изменены. Удалите install.php с сервера.', $cli);
+        if (!$cli) {
+            echo '<p>Вход в админку: <a href="/landing.html">/landing.html</a></p></body></html>';
+        }
+        exit(0);
+    }
+
     $schema = file_get_contents($root . '/sql/schema.sql');
     $seed = file_get_contents($root . '/sql/seed.sql');
     if ($schema === false || $seed === false) {
@@ -69,14 +83,18 @@ try {
     }
     out('✓ Тестовые данные загружены', $cli);
 
-    $hash = password_hash('MirokonTest!2026', PASSWORD_DEFAULT);
-    $upd = $pdo->prepare('UPDATE admins SET password_hash = ? WHERE email = ?');
-    $upd->execute([$hash, 'test-admin@mirokon-new.test']);
-    if ($upd->rowCount() < 1) {
-        $pdo->prepare('INSERT INTO admins (id, email, password_hash) VALUES (?, ?, ?)')
-            ->execute(['a0000000-0000-4000-8000-000000000001', 'test-admin@mirokon-new.test', $hash]);
+    $email = mb_strtolower(trim((string)($CONFIG['admin_email'] ?? '')));
+    $password = (string)($CONFIG['admin_password'] ?? '');
+    if ($email === '' || $password === '') {
+        throw new RuntimeException('Укажите admin_email и admin_password в config.local.php');
     }
-    out('✓ Админ: test-admin@mirokon-new.test / MirokonTest!2026', $cli);
+    $hash = password_hash($password, PASSWORD_DEFAULT);
+    $id = 'a0000000-0000-4000-8000-000000000001';
+    $pdo->prepare(
+        'INSERT INTO admins (id, email, password_hash) VALUES (?, ?, ?)
+         ON DUPLICATE KEY UPDATE email = VALUES(email), password_hash = VALUES(password_hash)'
+    )->execute([$id, $email, $hash]);
+    out('✓ Админ: ' . $email, $cli);
 
     out('', $cli);
     out('Готово. Удалите install.php с сервера.', $cli);

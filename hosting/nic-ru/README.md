@@ -44,13 +44,9 @@
 5. **Удалите `install.php`.**
 6. Права на запись: `uploads/` (и подпапки) — 755/775.
 
-### Тестовый админ (из seed)
+### Админ
 
-- URL: `/landing.html`
-- E-mail: `test-admin@mirokon-new.test`
-- Пароль: `MirokonTest!2026`
-
-Смените пароль после первого входа (через SQL `password_hash` или новый админ).
+Вход: `/landing.html`. Логин и пароль — `admin_email` и `admin_password` из `config.local.php`. `install.php` создаёт эту учётку и на странице показывает только почту.
 
 ## Telegram (опционально)
 

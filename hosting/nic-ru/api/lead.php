@@ -5,7 +5,21 @@ require_once dirname(__DIR__) . '/includes/bootstrap.php';
 cors_and_methods(['POST', 'OPTIONS']);
 require_method('POST');
 
+function lead_phone_ok(string $phone): bool
+{
+    $d = preg_replace('/\D+/', '', $phone) ?? '';
+    if (strlen($d) === 11 && $d[0] === '8') {
+        $d = '7' . substr($d, 1);
+    } elseif (strlen($d) === 10 && $d[0] === '9') {
+        $d = '7' . $d;
+    }
+    return (bool)preg_match('/^7\d{10}$/', $d);
+}
+
 $body = json_body();
+if (trim((string)($body['hp'] ?? '')) !== '') {
+    json_response(['success' => true, 'message' => 'Заявка отправлена! Мы свяжемся с вами в ближайшее время.']);
+}
 $name = mb_substr(trim((string)($body['name'] ?? '')), 0, 80);
 $phone = mb_substr(trim((string)($body['phone'] ?? '')), 0, 32);
 $message = mb_substr(trim((string)($body['message'] ?? '')), 0, 2000);
@@ -16,8 +30,11 @@ if (is_array($cart)) {
     $cart = null;
 }
 
-if ($name === '' || $phone === '') {
-    json_response(['error' => 'Укажите имя и телефон'], 400);
+if (empty($body['consent'])) {
+    json_response(['error' => 'Нужно согласие на обработку персональных данных'], 400);
+}
+if ($name === '' || !lead_phone_ok($phone)) {
+    json_response(['error' => 'Укажите имя и телефон в формате +7'], 400);
 }
 
 $ip = client_ip();

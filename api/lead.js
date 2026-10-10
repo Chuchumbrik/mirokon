@@ -38,19 +38,34 @@ async function emailDubl({ name, phone, message, cart_items }) {
   }
 }
 
+function leadPhoneDigits(phone) {
+  let d = String(phone || '').replace(/\D/g, '');
+  if (d.length === 11 && d[0] === '8') d = '7' + d.slice(1);
+  else if (d.length === 10 && d[0] === '9') d = '7' + d;
+  return /^7\d{10}$/.test(d) ? d : '';
+}
+
 const handler = async (req, res) => {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  let { name, phone, message, cart_items } = req.body || {};
+  const body = req.body || {};
+  if (String(body.hp || '').trim()) {
+    return res.json({ success: true, message: 'Заявка отправлена! Мы свяжемся с вами в ближайшее время.' });
+  }
+
+  let { name, phone, message, cart_items } = body;
   name = (name || '').toString().trim().slice(0, 80);
   phone = (phone || '').toString().trim().slice(0, 32);
   message = (message || '').toString().trim().slice(0, 2000);
   cart_items = Array.isArray(cart_items) ? cart_items.slice(0, 50) : null;
 
-  if (!name || !phone) {
-    return res.status(400).json({ error: 'Укажите имя и телефон' });
+  if (!body.consent) {
+    return res.status(400).json({ error: 'Нужно согласие на обработку персональных данных' });
+  }
+  if (!name || !leadPhoneDigits(phone)) {
+    return res.status(400).json({ error: 'Укажите имя и телефон в формате +7' });
   }
 
   // Rate-limit: не более 5 заявок/час с одного IP
@@ -75,15 +90,19 @@ const handler = async (req, res) => {
     // 1) Сохраняем заявку в БД (service_role минует RLS) — best-effort
     let lead = null;
     if (SUPABASE_URL && SERVICE_KEY) {
-      const dbRes = await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
-        method: 'POST', headers: { ...svc, Prefer: 'return=representation' },
-        body: JSON.stringify({ name, phone, message: message || null, cart_items: cart_items || null })
-      });
-      if (dbRes.ok) {
-        const rows = await dbRes.json().catch(() => []);
-        lead = rows && rows[0];
-      } else {
-        console.error('Lead DB insert failed:', dbRes.status, await dbRes.text().catch(() => ''));
+      try {
+        const dbRes = await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
+          method: 'POST', headers: { ...svc, Prefer: 'return=representation' },
+          body: JSON.stringify({ name, phone, message: message || null, cart_items: cart_items || null })
+        });
+        if (dbRes.ok) {
+          const rows = await dbRes.json().catch(() => []);
+          lead = rows && rows[0];
+        } else {
+          console.error('Lead DB insert failed:', dbRes.status, await dbRes.text().catch(() => ''));
+        }
+      } catch (e) {
+        console.error('Lead DB insert failed:', e.message);
       }
     }
 
@@ -112,10 +131,14 @@ const handler = async (req, res) => {
       const mid = j && j.ok && j.result && j.result.message_id;
       const cid = j && j.result && j.result.chat && j.result.chat.id;
       if (mid) {
-        await fetch(`${SUPABASE_URL}/rest/v1/leads?id=eq.${lead.id}`, {
-          method: 'PATCH', headers: { ...svc, Prefer: 'return=minimal' },
-          body: JSON.stringify({ tg_chat_id: String(cid), tg_message_id: mid })
-        });
+        try {
+          await fetch(`${SUPABASE_URL}/rest/v1/leads?id=eq.${lead.id}`, {
+            method: 'PATCH', headers: { ...svc, Prefer: 'return=minimal' },
+            body: JSON.stringify({ tg_chat_id: String(cid), tg_message_id: mid })
+          });
+        } catch (e) {
+          console.error('Lead TG ids save failed:', e.message);
+        }
       }
     }
 
@@ -130,3 +153,12 @@ const handler = async (req, res) => {
 };
 
 module.exports = handler;
+
+if (require.main === module) {
+  const assert = require('assert');
+  assert.strictEqual(leadPhoneDigits('+7 (999) 123-45-67'), '79991234567');
+  assert.strictEqual(leadPhoneDigits('89991234567'), '79991234567');
+  assert.strictEqual(leadPhoneDigits('9991234567'), '79991234567');
+  assert.strictEqual(leadPhoneDigits('123'), '');
+  assert.strictEqual(leadPhoneDigits('+7 (999) 123-45-6'), '');
+}

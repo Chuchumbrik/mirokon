@@ -27,4 +27,8 @@ return [
 
     // Сессия админки
     'session_name' => 'mirokon_admin',
+
+    // Первый админ. install.php запишет его в таблицу admins и больше пароль нигде не хранит.
+    'admin_email' => 'admin@example.ru',
+    'admin_password' => 'CHANGE_ME',
 ];

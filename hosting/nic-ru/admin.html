@@ -60,7 +60,8 @@ textarea{resize:vertical;min-height:70px}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 20px;border-radius:12px;box-shadow:var(--sh);font-size:.9rem;opacity:0;transition:.3s;pointer-events:none}
 .toast.show{opacity:1}
 .toast.err{background:#b91c1c}
-.row2{display:grid;grid-template-columns:1fr 140px;gap:12px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row2 > *{min-width:0}
 @media(max-width:560px){.row2{grid-template-columns:1fr}}
 .ph-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:10px 0}
 .ph-card{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:4/3;background:#f1f5f9;border:1px solid var(--border);cursor:pointer}
@@ -129,9 +130,10 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
 .list-loading::before{content:'';display:inline-block;width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:adm-spin .7s linear infinite;vertical-align:middle;margin-right:10px}
 @keyframes adm-spin{to{transform:rotate(360deg)}}
 .settings-nav{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
-.settings-nav a{padding:8px 14px;border:1px solid var(--border);border-radius:10px;background:#fff;font-size:.85rem;font-weight:600;color:var(--muted);text-decoration:none;transition:.15s}
-.settings-nav a:hover{border-color:var(--accent);color:var(--primary)}
-.settings-block{scroll-margin-top:96px}
+.settings-nav button{padding:8px 14px;border:1px solid var(--border);border-radius:10px;background:#fff;font-family:'Inter';font-size:.85rem;font-weight:600;color:var(--muted);cursor:pointer}
+.settings-nav button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.settings-pane{display:none}
+.settings-pane.active{display:block}
 .ph-hint{color:var(--muted);font-size:.82rem;margin:0 0 10px;line-height:1.45}
 .inline-modal-back{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:120;display:none;align-items:center;justify-content:center;padding:16px}
 .inline-modal-box{background:#fff;border-radius:16px;box-shadow:var(--sh);padding:24px;max-width:420px;width:100%}
@@ -200,7 +202,7 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
         </div>
         <label>Описание</label><textarea id="w-desc" placeholder="Двухкамерный стеклопакет…"></textarea>
         <div class="row2" style="margin-top:8px">
-          <div><label>Система (профиль)</label><input id="w-system" placeholder="VEKA Softline 70"></div>
+          <div><label>Система (профиль)</label><input id="w-system" placeholder="REHAU Delight"></div>
           <div><label>Цена «от», ₽</label><input type="number" id="w-pricefrom" placeholder="38000"></div>
         </div>
         <div class="row2">
@@ -326,19 +328,20 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
     <!-- SETTINGS -->
     <section class="panel" id="panel-settings">
       <nav class="settings-nav" aria-label="Разделы настроек">
-        <a href="#settings-contacts">Контакты</a>
-        <a href="#settings-hero">Hero</a>
-        <a href="#settings-footer">Футер</a>
-        <a href="#settings-seo">SEO</a>
-        <a href="#settings-copy">Тексты</a>
-        <a href="#settings-scope">Кейсы</a>
-        <a href="#settings-logo">Логотип</a>
-        <a href="#settings-sections">Секции</a>
+        <button type="button" class="active" data-settings-pane="contacts">Контакты</button>
+        <button type="button" data-settings-pane="hero">Первый экран</button>
+        <button type="button" data-settings-pane="footer">Футер</button>
+        <button type="button" data-settings-pane="seo">SEO</button>
+        <button type="button" data-settings-pane="copy">Тексты</button>
+        <button type="button" data-settings-pane="scope">Кейсы</button>
+        <button type="button" data-settings-pane="logo">Логотип</button>
+        <button type="button" data-settings-pane="sections">Секции</button>
       </nav>
       <div class="card">
         <h2>Настройки сайта</h2>
-        <p style="color:var(--muted);font-size:.88rem;margin:-8px 0 16px">Контакты, тексты Hero, SEO и видимость секций. Изменения появятся на сайте после обновления страницы.</p>
-        <h3 class="settings-block" id="settings-contacts">Контакты</h3>
+        <p style="color:var(--muted);font-size:.88rem;margin:-8px 0 16px">Открыт один раздел. Кнопка внизу сохраняет все разделы сразу.</p>
+        <div class="settings-pane active" id="pane-contacts">
+        <h3>Контакты</h3>
         <div class="row2">
           <div><label>Название компании</label><input id="s-company" placeholder="Mirokon"></div>
           <div><label>Телефон (цифры)</label><input id="s-phone" placeholder="79991234567"></div>
@@ -352,8 +355,10 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
           <div><label>Email</label><input id="s-email" type="email" placeholder="info@company.ru"></div>
         </div>
         <label>Часы работы</label><input id="s-hours" placeholder="Пн–Вс 09:00–21:00">
+        </div>
 
-        <h3 class="settings-block" id="settings-hero" style="margin-top:20px">Hero (первый экран)</h3>
+        <div class="settings-pane" id="pane-hero">
+        <h3>Первый экран</h3>
         <label>Метка над заголовком</label><input id="s-hero-eyebrow">
         <div class="row2">
           <div><label>Заголовок (начало)</label><input id="s-hero-t1" placeholder="Окна, которые"></div>
@@ -366,16 +371,20 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
         </div>
         <label>Чипы доверия (по одному на строку)</label><textarea id="s-hero-chips" rows="3" placeholder="Гарантия 5 лет&#10;Договор&#10;Монтаж за 1 день"></textarea>
         <label>Статистика (формат: значение | подпись, по строке)</label><textarea id="s-hero-stats" rows="3" placeholder="1500+ | окон установлено&#10;8 лет | на рынке"></textarea>
+        </div>
 
-        <h3 class="settings-block" id="settings-footer" style="margin-top:20px">Футер и соцсети</h3>
+        <div class="settings-pane" id="pane-footer">
+        <h3>Футер и соцсети</h3>
         <label>О компании (футер)</label><textarea id="s-footer-about"></textarea>
         <label>Копирайт (нижняя строка футера)</label><input id="s-footer-copy" placeholder="© 2026 Mirokon · Москва и МО">
         <div class="row2">
           <div><label>VK (ссылка)</label><input id="s-vk" placeholder="https://vk.com/..."></div>
           <div><label>Avito (ссылка)</label><input id="s-avito" placeholder="https://avito.ru/..."></div>
         </div>
+        </div>
 
-        <h3 class="settings-block" id="settings-seo" style="margin-top:20px">SEO</h3>
+        <div class="settings-pane" id="pane-seo">
+        <h3>SEO</h3>
         <label>Title страницы</label><input id="s-seo-title">
         <label>Meta description</label><textarea id="s-seo-desc" rows="2"></textarea>
         <label>OG-картинка (1200×630, JPG/PNG)</label>
@@ -384,30 +393,39 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
         <div id="s-og-preview" style="margin-top:8px"></div>
         <p id="s-og-size-hint" style="color:var(--muted);font-size:.8rem;margin-top:6px"></p>
         <input type="hidden" id="s-og-image-url">
+        </div>
 
-        <h3 class="settings-block" id="settings-copy" style="margin-top:20px">Тексты секций</h3>
+        <div class="settings-pane" id="pane-copy">
+        <h3>Тексты секций</h3>
         <div class="row2"><div><label>Конструктор — заголовок</label><input id="s-copy-ctor-t"></div><div><label>Конструктор — подзаголовок</label><input id="s-copy-ctor-s"></div></div>
         <div class="row2"><div><label>Работы — заголовок</label><input id="s-copy-gal-t"></div><div><label>Работы — подзаголовок</label><input id="s-copy-gal-s"></div></div>
         <div class="row2"><div><label>Отзывы — заголовок</label><input id="s-copy-rev-t"></div><div><label>Отзывы — подзаголовок</label><input id="s-copy-rev-s"></div></div>
         <div class="row2"><div><label>Новости — заголовок</label><input id="s-copy-news-t"></div><div><label>Новости — подзаголовок</label><input id="s-copy-news-s"></div></div>
         <div class="row2"><div><label>Контакты — заголовок</label><input id="s-copy-con-t"></div><div><label>Контакты — подзаголовок</label><input id="s-copy-con-s"></div></div>
+        </div>
 
-        <h3 class="settings-block" id="settings-scope" style="margin-top:20px">Перечень работ в кейсах</h3>
+        <div class="settings-pane" id="pane-scope">
+        <h3>Перечень работ в кейсах</h3>
         <label>Пункты чеклиста (по одному на строку)</label>
         <textarea id="s-scope-items" rows="4" placeholder="Демонтаж старого&#10;Монтаж окна"></textarea>
+        </div>
 
-        <h3 class="settings-block" id="settings-logo" style="margin-top:20px">Логотип</h3>
+        <div class="settings-pane" id="pane-logo">
+        <h3>Логотип</h3>
         <input type="file" id="s-logo" accept="image/*">
         <div id="s-logo-preview" style="margin-top:8px"></div>
         <input type="hidden" id="s-logo-url">
+        </div>
 
-        <h3 class="settings-block" id="settings-sections" style="margin-top:20px">Секции на сайте</h3>
+        <div class="settings-pane" id="pane-sections">
+        <h3>Секции на сайте</h3>
         <div class="scope-checks">
           <label class="check"><input type="checkbox" id="s-sec-constructor" checked> Конструктор</label>
           <label class="check"><input type="checkbox" id="s-sec-gallery" checked> Примеры работ</label>
           <label class="check"><input type="checkbox" id="s-sec-reviews" checked> Отзывы</label>
           <label class="check"><input type="checkbox" id="s-sec-news" checked> Новости</label>
           <label class="check"><input type="checkbox" id="s-sec-contact" checked> Форма заявки</label>
+        </div>
         </div>
 
         <div style="margin-top:20px;display:flex;gap:8px;flex-wrap:wrap">
@@ -424,7 +442,7 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
         <h2>Прайс конструктора</h2>
         <p style="color:var(--muted);font-size:.88rem;margin:-8px 0 16px">Ориентировочные цены для калькулятора на сайте. Точная смета — после замера.</p>
         <div class="row2">
-          <div><label>База, ₽/м периметра</label><input type="number" id="p-base"></div>
+          <div><label>База, ₽/м²</label><input type="number" id="p-base"></div>
           <div><label>Минимальная цена, ₽</label><input type="number" id="p-min"></div>
         </div>
         <h3 style="margin-top:16px">Размеры (мм)</h3>
@@ -516,5 +534,18 @@ input[type=file]::file-selector-button:hover{background:#1D4ED8}
   </div>
 
 <script src="/admin.js"></script>
+<script>
+document.querySelectorAll('[data-settings-pane]').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var id = btn.getAttribute('data-settings-pane');
+    document.querySelectorAll('[data-settings-pane]').forEach(function (b) {
+      b.classList.toggle('active', b === btn);
+    });
+    document.querySelectorAll('.settings-pane').forEach(function (pane) {
+      pane.classList.toggle('active', pane.id === 'pane-' + id);
+    });
+  });
+});
+</script>
 </body>
 </html>

@@ -1,7 +1,6 @@
 {
   "name": "mirokon",
   "private": true,
-  "type": "module",
   "scripts": {
     "migrate": "node scripts/migrate.mjs",
     "create-test-admin": "node scripts/create-test-admin.mjs",
