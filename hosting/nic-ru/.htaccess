@@ -1,0 +1,27 @@
+# Mirokon — nic.ru virtual hosting
+Options -Indexes
+DirectoryIndex index.html index.php
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  # Защита конфигов и includes/sql
+  RewriteRule ^(config\.local\.php|config\.example\.php)$ - [F,L]
+  RewriteRule ^(includes|sql)/ - [F,L]
+</IfModule>
+
+# Запрет исполнения PHP внутри uploads
+<IfModule mod_rewrite.c>
+  RewriteRule ^uploads/.*\.(?i:php|phtml|phar|cgi|pl)$ - [F,L]
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+  Header set X-Frame-Options "SAMEORIGIN"
+</IfModule>
+
+# PHP upload limits (могут игнорироваться на shared — дублируйте в панели)
+<IfModule mod_php.c>
+  php_value upload_max_filesize 16M
+  php_value post_max_size 20M
+</IfModule>

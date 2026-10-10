@@ -1,3 +1,39 @@
+function leadNationalDigits(value) {
+  let d = String(value || '').replace(/\D/g, '');
+  if (d[0] === '8' && d.length > 10) d = d.slice(1);
+  else if (d[0] === '7' && (String(value).includes('+7') || d.length > 10)) d = d.slice(1);
+  return d.slice(0, 10);
+}
+function leadFormatPhone(national) {
+  let i = 0;
+  return '+7 (___) ___-__-__'.replace(/_/g, () => national[i++] || '_');
+}
+function leadPhoneCaret(formatted, count) {
+  if (count <= 0) return 4;
+  let seen = 0;
+  for (let i = 0; i < formatted.length; i++) {
+    if (i > 2 && formatted[i] >= '0' && formatted[i] <= '9') {
+      seen++;
+      if (seen === count) return i + 1;
+    }
+  }
+  return formatted.length;
+}
+if (typeof window === 'undefined') {
+  const assert = require('assert');
+  assert.strictEqual(leadNationalDigits('+7 (___) ___-__-__'), '');
+  assert.strictEqual(leadNationalDigits('+7 (999) 123-45-67'), '9991234567');
+  assert.strictEqual(leadNationalDigits('89991234567'), '9991234567');
+  assert.strictEqual(leadNationalDigits('9991234567'), '9991234567');
+  assert.strictEqual(leadNationalDigits('+7 (999) 123-45-6'), '999123456');
+  assert.strictEqual(leadFormatPhone(''), '+7 (___) ___-__-__');
+  assert.strictEqual(leadFormatPhone('999'), '+7 (999) ___-__-__');
+  assert.strictEqual(leadFormatPhone('9991234567'), '+7 (999) 123-45-67');
+  assert.strictEqual(leadPhoneCaret('+7 (___) ___-__-__', 0), 4);
+  assert.strictEqual(leadPhoneCaret('+7 (999) ___-__-__', 3), 7);
+  process.exit(0);
+}
+
     // Constructor logic
     const svg = document.getElementById('window-svg');
     const priceEl = document.getElementById('total-price');
@@ -392,7 +428,9 @@
         const msg = document.getElementById('lead-message');
         if (msg) msg.value = '';
       }
-      document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
+      const form = document.getElementById('lead-form');
+      if (form) form.requestSubmit();
+      else document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
     }
 
     async function ctaOrder() {
@@ -418,12 +456,16 @@
 let reviewsSwiper = null;
 function initReviewsSwiper() {
   if (reviewsSwiper) reviewsSwiper.destroy(true, true);
+  const n = document.querySelectorAll('#reviews-wrapper .swiper-slide').length;
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const wide = n > 3 ? 3 : Math.max(1, n - 1);
   reviewsSwiper = new Swiper('.mySwiper', {
-    slidesPerView: 1, spaceBetween: 30, loop: true, grabCursor: true,
+    slidesPerView: 1, spaceBetween: 30, loop: n > 1, grabCursor: true,
     keyboard: { enabled: true }, a11y: { enabled: true },
+    autoplay: (reduce || n < 2) ? false : { delay: 5000, disableOnInteraction: false, pauseOnMouseEnter: true },
     pagination: { el: '.swiper-pagination', clickable: true },
     navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-    breakpoints: { 768: { slidesPerView: 2, spaceBetween: 20 }, 1024: { slidesPerView: 3, spaceBetween: 30 } }
+    breakpoints: { 768: { slidesPerView: Math.min(2, wide), spaceBetween: 20 }, 1024: { slidesPerView: wide, spaceBetween: 30 } }
   });
 }
 // Swiper инициализируется в loadReviews() уже на данных из БД (на скелетоне не нужен — иначе loop-warning)
@@ -615,20 +657,17 @@ function applySiteSettings(s) {
   if (fwa) fwa.href = wa;
   const ftg = document.getElementById('footer-tg');
   if (ftg && tg) ftg.href = tg;
+  const fvk = document.getElementById('footer-vk');
+  if (fvk) {
+    const vk = s.social && s.social.vk;
+    if (vk) { fvk.href = vk; fvk.style.display = ''; }
+    else fvk.style.display = 'none';
+  }
   const mc = document.getElementById('mobile-call');
   if (mc) mc.href = tel;
   const mw = document.getElementById('mobile-wa');
   if (mw) mw.href = wa;
 
-  const showLink = (id, href, text) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    if (text) { el.href = href; el.textContent = text; el.style.display = ''; }
-    else el.style.display = 'none';
-  };
-  if (s.email) showLink('contact-email', 'mailto:' + s.email.trim(), s.email.trim());
-  else { const ce = document.getElementById('contact-email'); if (ce) ce.style.display = 'none'; }
-  if (s.email) showLink('footer-email', 'mailto:' + s.email.trim(), s.email.trim());
   const hoursEl = document.getElementById('contact-hours');
   if (hoursEl) {
     if (s.hours) { hoursEl.textContent = s.hours; hoursEl.style.display = ''; }
@@ -645,7 +684,7 @@ function applySiteSettings(s) {
   const soc = document.getElementById('footer-social-extra');
   if (soc) {
     soc.replaceChildren();
-    if (s.social && s.social.vk) soc.appendChild(Object.assign(document.createElement('a'), { href: s.social.vk, target: '_blank', rel: 'noopener', textContent: 'VK' }));
+    if (s.social && s.social.vk && !document.getElementById('footer-vk')) soc.appendChild(Object.assign(document.createElement('a'), { href: s.social.vk, target: '_blank', rel: 'noopener', textContent: 'VK' }));
     if (s.social && s.social.avito) soc.appendChild(Object.assign(document.createElement('a'), { href: s.social.avito, target: '_blank', rel: 'noopener', textContent: 'Avito' }));
   }
 
@@ -828,6 +867,28 @@ function closeNewsModal() {
   newsLastFocused = null;
 }
 const newsModalKeyHandler = newsModal ? createModalKeyHandler(newsModal, closeNewsModal) : null;
+
+let leadOkLast = null;
+const leadOkModal = document.getElementById('lead-ok');
+function closeLeadOk() {
+  if (!leadOkModal) return;
+  leadOkModal.classList.add('hidden');
+  document.body.style.overflow = '';
+  if (leadOkKey) document.removeEventListener('keydown', leadOkKey);
+  if (leadOkLast && leadOkLast.focus) leadOkLast.focus();
+  leadOkLast = null;
+}
+const leadOkKey = leadOkModal ? createModalKeyHandler(leadOkModal, closeLeadOk) : null;
+function openLeadOk() {
+  if (!leadOkModal) return;
+  leadOkLast = document.activeElement;
+  leadOkModal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  if (leadOkKey) document.addEventListener('keydown', leadOkKey);
+  const btn = leadOkModal.querySelector('.btn-ds');
+  if (btn) btn.focus();
+}
+if (leadOkModal) leadOkModal.addEventListener('click', e => { if (e.target === leadOkModal) closeLeadOk(); });
 
 function openNewsModal(idx) {
   const n = NEWS_CACHE[idx]; if (!n || !newsModal) return;
@@ -1138,13 +1199,14 @@ function calcLikeThis(type) {
   // Валидаторы возвращают true/false и обновляют сообщение под полем
   function validName() {
     const v = nameEl.value.trim();
-    if (!v) { setErr(nameEl, errName, 'Укажите, как к вам обращаться'); return false; }
+    if (!v) { setErr(nameEl, errName, 'Укажите имя'); return false; }
     if (v.length < 2) { setErr(nameEl, errName, 'Имя слишком короткое'); return false; }
     clrErr(nameEl, errName); return true;
   }
   function validPhone() {
-    const d = phoneEl.value.replace(/\D/g, '');
-    if (!d || d.length < 11) { setErr(phoneEl, errPhone, 'Введите номер в формате +7 (___) ___-__-__'); return false; }
+    const d = leadNationalDigits(phoneEl.value);
+    if (!d) { setErr(phoneEl, errPhone, 'Укажите телефон'); return false; }
+    if (d.length < 10) { setErr(phoneEl, errPhone, 'Введите номер полностью'); return false; }
     clrErr(phoneEl, errPhone); return true;
   }
   function validConsent() {
@@ -1158,19 +1220,39 @@ function calcLikeThis(type) {
     return true;
   }
 
-  // Маска телефона РФ: +7 (XXX) XXX-XX-XX
+  // Шаблон +7 (___) ___-__-__: цифры в слоты, курсор остаётся за последней введённой
+  function paintPhone(national, caretDigits) {
+    phoneEl.value = leadFormatPhone(national);
+    const pos = leadPhoneCaret(phoneEl.value, caretDigits);
+    phoneEl.setSelectionRange(pos, pos);
+    if (phoneEl.classList.contains('invalid')) validPhone();
+  }
+  if (!leadNationalDigits(phoneEl.value)) phoneEl.value = leadFormatPhone('');
+  phoneEl.addEventListener('keydown', (e) => {
+    if ((e.key !== 'Backspace' && e.key !== 'Delete') || e.ctrlKey || e.metaKey || e.altKey) return;
+    const start = phoneEl.selectionStart, end = phoneEl.selectionEnd;
+    if (start == null || start !== end) return;
+    const national = leadNationalDigits(phoneEl.value);
+    let idx = leadNationalDigits(phoneEl.value.slice(0, start)).length;
+    if (e.key === 'Backspace') {
+      if (idx === 0) { e.preventDefault(); return; }
+      idx -= 1;
+    } else if (idx >= national.length) { e.preventDefault(); return; }
+    e.preventDefault();
+    paintPhone(national.slice(0, idx) + national.slice(idx + 1), idx);
+  });
   phoneEl.addEventListener('input', () => {
-    let d = phoneEl.value.replace(/\D/g, '');
-    if (d.startsWith('8')) d = '7' + d.slice(1);
-    if (!d.startsWith('7')) d = '7' + d;
-    d = d.slice(0, 11);
-    let out = '+7';
-    if (d.length > 1) out += ' (' + d.slice(1, 4);
-    if (d.length >= 4) out += ') ' + d.slice(4, 7);
-    if (d.length >= 7) out += '-' + d.slice(7, 9);
-    if (d.length >= 9) out += '-' + d.slice(9, 11);
-    phoneEl.value = out;
-    if (phoneEl.classList.contains('invalid')) validPhone(); // очистить ошибку по мере ввода
+    const raw = phoneEl.value;
+    const caret = phoneEl.selectionStart ?? raw.length;
+    const national = leadNationalDigits(raw);
+    paintPhone(national, Math.min(leadNationalDigits(raw.slice(0, caret)).length, national.length));
+  });
+  phoneEl.addEventListener('focus', () => {
+    if (leadNationalDigits(phoneEl.value)) return;
+    phoneEl.value = leadFormatPhone('');
+    setTimeout(() => {
+      if (document.activeElement === phoneEl && !leadNationalDigits(phoneEl.value)) phoneEl.setSelectionRange(4, 4);
+    }, 0);
   });
 
   // Валидация на blur; повторная проверка по input — только если поле уже в ошибке
@@ -1182,11 +1264,11 @@ function calcLikeThis(type) {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     // honeypot: бот заполнил скрытое поле — делаем вид, что всё ок
-    if (document.getElementById('lead-company').value) { setStatus('ok', 'Заявка отправлена!'); form.reset(); return; }
+    if (document.getElementById('lead-hp').value) { openLeadOk(); form.reset(); phoneEl.value = leadFormatPhone(''); return; }
 
     const okName = validName(), okPhone = validPhone(), okConsent = validConsent();
     if (!okName || !okPhone || !okConsent) {
-      setStatus('err', 'Проверьте выделенные поля');
+      setStatus('err', (!okName ? errName : !okPhone ? errPhone : errConsent).textContent);
       (!okName ? nameEl : !okPhone ? phoneEl : consentEl).focus();
       return;
     }
@@ -1204,12 +1286,13 @@ function calcLikeThis(type) {
       const res = await fetch('/api/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, phone: phoneEl.value, message, cart_items: (typeof cart !== 'undefined' && cart.length ? cart.map(i => ({ type: i.typeText, profile: i.profText, glass: i.glassText, hardware: i.hwText, width: parseInt(i.width), height: parseInt(i.height), price: i.price })) : null) })
+        body: JSON.stringify({ name, phone: phoneEl.value, message, consent: true, cart_items: (typeof cart !== 'undefined' && cart.length ? cart.map(i => ({ type: i.typeText, profile: i.profText, glass: i.glassText, hardware: i.hwText, width: parseInt(i.width), height: parseInt(i.height), price: i.price })) : null) })
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
-        setStatus('ok', data.message || 'Заявка отправлена! Мы свяжемся с вами в ближайшее время.');
+        openLeadOk();
         form.reset();
+        phoneEl.value = leadFormatPhone('');
         clearCart();
         const fp = document.getElementById('form-order-preview');
         if (fp) { fp.style.display = 'none'; fp.replaceChildren(); }
@@ -1218,10 +1301,10 @@ function calcLikeThis(type) {
         if (errConsent) { errConsent.classList.remove('show'); errConsent.textContent = ''; }
         if (window.ym) ym(0, 'reachGoal', 'lead'); // цель Яндекс.Метрики (активна, когда счётчик подключён)
       } else {
-        setStatus('err', 'Ошибка: ' + (data.error || ('код ' + res.status)));
+        setStatus('err', data.error || 'Не удалось отправить заявку. Позвоните нам напрямую.');
       }
     } catch (err) {
-      setStatus('err', 'Не удалось отправить: ' + err.message + '. Позвоните нам напрямую.');
+      setStatus('err', 'Не удалось отправить заявку. Позвоните нам напрямую.');
     } finally {
       btn.disabled = false;
       btn.classList.remove('is-loading');

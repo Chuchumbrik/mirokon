@@ -1,0 +1,7 @@
+# Не выполнять скрипты из каталога загрузок
+<FilesMatch "\.(?i:php|phtml|phar|cgi|pl)$">
+  Require all denied
+</FilesMatch>
+Options -ExecCGI
+RemoveHandler .php .phtml .phar
+RemoveType .php .phtml .phar

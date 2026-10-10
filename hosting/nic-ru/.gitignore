@@ -1,0 +1,8 @@
+config.local.php
+uploads/works/*
+!uploads/works/.gitkeep
+!uploads/works/demo-*.svg
+uploads/news/*
+!uploads/news/.gitkeep
+uploads/site/*
+!uploads/site/.gitkeep

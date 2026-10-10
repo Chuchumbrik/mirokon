@@ -1,0 +1,1368 @@
+function leadNationalDigits(value) {
+  let d = String(value || '').replace(/\D/g, '');
+  if (d[0] === '8' && d.length > 10) d = d.slice(1);
+  else if (d[0] === '7' && (String(value).includes('+7') || d.length > 10)) d = d.slice(1);
+  return d.slice(0, 10);
+}
+function leadFormatPhone(national) {
+  let i = 0;
+  return '+7 (___) ___-__-__'.replace(/_/g, () => national[i++] || '_');
+}
+function leadPhoneCaret(formatted, count) {
+  if (count <= 0) return 4;
+  let seen = 0;
+  for (let i = 0; i < formatted.length; i++) {
+    if (i > 2 && formatted[i] >= '0' && formatted[i] <= '9') {
+      seen++;
+      if (seen === count) return i + 1;
+    }
+  }
+  return formatted.length;
+}
+if (typeof window === 'undefined') {
+  const assert = require('assert');
+  assert.strictEqual(leadNationalDigits('+7 (___) ___-__-__'), '');
+  assert.strictEqual(leadNationalDigits('+7 (999) 123-45-67'), '9991234567');
+  assert.strictEqual(leadNationalDigits('89991234567'), '9991234567');
+  assert.strictEqual(leadNationalDigits('9991234567'), '9991234567');
+  assert.strictEqual(leadNationalDigits('+7 (999) 123-45-6'), '999123456');
+  assert.strictEqual(leadFormatPhone(''), '+7 (___) ___-__-__');
+  assert.strictEqual(leadFormatPhone('999'), '+7 (999) ___-__-__');
+  assert.strictEqual(leadFormatPhone('9991234567'), '+7 (999) 123-45-67');
+  assert.strictEqual(leadPhoneCaret('+7 (___) ___-__-__', 0), 4);
+  assert.strictEqual(leadPhoneCaret('+7 (999) ___-__-__', 3), 7);
+  process.exit(0);
+}
+
+    // Constructor logic
+    const svg = document.getElementById('window-svg');
+    const priceEl = document.getElementById('total-price');
+    const widthSlider = document.getElementById('width');
+    const heightSlider = document.getElementById('height');
+    const widthVal = document.getElementById('width-val');
+    const heightVal = document.getElementById('height-val');
+
+    // Prices — из site_settings.pricing (fallback: pricing-defaults.js)
+    let PRICING = JSON.parse(JSON.stringify(window.DEFAULT_PRICING || { base_per_m: 25000, min_price: 3000, types: [], profiles: [], glass: [], hardware: [] }));
+
+    function rebuildConstructorSelects() {
+      const p = PRICING;
+      const mk = (sel, items, priceKey) => {
+        if (!sel || !items) return;
+        const cur = sel.value;
+        sel.replaceChildren();
+        items.filter(i => i.enabled !== false).forEach(i => {
+          const o = document.createElement('option');
+          o.value = i.id; o.textContent = i.label;
+          o.dataset.price = i[priceKey] != null ? i[priceKey] : 0;
+          sel.appendChild(o);
+        });
+        if (cur && [...sel.options].some(o => o.value === cur)) sel.value = cur;
+      };
+      mk(document.getElementById('window-type'), p.types, 'surcharge');
+      mk(document.getElementById('profile'), p.profiles, 'price');
+      mk(document.getElementById('glass'), p.glass, 'price');
+      mk(document.getElementById('hardware'), p.hardware, 'price');
+      if (p.width && widthSlider) {
+        widthSlider.min = p.width.min; widthSlider.max = p.width.max;
+        widthSlider.step = p.width.step || 10; widthSlider.value = p.width.default || widthSlider.value;
+        updateVal(widthSlider, widthVal);
+      }
+      if (p.height && heightSlider) {
+        heightSlider.min = p.height.min; heightSlider.max = p.height.max;
+        heightSlider.step = p.height.step || 10; heightSlider.value = p.height.default || heightSlider.value;
+        updateVal(heightSlider, heightVal);
+      }
+    }
+
+    function applyPricing(p) {
+      if (!p) return;
+      const d = window.DEFAULT_PRICING || {};
+      PRICING = {
+        base_per_m: p.base_per_m ?? d.base_per_m ?? 25000,
+        min_price: p.min_price ?? d.min_price ?? 3000,
+        width: Object.assign({}, d.width, p.width),
+        height: Object.assign({}, d.height, p.height),
+        types: (p.types && p.types.length) ? p.types : d.types,
+        profiles: (p.profiles && p.profiles.length) ? p.profiles : d.profiles,
+        glass: (p.glass && p.glass.length) ? p.glass : d.glass,
+        hardware: (p.hardware && p.hardware.length) ? p.hardware : d.hardware
+      };
+      rebuildConstructorSelects();
+      drawWindow();
+      calcPrice();
+    }
+    window.applyPricing = applyPricing;
+
+    function updateVal(slider, valEl) { valEl.textContent = slider.value; }
+
+    // Плавная анимация числа цены
+    function animatePrice(target) {
+      const from = Number(priceEl.dataset.v || 0);
+      if (from === target) { priceEl.textContent = target.toLocaleString('ru-RU') + ' ₽'; return; }
+      const dur = 350, t0 = performance.now();
+      cancelAnimationFrame(priceEl._raf || 0);
+      const step = (t) => {
+        const k = Math.min(1, (t - t0) / dur);
+        const ease = 0.5 - Math.cos(Math.PI * k) / 2;
+        priceEl.textContent = Math.round(from + (target - from) * ease).toLocaleString('ru-RU') + ' ₽';
+        if (k < 1) priceEl._raf = requestAnimationFrame(step);
+        else priceEl.dataset.v = target;
+      };
+      priceEl._raf = requestAnimationFrame(step);
+    }
+
+    function calcPrice() {
+      const w = parseFloat(widthSlider.value) / 1000;
+      const h = parseFloat(heightSlider.value) / 1000;
+      const perim = 2 * (w + h);
+      const type = document.getElementById('window-type').value;
+      const prof = parseFloat(document.getElementById('profile').selectedOptions[0].dataset.price || 0);
+      const gl = parseFloat(document.getElementById('glass').selectedOptions[0].dataset.price || 0);
+      const hw = parseFloat(document.getElementById('hardware').selectedOptions[0].dataset.price || 0);
+      const typeItem = (PRICING.types || []).find(t => t.id === type);
+      const typeAdd = typeItem ? Number(typeItem.surcharge) || 0 : 0;
+      let total = (PRICING.base_per_m || 25000) * (w * h) + prof * perim + gl * (w * h) + hw + typeAdd;
+      total = Math.max(total, PRICING.min_price || 3000);
+      animatePrice(Math.round(total));
+    }
+
+    // SVG-превью окна — все 6 типов конструкций
+    const GLASS_DEFS = '<defs><linearGradient id="cg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#EAF2FF"/><stop offset="0.5" stop-color="#D7E8FF"/><stop offset="1" stop-color="#F4F9FF"/></linearGradient></defs>';
+
+    function sash(x, y, w, h, opts) {
+      opts = opts || {};
+      let s = `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="4" fill="url(#cg)" stroke="#94a3b8" stroke-width="3"/>`;
+      s += `<path d="M${x + w * 0.22} ${y + h * 0.12} L${x + w * 0.6} ${y + h * 0.9}" stroke="#fff" stroke-width="${Math.max(6, w * 0.08)}" opacity="0.5" stroke-linecap="round"/>`;
+      if (opts.tilt) s += `<path d="M${x + 8} ${y + h - 8} L${x + w / 2} ${y + 10} L${x + w - 8} ${y + h - 8}" fill="none" stroke="#93c5fd" stroke-width="2" stroke-dasharray="5 4"/>`;
+      if (opts.handle) {
+        const hx = opts.handle === 'left' ? x + 7 : x + w - 13;
+        s += `<rect x="${hx}" y="${y + h / 2 - 16}" width="6" height="32" rx="3" fill="#1E40AF"/>`;
+      }
+      return s;
+    }
+
+    const LAYOUTS = {
+      'single-turn':      [{ handle: 'right', tilt: true }],
+      'single-deaf':      [{}],
+      'double-deaf-turn': [{}, { handle: 'right', tilt: true }],
+      'double-turn':      [{ handle: 'left', tilt: true }, { handle: 'right', tilt: true }],
+      'triple':           [{ handle: 'left', tilt: true }, {}, { handle: 'right', tilt: true }]
+    };
+
+    function drawWindow() {
+      const type = document.getElementById('window-type').value;
+      const x0 = 30, y0 = 30, W = 340, H = 238, gap = 5;
+      const frame = `<rect x="20" y="20" width="360" height="258" rx="12" fill="#fff" stroke="#cbd5e1" stroke-width="8"/>`;
+      let inner = '';
+      if (type === 'balcony') {
+        const winW = W * 0.42, doorW = W * 0.5, winH = H * 0.6;
+        inner += sash(x0, y0 + (H - winH), winW, winH, { handle: 'right', tilt: true });
+        inner += sash(x0 + winW + gap, y0, doorW, H, { handle: 'left' });
+        inner += `<line x1="${x0}" y1="${y0 + (H - winH)}" x2="${x0 + winW}" y2="${y0 + (H - winH)}" stroke="#cbd5e1" stroke-width="4"/>`;
+      } else {
+        const lay = LAYOUTS[type] || LAYOUTS['single-turn'];
+        const n = lay.length, sw = (W - gap * (n - 1)) / n;
+        lay.forEach((sp, i) => { inner += sash(x0 + i * (sw + gap), y0, sw, H, sp); });
+      }
+      const dim = `<text x="200" y="296" text-anchor="middle" font-family="Inter,sans-serif" font-size="15" font-weight="600" fill="#64748B">${widthSlider.value} × ${heightSlider.value} мм</text>`;
+      svg.innerHTML = GLASS_DEFS + frame + inner + dim;
+    }
+
+    // Events
+    ['window-type', 'profile', 'glass', 'hardware'].forEach(id => {
+      document.getElementById(id).addEventListener('change', () => { ctorDirty = true; drawWindow(); calcPrice(); });
+    });
+    widthSlider.addEventListener('input', () => { ctorDirty = true; updateVal(widthSlider, widthVal); drawWindow(); calcPrice(); });
+    heightSlider.addEventListener('input', () => { ctorDirty = true; updateVal(heightSlider, heightVal); drawWindow(); calcPrice(); });
+
+    // Init конструктора — после loadSiteSettings (см. конец файла)
+    window._initConstructor = function () { rebuildConstructorSelects(); drawWindow(); calcPrice(); };
+
+    function scrollToForm() {
+      document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Мобильное меню
+    function toggleMenu() {
+      const open = document.getElementById('mobile-nav').classList.toggle('open');
+      document.getElementById('menu-btn').setAttribute('aria-expanded', open);
+    }
+    function closeMenu() {
+      document.getElementById('mobile-nav').classList.remove('open');
+      document.getElementById('menu-btn').setAttribute('aria-expanded', 'false');
+    }
+
+    // ===== Мульти-корзина позиций =====
+    const _CART_KEY = 'mirokon_cart';
+    const cart = (() => { try { const s = localStorage.getItem(_CART_KEY); return s ? JSON.parse(s) : []; } catch { return []; } })();
+    function _persistCart() { try { localStorage.setItem(_CART_KEY, JSON.stringify(cart)); } catch {} }
+
+    let ctorDirty    = false; // пользователь изменил конструктор, но не сохранил
+    let editingIndex  = -1;   // индекс редактируемой позиции (-1 = нет)
+    let editingBackup = null; // копия оригинала для отмены
+
+    // --- вспомогательные ---
+
+    function _makeItem() {
+      return {
+        typeText:  document.getElementById('window-type').selectedOptions[0].textContent,
+        typeVal:   document.getElementById('window-type').value,
+        profText:  document.getElementById('profile').selectedOptions[0].textContent,
+        profVal:   document.getElementById('profile').value,
+        glassText: document.getElementById('glass').selectedOptions[0].textContent,
+        glassVal:  document.getElementById('glass').value,
+        hwText:    document.getElementById('hardware').selectedOptions[0].textContent,
+        hwVal:     document.getElementById('hardware').value,
+        width:  widthSlider.value,
+        height: heightSlider.value,
+        price:  parseInt(priceEl.dataset.v || 0) || 3000
+      };
+    }
+
+    function _loadItemToConstructor(item) {
+      if (item.typeVal)  document.getElementById('window-type').value = item.typeVal;
+      if (item.profVal)  document.getElementById('profile').value     = item.profVal;
+      if (item.glassVal) document.getElementById('glass').value       = item.glassVal;
+      if (item.hwVal)    document.getElementById('hardware').value    = item.hwVal;
+      widthSlider.value  = item.width;
+      heightSlider.value = item.height;
+      updateVal(widthSlider, widthVal);
+      updateVal(heightSlider, heightVal);
+      drawWindow(); calcPrice();
+    }
+
+    // Рендер предпросмотра заказа — вызывается и из submitCart, и при обновлении позиции
+    function _renderPreview() {
+      const preview = document.getElementById('form-order-preview');
+      if (!preview || !cart.length) return;
+      let total = 0;
+      preview.replaceChildren();
+      const head = document.createElement('div'); head.className = 'form-order-head';
+      const n = cart.length, word = n===1?'позиция':n<=4?'позиции':'позиций';
+      const titleSpan = document.createElement('span'); titleSpan.className = 'form-order-title';
+      titleSpan.textContent = 'Ваш заказ · ' + n + ' ' + word;
+      const editBtn = document.createElement('button'); editBtn.type = 'button'; editBtn.className = 'form-order-edit'; editBtn.textContent = '← Изменить состав';
+      editBtn.addEventListener('click', () => document.getElementById('constructor').scrollIntoView({behavior:'smooth'}));
+      head.appendChild(titleSpan); head.appendChild(editBtn);
+      preview.appendChild(head);
+      cart.forEach((item, i) => {
+        total += item.price;
+        const row  = document.createElement('div'); row.className = 'form-order-item';
+        const info = document.createElement('div'); info.className = 'form-order-item-info';
+        const nm   = document.createElement('div'); nm.className = 'form-order-item-name'; nm.textContent = (i+1) + '. ' + item.typeText;
+        const mt   = document.createElement('div'); mt.className = 'form-order-item-meta'; mt.textContent = item.profText + ' · ' + item.glassText + ' · ' + item.width + '×' + item.height + ' мм';
+        const pr   = document.createElement('span'); pr.className = 'form-order-item-price'; pr.textContent = item.price.toLocaleString('ru-RU') + ' ₽';
+        info.appendChild(nm); info.appendChild(mt);
+        row.appendChild(info); row.appendChild(pr);
+        preview.appendChild(row);
+      });
+      const foot = document.createElement('div'); foot.className = 'form-order-total';
+      const lbl  = document.createElement('span'); lbl.className = 'form-order-total-label'; lbl.textContent = 'Ориентировочная стоимость';
+      const sm   = document.createElement('span'); sm.className  = 'form-order-total-sum';   sm.textContent  = total.toLocaleString('ru-RU') + ' ₽';
+      foot.appendChild(lbl); foot.appendChild(sm);
+      preview.appendChild(foot);
+      preview.className = 'form-order-preview';
+      preview.style.display = 'block';
+    }
+
+    // Показать/скрыть баннер редактирования и поменять текст кнопки «Добавить»
+    function _updateEditBanner() {
+      const banner = document.getElementById('ctor-edit-banner');
+      const numEl  = document.getElementById('ctor-edit-num');
+      const addBtn = document.getElementById('ctor-add-btn');
+      if (!banner) return;
+      if (editingIndex !== -1) {
+        banner.style.display = 'flex';
+        if (numEl)  numEl.textContent  = editingIndex + 1;
+        if (addBtn) addBtn.textContent = 'Сохранить изменения';
+      } else {
+        banner.style.display = 'none';
+        if (addBtn) addBtn.textContent = '+ Добавить в список';
+      }
+    }
+
+    // --- публичные функции ---
+
+    function addToCart() {
+      const item = _makeItem();
+      if (editingIndex !== -1) {
+        cart[editingIndex] = item;    // обновить позицию на месте
+        editingIndex  = -1;
+        editingBackup = null;
+        // если предпросмотр заказа уже открыт — обновить его автоматически
+        const fp = document.getElementById('form-order-preview');
+        if (fp && fp.style.display !== 'none') _renderPreview();
+      } else {
+        cart.push(item);
+        document.getElementById('cart-section').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      ctorDirty = false;
+      _persistCart();
+      renderCart();
+      _updateEditBanner();
+    }
+
+    function editFromCart(i) {
+      if (editingIndex !== -1 && editingIndex !== i) {
+        cart[editingIndex] = editingBackup; // откатить предыдущую при переключении
+      }
+      editingIndex  = i;
+      editingBackup = Object.assign({}, cart[i]);
+      _loadItemToConstructor(cart[i]);
+      ctorDirty = false;
+      renderCart();
+      _updateEditBanner();
+      document.getElementById('constructor').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function cancelEdit() {
+      if (editingIndex !== -1 && editingBackup) {
+        cart[editingIndex] = editingBackup; // вернуть оригинал в корзину
+        _loadItemToConstructor(editingBackup); // вернуть оригинал в конструктор
+        _persistCart();
+      }
+      editingIndex  = -1;
+      editingBackup = null;
+      ctorDirty = false;
+      renderCart();
+      _updateEditBanner();
+    }
+
+    function removeFromCart(i) {
+      if (editingIndex === i)      { editingIndex = -1; editingBackup = null; _updateEditBanner(); }
+      else if (editingIndex > i)   { editingIndex--; }
+      cart.splice(i, 1); _persistCart(); renderCart();
+    }
+
+    function clearCart() {
+      cart.length = 0; editingIndex = -1; editingBackup = null; ctorDirty = false;
+      _persistCart(); renderCart(); _updateEditBanner();
+    }
+
+    renderCart(); // восстановить корзину из localStorage при загрузке
+
+    function renderCart() {
+      const section = document.getElementById('cart-section');
+      const itemsEl = document.getElementById('cart-items');
+      const totalEl = document.getElementById('cart-total');
+      const countEl = document.getElementById('cart-count');
+      if (!cart.length) { section.style.display = 'none'; return; }
+      section.style.display = 'block';
+      countEl.textContent = cart.length;
+      itemsEl.replaceChildren();
+      let total = 0;
+      cart.forEach((item, i) => {
+        const isEditing = i === editingIndex;
+        total += item.price;
+        const row   = document.createElement('div');   row.className   = 'cart-item' + (isEditing ? ' editing' : '');
+        const body  = document.createElement('div');   body.className  = 'cart-item-body';
+        const title = document.createElement('div');   title.className = 'cart-item-title'; title.textContent = item.typeText;
+        const meta  = document.createElement('div');   meta.className  = 'cart-item-meta';  meta.textContent  = item.profText + ' · ' + item.glassText + ' · ' + item.width + '×' + item.height + ' мм';
+        if (isEditing) {
+          const badge = document.createElement('span'); badge.className = 'cart-item-editing-badge'; badge.textContent = 'в редактировании';
+          body.append(title, meta, badge);
+        } else {
+          body.append(title, meta);
+        }
+        const price = document.createElement('span');  price.className  = 'cart-item-price'; price.textContent = item.price.toLocaleString('ru-RU') + ' ₽';
+        const edit  = document.createElement('button'); edit.className   = 'cart-item-edit' + (isEditing ? ' active' : ''); edit.textContent = '✎'; edit.title = 'Редактировать позицию'; edit.disabled = isEditing;
+        edit.addEventListener('click', () => editFromCart(i));
+        const rm    = document.createElement('button'); rm.className = 'cart-item-rm'; rm.textContent = '✕'; rm.title = 'Удалить позицию';
+        rm.addEventListener('click', () => removeFromCart(i));
+        row.append(body, price, edit, rm);
+        itemsEl.appendChild(row);
+      });
+      const n = cart.length, word = n === 1 ? 'позиция' : n <= 4 ? 'позиции' : 'позиций';
+      const lbl = document.createElement('span'); lbl.className = 'cart-total-label'; lbl.textContent = 'Итого ' + n + ' ' + word;
+      const sum = document.createElement('span'); sum.className = 'cart-total-sum';   sum.textContent = total.toLocaleString('ru-RU') + ' ₽';
+      totalEl.replaceChildren(lbl, sum);
+    }
+
+    function showCtorPrompt(text, yesLabel, noLabel) {
+      return new Promise(resolve => {
+        const box = document.getElementById('ctor-submit-prompt');
+        const textEl = document.getElementById('ctor-prompt-text');
+        const yesBtn = document.getElementById('ctor-prompt-yes');
+        const noBtn = document.getElementById('ctor-prompt-no');
+        if (!box || !textEl || !yesBtn || !noBtn) { resolve(false); return; }
+        textEl.textContent = text;
+        yesBtn.textContent = yesLabel;
+        noBtn.textContent = noLabel;
+        box.style.display = 'flex';
+        box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        const done = v => {
+          box.style.display = 'none';
+          yesBtn.onclick = null;
+          noBtn.onclick = null;
+          resolve(v);
+        };
+        yesBtn.onclick = () => done(true);
+        noBtn.onclick = () => done(false);
+      });
+    }
+
+    async function submitCart() {
+      // Несохранённые изменения редактируемой позиции
+      if (editingIndex !== -1 && ctorDirty) {
+        const save = await showCtorPrompt(
+          'Позиция ' + (editingIndex + 1) + ' открыта на редактирование с несохранёнными изменениями. Сохранить перед отправкой?',
+          'Сохранить', 'Продолжить без сохранения'
+        );
+        if (save) addToCart(); else cancelEdit();
+      }
+      // Несохранённая новая позиция (не в режиме редактирования)
+      if (ctorDirty && editingIndex === -1) {
+        const type = document.getElementById('window-type').selectedOptions[0].textContent;
+        const sz   = widthSlider.value + '×' + heightSlider.value + ' мм';
+        const p    = (parseInt(priceEl.dataset.v || 0) || 3000).toLocaleString('ru-RU');
+        const add = await showCtorPrompt(
+          'В конструкторе настроена позиция: ' + type + ', ' + sz + ' (~' + p + ' ₽). Добавить её в заявку?',
+          'Добавить в заявку', 'Продолжить без неё'
+        );
+        if (add) addToCart();
+      }
+      const fp = document.getElementById('form-order-preview');
+      if (fp && cart.length) {
+        _renderPreview();
+        const msg = document.getElementById('lead-message');
+        if (msg) msg.value = '';
+      }
+      const form = document.getElementById('lead-form');
+      if (form) form.requestSubmit();
+      else document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    async function ctaOrder() {
+      if (!cart.length) addToCart();
+      await submitCart();
+    }
+
+    function resetCalc() {
+      if (editingIndex !== -1) cancelEdit(); // отменить редактирование при сбросе
+      document.getElementById('window-type').selectedIndex = 0;
+      document.getElementById('profile').selectedIndex = 0;
+      document.getElementById('glass').selectedIndex = 0;
+      document.getElementById('hardware').selectedIndex = 0;
+      widthSlider.value = (PRICING.width && PRICING.width.default) || 1400;
+      heightSlider.value = (PRICING.height && PRICING.height.default) || 1400;
+      updateVal(widthSlider, widthVal); updateVal(heightSlider, heightVal);
+      ctorDirty = false;
+      drawWindow(); calcPrice();
+    }
+
+    
+// Swiper reviews slider
+let reviewsSwiper = null;
+function initReviewsSwiper() {
+  if (reviewsSwiper) reviewsSwiper.destroy(true, true);
+  const n = document.querySelectorAll('#reviews-wrapper .swiper-slide').length;
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const wide = n > 3 ? 3 : Math.max(1, n - 1);
+  reviewsSwiper = new Swiper('.mySwiper', {
+    slidesPerView: 1, spaceBetween: 30, loop: n > 1, grabCursor: true,
+    keyboard: { enabled: true }, a11y: { enabled: true },
+    autoplay: (reduce || n < 2) ? false : { delay: 5000, disableOnInteraction: false, pauseOnMouseEnter: true },
+    pagination: { el: '.swiper-pagination', clickable: true },
+    navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+    breakpoints: { 768: { slidesPerView: Math.min(2, wide), spaceBetween: 20 }, 1024: { slidesPerView: wide, spaceBetween: 30 } }
+  });
+}
+// Swiper инициализируется в loadReviews() уже на данных из БД (на скелетоне не нужен — иначе loop-warning)
+
+// ===== PHP API: контент из MySQL (только published/approved на сервере) =====
+const sb = window.createMirokonClient ? window.createMirokonClient() : null;
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function okUrl(u) { return (u && /^(https?:\/\/|\/)/i.test(u)) ? u : ''; }
+function sanitizeHtml(html) {
+  if (!html) return '';
+  if (window.DOMPurify) {
+    return DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ['p', 'br', 'strong', 'b', 'em', 'i', 'u', 'a', 'ul', 'ol', 'li', 'h2', 'h3', 'h4', 'blockquote', 'span'],
+      ALLOWED_ATTR: ['href', 'target', 'rel', 'class']
+    });
+  }
+  return '<p>' + esc(html).replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
+}
+function plainToHtml(text) {
+  return '<p>' + esc(text).replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
+}
+
+function gallerySkeletonHTML(n = 6) {
+  return Array.from({ length: n }, () =>
+    '<article class="gallery-card sk" aria-hidden="true">'
+    + '<div class="gallery-img"><span class="sk-block"></span></div>'
+    + '<div class="gallery-body"><div class="sk-line sk-w70"></div><div class="sk-line"></div><div class="sk-line sk-w50"></div></div>'
+    + '</article>'
+  ).join('');
+}
+function reviewsSkeletonHTML() {
+  const card = '<div class="swiper-slide"><div class="review-card sk" aria-hidden="true"><div class="sk-line sk-w40"></div><div class="sk-line"></div><div class="sk-line sk-w80"></div><div class="sk-auth"><div class="sk-av"></div><div class="sk-line sk-w50"></div></div></div></div>';
+  return card.repeat(3);
+}
+function newsSkeletonHTML() {
+  const card = '<article class="news-card sk" aria-hidden="true"><div class="sk-line sk-w30"></div><div class="sk-line sk-w70"></div><div class="sk-line"></div></article>';
+  return card.repeat(3);
+}
+function hideSectionError(id) {
+  const el = document.getElementById(id);
+  if (el) { el.style.display = 'none'; el.replaceChildren(); }
+}
+function showSectionError(id, message, onRetry) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.replaceChildren();
+  const p = document.createElement('p');
+  p.textContent = message;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'btn-ds btn-ds-secondary section-retry';
+  btn.textContent = 'Обновить';
+  btn.addEventListener('click', onRetry);
+  el.append(p, btn);
+  el.style.display = 'block';
+}
+
+// ===== Настройки сайта из БД =====
+let SITE = null;
+function digitsPhone(p) { return String(p || '').replace(/\D/g, '').replace(/^8/, '7'); }
+function telHref(p) { const d = digitsPhone(p); return d ? 'tel:+' + d : '#'; }
+function waHref(p) { const d = digitsPhone(p); return d ? 'https://wa.me/' + d : '#'; }
+
+function updateJsonLd(s) {
+  const ld = document.querySelector('script[type="application/ld+json"]');
+  if (!ld || !s) return;
+  try {
+    const j = JSON.parse(ld.textContent);
+    if (s.company_name) j.name = s.company_name;
+    if (s.phone) j.telephone = '+' + digitsPhone(s.phone);
+    if (s.email) j.email = String(s.email).trim();
+    if (s.hours) j.openingHours = s.hours;
+    if (s.seo && s.seo.description) j.description = s.seo.description;
+    const canon = document.querySelector('link[rel="canonical"]');
+    if (canon && canon.href) j.url = canon.href;
+    const ogImg = okUrl(s.seo && s.seo.og_image);
+    if (ogImg) j.image = ogImg;
+    ld.textContent = JSON.stringify(j);
+  } catch (_) {}
+}
+
+function applySectionNav(sec) {
+  const map = { constructor: sec.constructor, gallery: sec.gallery, reviews: sec.reviews, news: sec.news, contact: sec.contact };
+  document.querySelectorAll('[data-section]').forEach(el => {
+    const key = el.dataset.section;
+    el.style.display = map[key] === false ? 'none' : '';
+  });
+  document.querySelectorAll('.nav-link[href^="#"]').forEach(a => {
+    const id = (a.getAttribute('href') || '').slice(1);
+    if (map[id] === false) a.style.display = 'none';
+    else a.style.display = '';
+  });
+  document.querySelectorAll('[data-nav-section]').forEach(el => {
+    const key = el.dataset.navSection;
+    el.style.display = map[key] === false ? 'none' : '';
+  });
+  if (typeof window._initScrollSpy === 'function') window._initScrollSpy();
+}
+
+function applySiteSettings(s) {
+  if (!s) return;
+  SITE = s;
+  const pd = s.phone_display || (s.phone ? '+7 (' + digitsPhone(s.phone).slice(1, 4) + ') ' + digitsPhone(s.phone).slice(4, 7) + '-' + digitsPhone(s.phone).slice(7, 9) + '-' + digitsPhone(s.phone).slice(9, 11) : '');
+  const tel = telHref(s.phone);
+  const wa = waHref(s.whatsapp || s.phone);
+  const tg = s.telegram ? 'https://t.me/' + String(s.telegram).replace(/^@/, '') : '';
+
+  if (s.seo) {
+    if (s.seo.title) document.title = s.seo.title;
+    const md = document.querySelector('meta[name="description"]');
+    if (md && s.seo.description) md.setAttribute('content', s.seo.description);
+    const ogt = document.querySelector('meta[property="og:title"]');
+    if (ogt && s.seo.title) ogt.setAttribute('content', s.seo.title.split('|')[0].trim());
+    const ogd = document.querySelector('meta[property="og:description"]');
+    if (ogd && s.seo.description) ogd.setAttribute('content', s.seo.description);
+    const ogImg = okUrl(s.seo.og_image);
+    if (ogImg) {
+      let ogm = document.querySelector('meta[property="og:image"]');
+      if (ogm) ogm.setAttribute('content', ogImg);
+    }
+  }
+
+  const copy = s.copy || window.DEFAULT_SECTION_COPY;
+  if (copy) {
+    const map = { constructor: 'copy-constructor', gallery: 'copy-gallery', reviews: 'copy-reviews', news: 'copy-news', contact: 'copy-contact' };
+    Object.entries(map).forEach(([key, id]) => {
+      const box = document.getElementById(id);
+      const block = copy[key];
+      if (!box || !block) return;
+      const h = box.querySelector('h2');
+      const p = box.querySelector('p');
+      if (h && block.title) h.textContent = block.title;
+      if (p && block.subtitle) p.textContent = block.subtitle;
+    });
+  }
+
+  if (s.pricing && typeof window.applyPricing === 'function') window.applyPricing(s.pricing);
+
+  const logo = okUrl(s.logo_url);
+  if (logo) {
+    ['site-brand', 'footer-brand'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = '<img src="' + esc(logo) + '" alt="' + esc(s.company_name || 'Mirokon') + '" style="height:36px;width:auto;display:block">';
+    });
+  }
+
+  const h = s.hero || {};
+  const set = (id, v) => { const el = document.getElementById(id); if (el && v != null && v !== '') el.textContent = v; };
+  set('hero-eyebrow', h.eyebrow);
+  set('hero-title-before', h.title_before);
+  set('hero-title-em', h.title_em);
+  set('hero-lead', h.lead);
+  if (h.price_from) {
+    const pf = document.getElementById('hero-price-from');
+    if (pf) pf.textContent = 'от ' + Number(h.price_from).toLocaleString('ru-RU') + ' ₽';
+  }
+  if (h.chips && h.chips.length) {
+    document.querySelectorAll('#hero-chips .chip-txt').forEach((el, i) => { if (h.chips[i]) el.textContent = h.chips[i]; });
+  }
+  if (h.stats && h.stats.length) {
+    const box = document.getElementById('hero-stats');
+    if (box) box.innerHTML = h.stats.map(st => '<div class="hs"><span class="hs-n">' + esc(st.value) + '</span><span class="hs-l">' + esc(st.label) + '</span></div>').join('');
+  }
+  set('footer-about', (s.footer || {}).about);
+  [['contact-phone', pd], ['footer-phone', pd], ['footer-phone-2', pd]].forEach(([id, text]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.href = tel;
+    const svg = el.querySelector('svg');
+    if (svg) { el.replaceChildren(svg, document.createTextNode(' ' + text)); }
+    else el.textContent = text;
+  });
+  const cwa = document.getElementById('contact-wa');
+  if (cwa) cwa.href = wa + '?text=' + encodeURIComponent('Здравствуйте! Хочу рассчитать окна');
+  const fwa = document.getElementById('footer-wa');
+  if (fwa) fwa.href = wa;
+  const ftg = document.getElementById('footer-tg');
+  if (ftg && tg) ftg.href = tg;
+  const fvk = document.getElementById('footer-vk');
+  if (fvk) {
+    const vk = s.social && s.social.vk;
+    if (vk) { fvk.href = vk; fvk.style.display = ''; }
+    else fvk.style.display = 'none';
+  }
+  const mc = document.getElementById('mobile-call');
+  if (mc) mc.href = tel;
+  const mw = document.getElementById('mobile-wa');
+  if (mw) mw.href = wa;
+
+  const hoursEl = document.getElementById('contact-hours');
+  if (hoursEl) {
+    if (s.hours) { hoursEl.textContent = s.hours; hoursEl.style.display = ''; }
+    else hoursEl.style.display = 'none';
+  }
+  const fh = document.getElementById('footer-hours');
+  if (fh) {
+    if (s.hours) { fh.textContent = s.hours; fh.style.display = ''; }
+    else fh.style.display = 'none';
+  }
+  const fc = document.getElementById('footer-copyright');
+  if (fc && (s.footer || {}).copyright) fc.textContent = s.footer.copyright;
+
+  const soc = document.getElementById('footer-social-extra');
+  if (soc) {
+    soc.replaceChildren();
+    if (s.social && s.social.vk && !document.getElementById('footer-vk')) soc.appendChild(Object.assign(document.createElement('a'), { href: s.social.vk, target: '_blank', rel: 'noopener', textContent: 'VK' }));
+    if (s.social && s.social.avito) soc.appendChild(Object.assign(document.createElement('a'), { href: s.social.avito, target: '_blank', rel: 'noopener', textContent: 'Avito' }));
+  }
+
+  const sec = s.sections || {};
+  applySectionNav(sec);
+  updateJsonLd(s);
+}
+
+async function loadSiteSettings() {
+  if (!sb) return;
+  const { data, error } = await sb.from('site_settings').select('data').eq('id', 1).maybeSingle();
+  if (error) { console.warn('site_settings:', error.message); return; }
+  if (data && data.data) applySiteSettings(data.data);
+}
+
+function sectionEnabled(name) {
+  if (!SITE || !SITE.sections) return true;
+  return SITE.sections[name] !== false;
+}
+
+// ===== Галерея работ как кейсы =====
+let WORKS = [], PHOTOS = {}, activeCat = 'all', CAT_ORDER = [];
+function photosOf(w) {
+  const list = (PHOTOS[w.id] || []).slice();
+  const cover = okUrl(w.image_url);
+  if (cover && !list.includes(cover)) list.unshift(cover);
+  return list;
+}
+
+async function loadGallery() {
+  const grid = document.getElementById('gallery-grid'); if (!sb || !grid) return;
+  if (!sectionEnabled('gallery')) return;
+  hideSectionError('gallery-error');
+  const empty = document.getElementById('gallery-empty');
+  if (empty) empty.style.display = 'none';
+  grid.innerHTML = gallerySkeletonHTML(6);
+  const filters = document.getElementById('gallery-filters');
+  if (filters) filters.replaceChildren();
+  const { data, error } = await sb.from('works')
+    .select('id,title,category,description,image_url,scope,system,duration_days,area,warranty,price_from,tpl_window_type,sort')
+    .eq('published', true).order('sort');
+  if (error) {
+    grid.innerHTML = '';
+    showSectionError('gallery-error', 'Не удалось загрузить примеры работ. Проверьте соединение и попробуйте снова.', loadGallery);
+    return console.error('works:', error.message);
+  }
+  if (!data || !data.length) { grid.innerHTML = ''; if (empty) empty.style.display = 'block'; return; }
+  WORKS = data;
+  const ids = data.map(w => w.id);
+  const { data: ph } = await sb.from('work_photos').select('work_id,url,sort').in('work_id', ids).order('sort');
+  PHOTOS = {};
+  (ph || []).forEach(p => { const u = okUrl(p.url); if (u) (PHOTOS[p.work_id] = PHOTOS[p.work_id] || []).push(u); });
+  const { data: cats } = await sb.from('categories').select('name').order('sort');
+  CAT_ORDER = (cats || []).map(c => c.name);
+  renderFilters();
+  renderGallery();
+}
+
+function renderFilters() {
+  const box = document.getElementById('gallery-filters'); if (!box) return;
+  const cats = [...new Set(WORKS.map(w => w.category).filter(Boolean))];
+  if (CAT_ORDER.length) cats.sort((a, b) => (CAT_ORDER.indexOf(a) + 1 || 999) - (CAT_ORDER.indexOf(b) + 1 || 999));
+  const mk = (val, label) => {
+    const b = document.createElement('button');
+    b.className = 'gallery-chip' + (activeCat === val ? ' active' : '');
+    b.textContent = label; b.type = 'button'; b.setAttribute('role', 'tab');
+    b.setAttribute('aria-selected', activeCat === val ? 'true' : 'false');
+    b.onclick = () => { activeCat = val; renderFilters(); renderGallery(); };
+    return b;
+  };
+  box.replaceChildren(mk('all', 'Все'), ...cats.map(c => mk(c, c)));
+}
+
+function renderGallery() {
+  const grid = document.getElementById('gallery-grid'); if (!grid) return;
+  const items = activeCat === 'all' ? WORKS : WORKS.filter(w => w.category === activeCat);
+  grid.innerHTML = items.map(w => {
+    const cover = photosOf(w)[0] || '';
+    const media = cover
+      ? `<img src="${esc(cover)}" alt="${esc(w.title)}" loading="lazy" style="width:100%;height:100%;object-fit:cover">`
+      : `<svg><use href="#win-illus"/></svg>`;
+    const from = w.price_from ? `<span class="gallery-from">от ${Number(w.price_from).toLocaleString('ru-RU')} ₽</span>` : '';
+    return `<article class="gallery-card" tabindex="0" role="button" data-id="${esc(w.id)}" onclick="openWork('${esc(w.id)}', this)" onkeydown="if(event.key==='Enter')openWork('${esc(w.id)}', this)">`
+      + `<div class="gallery-img"><span class="gallery-cat">${esc(w.category || 'Работа')}</span>${media}<div class="gallery-overlay"><span>Смотреть ↗</span></div></div>`
+      + `<div class="gallery-body"><h3>${esc(w.title)}</h3><p>${esc(w.description || '')}</p>${from}</div></article>`;
+  }).join('');
+}
+
+async function loadReviews() {
+  const wrap = document.getElementById('reviews-wrapper'); if (!sb || !wrap) return;
+  if (!sectionEnabled('reviews')) return;
+  hideSectionError('reviews-error');
+  const emptyEl = document.getElementById('reviews-empty');
+  const swiperEl = document.getElementById('reviews-swiper');
+  if (emptyEl) emptyEl.style.display = 'none';
+  if (swiperEl) swiperEl.style.display = '';
+  wrap.innerHTML = reviewsSkeletonHTML();
+  const { data, error } = await sb.from('reviews').select('author_name,author_city,rating,text').eq('approved', true).order('created_at', { ascending: false });
+  if (error) {
+    wrap.innerHTML = '';
+    if (swiperEl) swiperEl.style.display = 'none';
+    showSectionError('reviews-error', 'Не удалось загрузить отзывы. Проверьте соединение и попробуйте снова.', loadReviews);
+    return console.error('reviews:', error.message);
+  }
+  if (!data.length) { wrap.innerHTML = ''; if (emptyEl) emptyEl.style.display = 'block'; if (swiperEl) swiperEl.style.display = 'none'; return; }
+  // агрегат рейтинга
+  const agg = document.getElementById('reviews-agg');
+  if (agg) {
+    const avg = data.reduce((s, r) => s + (r.rating || 0), 0) / data.length;
+    const full = Math.round(avg), n = data.length;
+    const word = (n % 10 === 1 && n % 100 !== 11) ? 'отзыв' : ((n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) ? 'отзыва' : 'отзывов');
+    agg.innerHTML = `<span class="stars">${'★'.repeat(full)}${'☆'.repeat(5 - full)}</span><span class="rate">${avg.toFixed(1)}</span><span class="cnt">· ${n} ${word}</span>`;
+    agg.style.display = 'flex';
+  }
+  wrap.innerHTML = data.map(r => {
+    const initial = esc((r.author_name || '?').trim().charAt(0).toUpperCase());
+    return `<div class="swiper-slide"><div class="review-card">`
+      + `<div class="review-stars" aria-label="${r.rating} из 5">${'★'.repeat(r.rating)}</div>`
+      + `<p class="quote">«${esc(r.text)}»</p>`
+      + `<div class="review-author"><div class="review-avatar">${initial}</div><div><p class="review-author-name">${esc(r.author_name)}</p><p>${esc(r.author_city||'')}</p></div></div>`
+      + `</div></div>`;
+  }).join('');
+  initReviewsSwiper();
+}
+
+let NEWS_CACHE = [];
+
+async function loadNews() {
+  const grid = document.getElementById('news-grid'); if (!sb || !grid) return;
+  if (!sectionEnabled('news')) return;
+  hideSectionError('news-error');
+  const emptyEl = document.getElementById('news-empty');
+  if (emptyEl) emptyEl.style.display = 'none';
+  grid.innerHTML = newsSkeletonHTML();
+  const { data, error } = await sb.from('news').select('id,title,preview_text,body,image_url,created_at').eq('published', true).order('created_at', { ascending: false }).limit(8);
+  if (error) {
+    grid.innerHTML = '';
+    showSectionError('news-error', 'Не удалось загрузить новости. Проверьте соединение и попробуйте снова.', loadNews);
+    return console.error('news:', error.message);
+  }
+  if (!data.length) { NEWS_CACHE = []; grid.innerHTML = ''; if (emptyEl) emptyEl.style.display = 'block'; return; }
+  NEWS_CACHE = data;
+  if (emptyEl) emptyEl.style.display = 'none';
+  const fmt = d => new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' });
+  grid.innerHTML = data.map((n, i) => {
+    const img = okUrl(n.image_url);
+    const imgHtml = img ? '<div class="news-card-img"><img src="' + esc(img) + '" alt="' + esc(n.title || 'Новость') + '" loading="lazy"></div>' : '';
+    return '<article class="news-card news-card-clickable" data-news-idx="' + i + '" tabindex="0" role="button" aria-label="Читать: ' + esc(n.title) + '">' + imgHtml + '<span class="news-date">' + esc(fmt(n.created_at)) + '</span><h3>' + esc(n.title) + '</h3><p>' + esc(n.preview_text||'') + '</p></article>';
+  }).join('');
+  grid.querySelectorAll('.news-card-clickable').forEach(card => {
+    const open = () => openNewsModal(+card.dataset.newsIdx);
+    card.addEventListener('click', open);
+    card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+  });
+}
+
+const newsModal = document.getElementById('news-modal');
+let newsLastFocused = null;
+
+function modalFocusSelector() {
+  return 'button:not([disabled]), a[href], input:not([disabled]):not(.hp), textarea:not([disabled]), select:not([disabled]), img[tabindex], [tabindex]:not([tabindex="-1"])';
+}
+function createModalKeyHandler(modal, onClose) {
+  return function modalKeyHandler(e) {
+    if (e.key === 'Escape') { onClose(); return; }
+    if (e.key !== 'Tab') return;
+    const nodes = modal.querySelectorAll(modalFocusSelector());
+    if (!nodes.length) return;
+    const first = nodes[0], last = nodes[nodes.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  };
+}
+function closeNewsModal() {
+  if (!newsModal) return;
+  newsModal.classList.add('hidden');
+  document.body.style.overflow = '';
+  if (newsModalKeyHandler) document.removeEventListener('keydown', newsModalKeyHandler);
+  if (newsLastFocused && newsLastFocused.focus) newsLastFocused.focus();
+  newsLastFocused = null;
+}
+const newsModalKeyHandler = newsModal ? createModalKeyHandler(newsModal, closeNewsModal) : null;
+
+let leadOkLast = null;
+const leadOkModal = document.getElementById('lead-ok');
+function closeLeadOk() {
+  if (!leadOkModal) return;
+  leadOkModal.classList.add('hidden');
+  document.body.style.overflow = '';
+  if (leadOkKey) document.removeEventListener('keydown', leadOkKey);
+  if (leadOkLast && leadOkLast.focus) leadOkLast.focus();
+  leadOkLast = null;
+}
+const leadOkKey = leadOkModal ? createModalKeyHandler(leadOkModal, closeLeadOk) : null;
+function openLeadOk() {
+  if (!leadOkModal) return;
+  leadOkLast = document.activeElement;
+  leadOkModal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  if (leadOkKey) document.addEventListener('keydown', leadOkKey);
+  const btn = leadOkModal.querySelector('.btn-ds');
+  if (btn) btn.focus();
+}
+if (leadOkModal) leadOkModal.addEventListener('click', e => { if (e.target === leadOkModal) closeLeadOk(); });
+
+function openNewsModal(idx) {
+  const n = NEWS_CACHE[idx]; if (!n || !newsModal) return;
+  newsLastFocused = document.activeElement;
+  const fmt = d => new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+  document.getElementById('news-modal-title').textContent = n.title || '';
+  document.getElementById('news-modal-date').textContent = fmt(n.created_at);
+  const body = document.getElementById('news-modal-body');
+  const full = (n.body || '').trim();
+  body.textContent = '';
+  if (full) {
+    if (/<[a-z][\s\S]*>/i.test(full)) body.innerHTML = sanitizeHtml(full);
+    else body.innerHTML = plainToHtml(full);
+  } else {
+    body.textContent = n.preview_text || '';
+  }
+  const imgWrap = document.getElementById('news-modal-img');
+  const img = okUrl(n.image_url);
+  if (img) { imgWrap.style.display = ''; imgWrap.innerHTML = '<img src="' + esc(img) + '" alt="' + esc(n.title || '') + '">'; }
+  else { imgWrap.style.display = 'none'; imgWrap.innerHTML = ''; }
+  newsModal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  if (newsModalKeyHandler) document.addEventListener('keydown', newsModalKeyHandler);
+  const closeBtn = newsModal.querySelector('.modal-close');
+  if (closeBtn) closeBtn.focus();
+  else document.getElementById('news-modal-title')?.focus();
+}
+
+if (newsModal) newsModal.addEventListener('click', e => { if (e.target === newsModal) closeNewsModal(); });
+
+loadSiteSettings().then(() => {
+  if (typeof window._initConstructor === 'function') window._initConstructor();
+  else { drawWindow(); calcPrice(); }
+  loadGallery(); loadReviews(); loadNews();
+});
+
+// ===== Review modal =====
+const reviewModal = document.getElementById('review-modal');
+const reviewStatusEl = document.getElementById('review-status');
+const stars = document.querySelectorAll('.star');
+const ratingInput = document.getElementById('r-rating');
+let lastFocused = null;
+
+function highlightStars(n) {
+  stars.forEach(s => { s.style.color = (parseInt(s.dataset.rating) <= n) ? '#fbbf24' : '#d1d5db'; });
+}
+
+function trapFocus(e) {
+  if (e.key === 'Escape') { closeReviewModal(); return; }
+  if (e.key !== 'Tab') return;
+  const f = reviewModal.querySelectorAll(modalFocusSelector());
+  if (!f.length) return;
+  const first = f[0], last = f[f.length - 1];
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+}
+
+function openReviewModal() {
+  lastFocused = document.activeElement;
+  reviewModal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  reviewStatusEl.className = 'form-status';
+  highlightStars(parseInt(ratingInput.value) || 5);
+  document.addEventListener('keydown', trapFocus);
+  document.getElementById('r-name').focus();
+}
+
+function closeReviewModal() {
+  reviewModal.classList.add('hidden');
+  document.body.style.overflow = '';
+  document.getElementById('review-form').reset();
+  ratingInput.value = 5;
+  highlightStars(5);
+  reviewStatusEl.className = 'form-status';
+  document.removeEventListener('keydown', trapFocus);
+  if (lastFocused) lastFocused.focus();
+}
+
+// клик по затемнению вне карточки закрывает модалку
+reviewModal.addEventListener('click', (e) => { if (e.target === reviewModal) closeReviewModal(); });
+
+// выбор рейтинга: клик, клавиатура, ховер
+function pickStar(star) {
+  ratingInput.value = parseInt(star.dataset.rating);
+  highlightStars(parseInt(star.dataset.rating));
+}
+stars.forEach(star => {
+  star.addEventListener('click', () => pickStar(star));
+  star.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pickStar(star); } });
+  star.addEventListener('mouseenter', () => highlightStars(parseInt(star.dataset.rating)));
+});
+const ratingRow = document.querySelector('.rating');
+if (ratingRow) ratingRow.addEventListener('mouseleave', () => highlightStars(parseInt(ratingInput.value) || 5));
+highlightStars(parseInt(ratingInput.value) || 5);
+
+// отправка отзыва -> /api/review (модерация в Telegram)
+document.getElementById('review-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const nameEl = document.getElementById('r-name');
+  const textEl = document.getElementById('r-text');
+  const name = nameEl.value.trim();
+  const text = textEl.value.trim();
+  const city = (document.getElementById('r-city')?.value || '').trim();
+  const rating = parseInt(ratingInput.value);
+  const setStatus = (type, msg) => { reviewStatusEl.className = 'form-status ' + type; reviewStatusEl.textContent = msg; };
+  nameEl.classList.toggle('invalid', !name);
+  textEl.classList.toggle('invalid', !text);
+  if (!name || !text) { setStatus('err', 'Заполните имя и текст отзыва'); return; }
+  const btn = e.target.querySelector('button[type="submit"]');
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Отправка...';
+  setStatus('', '');
+  try {
+    const res = await fetch('/api/review.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, city, rating, text })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) {
+      setStatus('ok', data.message || 'Спасибо! Ваш отзыв отправлен на модерацию.');
+      document.getElementById('review-form').reset();
+      ratingInput.value = 5; highlightStars(5);
+    } else {
+      setStatus('err', 'Ошибка: ' + (data.error || ('код ' + res.status)));
+    }
+  } catch (err) {
+    setStatus('err', 'Ошибка отправки: ' + err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = orig;
+  }
+});
+// ===== Детальный вид кейса (work-detail) =====
+const workModal = document.getElementById('work-detail');
+const wdCard = document.getElementById('wd-card');
+let wdLastFocused = null;
+const wdReduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function wdKeydown(e) {
+  if (e.key === 'Escape') { closeWork(); return; }
+  if (e.key !== 'Tab') return;
+  const f = workModal.querySelectorAll(modalFocusSelector());
+  if (!f.length) return;
+  const first = f[0], last = f[f.length - 1];
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+}
+
+function wdSetHero(url) {
+  const hero = document.getElementById('wd-hero');
+  if (url) hero.src = url; else hero.removeAttribute('src');
+  workModal.querySelectorAll('.wd-thumb').forEach(t => t.classList.toggle('active', t.dataset.url === url));
+}
+
+function openWork(id, cardEl) {
+  const w = WORKS.find(x => x.id === id); if (!w) return;
+  if (!workModal.classList.contains('hidden')) cardEl = null; // переход между кейсами — без FLIP
+  else wdLastFocused = document.activeElement;
+  const photos = photosOf(w);
+
+  document.getElementById('wd-cat').textContent = w.category || 'Работа';
+  document.getElementById('wd-title').textContent = w.title || 'Работа';
+  document.getElementById('wd-desc').textContent = w.description || '';
+  document.getElementById('wd-hero').alt = w.title || '';
+
+  // миниатюры
+  const thumbs = document.getElementById('wd-thumbs');
+  thumbs.replaceChildren();
+  photos.forEach((u, i) => {
+    const img = document.createElement('img');
+    img.className = 'wd-thumb' + (i === 0 ? ' active' : '');
+    img.src = u;
+    img.alt = (w.title || 'Работа') + (photos.length > 1 ? ' — фото ' + (i + 1) : '');
+    img.dataset.url = u; img.loading = 'lazy'; img.tabIndex = 0;
+    img.addEventListener('click', () => wdSetHero(u));
+    img.addEventListener('keydown', e => { if (e.key === 'Enter') wdSetHero(u); });
+    thumbs.appendChild(img);
+  });
+  thumbs.style.display = photos.length > 1 ? 'flex' : 'none';
+  wdSetHero(photos[0] || '');
+
+  // перечень работ
+  const scope = document.getElementById('wd-scope');
+  scope.replaceChildren();
+  (w.scope || []).forEach(s => { const li = document.createElement('li'); li.textContent = s; scope.appendChild(li); });
+
+  // мета
+  const meta = document.getElementById('wd-meta');
+  meta.replaceChildren();
+  const dur = w.duration_days ? (w.duration_days === 1 ? '1 день' : w.duration_days + ' дня') : null;
+  [[w.system, '🪟'], [dur, '🕒'], [w.area, '📍'], [w.warranty && 'Гарантия ' + w.warranty, '🛡']]
+    .filter(([t]) => t).forEach(([t, ic]) => { const s = document.createElement('span'); s.textContent = ic + ' ' + t; meta.appendChild(s); });
+
+  // цена «от»
+  const price = document.getElementById('wd-price');
+  price.replaceChildren();
+  if (w.price_from) {
+    price.append('от ' + Number(w.price_from).toLocaleString('ru-RU') + ' ₽');
+    const sm = document.createElement('small'); sm.textContent = 'ориентировочно, под ключ'; price.appendChild(sm);
+    price.style.display = '';
+  } else { price.style.display = 'none'; }
+
+  document.getElementById('wd-calc').onclick = () => calcLikeThis(w.tpl_window_type);
+
+  // правый рейл — ТОЛЬКО другие работы этой же категории
+  const rail = document.getElementById('wd-rail');
+  const railAside = workModal.querySelector('.wd-rail');
+  const railTitle = workModal.querySelector('.wd-rail-title');
+  const grid = workModal.querySelector('.wd-grid');
+  rail.replaceChildren();
+  const sameCat = WORKS.filter(x => x.id !== id && x.category === w.category);
+  if (!sameCat.length) {
+    if (railAside) railAside.style.display = 'none';
+    if (grid) grid.classList.add('no-rail');
+  } else {
+    if (railAside) railAside.style.display = '';
+    if (grid) grid.classList.remove('no-rail');
+    if (railTitle) railTitle.textContent = 'Ещё в категории «' + (w.category || 'Работы') + '»';
+    sameCat.forEach(o => {
+      const item = document.createElement('div'); item.className = 'wd-rail-item'; item.tabIndex = 0; item.setAttribute('role', 'button');
+      const im = document.createElement('img'); const ph = photosOf(o)[0];
+      if (ph) im.src = ph;
+      im.alt = o.title || 'Работа';
+      im.loading = 'lazy';
+      const tb = document.createElement('div');
+      const t = document.createElement('div'); t.className = 't'; t.textContent = o.title;
+      const c = document.createElement('div'); c.className = 'c'; c.textContent = o.category || '';
+      tb.append(t, c); item.append(im, tb);
+      item.addEventListener('click', () => openWork(o.id));
+      item.addEventListener('keydown', e => { if (e.key === 'Enter') openWork(o.id); });
+      rail.appendChild(item);
+    });
+  }
+
+  workModal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  document.addEventListener('keydown', wdKeydown);
+  wdCard.scrollTop = 0;
+  flipOpen(cardEl);
+  workModal.querySelector('.modal-close').focus();
+  if (window.ym) ym(0, 'reachGoal', 'portfolio_open');
+}
+
+// FLIP: карточка «вырастает» в оверлей. Fallback — просто показать (reduced-motion / нет rect).
+function flipOpen(cardEl) {
+  if (wdReduce || !cardEl || typeof cardEl.getBoundingClientRect !== 'function') return;
+  const first = cardEl.getBoundingClientRect();
+  const last = wdCard.getBoundingClientRect();
+  if (!first.width || !last.width) return;
+  const dx = first.left - last.left, dy = first.top - last.top;
+  const sx = first.width / last.width, sy = first.height / last.height;
+  wdCard.style.transformOrigin = 'top left';
+  wdCard.style.transform = `translate(${dx}px,${dy}px) scale(${sx},${sy})`;
+  wdCard.style.opacity = '0.5';
+  requestAnimationFrame(() => {
+    wdCard.style.transition = 'transform .42s cubic-bezier(.2,.8,.2,1), opacity .3s ease';
+    wdCard.style.transform = 'none'; wdCard.style.opacity = '1';
+  });
+  wdCard.addEventListener('transitionend', function te() {
+    wdCard.style.transition = ''; wdCard.style.transformOrigin = ''; wdCard.removeEventListener('transitionend', te);
+  }, { once: true });
+}
+
+function closeWork() {
+  workModal.classList.add('hidden');
+  document.body.style.overflow = '';
+  document.removeEventListener('keydown', wdKeydown);
+  if (wdLastFocused) wdLastFocused.focus();
+}
+workModal.addEventListener('click', (e) => { if (e.target === workModal) closeWork(); });
+
+// CTA «Рассчитать для моей квартиры» — предвыбор типа в конструкторе + информер
+function calcLikeThis(type) {
+  closeWork();
+  const sel = document.getElementById('window-type');
+  if (sel && type && [...sel.options].some(o => o.value === type)) {
+    sel.value = type;
+    sel.dispatchEvent(new Event('change'));
+  }
+  const informer = document.getElementById('ctor-informer');
+  if (informer) informer.style.display = 'flex';
+  document.getElementById('constructor').scrollIntoView({ behavior: wdReduce ? 'auto' : 'smooth' });
+  if (window.ym) ym(0, 'reachGoal', 'portfolio_to_calculator');
+}
+
+// Lead form — маска телефона, динамическая валидация по полям, отправка в /api/lead
+(function () {
+  const form = document.getElementById('lead-form');
+  const phoneEl = document.getElementById('lead-phone');
+  const nameEl = document.getElementById('lead-name');
+  const consentEl = document.getElementById('lead-consent');
+  const consentLabel = document.getElementById('lead-consent-label');
+  const statusEl = document.getElementById('lead-status');
+  const errName = document.getElementById('err-name');
+  const errPhone = document.getElementById('err-phone');
+  const errConsent = document.getElementById('err-consent');
+  const setStatus = (type, msg) => { statusEl.className = 'form-status ' + type; statusEl.textContent = msg; };
+
+  const setErr = (input, errEl, msg) => {
+    if (input) input.classList.add('invalid');
+    if (errEl) { errEl.textContent = msg; errEl.classList.add('show'); }
+  };
+  const clrErr = (input, errEl) => {
+    if (input) input.classList.remove('invalid');
+    if (errEl) { errEl.classList.remove('show'); errEl.textContent = ''; }
+  };
+
+  // Валидаторы возвращают true/false и обновляют сообщение под полем
+  function validName() {
+    const v = nameEl.value.trim();
+    if (!v) { setErr(nameEl, errName, 'Укажите имя'); return false; }
+    if (v.length < 2) { setErr(nameEl, errName, 'Имя слишком короткое'); return false; }
+    clrErr(nameEl, errName); return true;
+  }
+  function validPhone() {
+    const d = leadNationalDigits(phoneEl.value);
+    if (!d) { setErr(phoneEl, errPhone, 'Укажите телефон'); return false; }
+    if (d.length < 10) { setErr(phoneEl, errPhone, 'Введите номер полностью'); return false; }
+    clrErr(phoneEl, errPhone); return true;
+  }
+  function validConsent() {
+    if (!consentEl.checked) {
+      if (consentLabel) consentLabel.classList.add('invalid');
+      if (errConsent) { errConsent.textContent = 'Нужно согласие на обработку персональных данных'; errConsent.classList.add('show'); }
+      return false;
+    }
+    if (consentLabel) consentLabel.classList.remove('invalid');
+    if (errConsent) { errConsent.classList.remove('show'); errConsent.textContent = ''; }
+    return true;
+  }
+
+  // Шаблон +7 (___) ___-__-__: цифры в слоты, курсор остаётся за последней введённой
+  function paintPhone(national, caretDigits) {
+    phoneEl.value = leadFormatPhone(national);
+    const pos = leadPhoneCaret(phoneEl.value, caretDigits);
+    phoneEl.setSelectionRange(pos, pos);
+    if (phoneEl.classList.contains('invalid')) validPhone();
+  }
+  if (!leadNationalDigits(phoneEl.value)) phoneEl.value = leadFormatPhone('');
+  phoneEl.addEventListener('keydown', (e) => {
+    if ((e.key !== 'Backspace' && e.key !== 'Delete') || e.ctrlKey || e.metaKey || e.altKey) return;
+    const start = phoneEl.selectionStart, end = phoneEl.selectionEnd;
+    if (start == null || start !== end) return;
+    const national = leadNationalDigits(phoneEl.value);
+    let idx = leadNationalDigits(phoneEl.value.slice(0, start)).length;
+    if (e.key === 'Backspace') {
+      if (idx === 0) { e.preventDefault(); return; }
+      idx -= 1;
+    } else if (idx >= national.length) { e.preventDefault(); return; }
+    e.preventDefault();
+    paintPhone(national.slice(0, idx) + national.slice(idx + 1), idx);
+  });
+  phoneEl.addEventListener('input', () => {
+    const raw = phoneEl.value;
+    const caret = phoneEl.selectionStart ?? raw.length;
+    const national = leadNationalDigits(raw);
+    paintPhone(national, Math.min(leadNationalDigits(raw.slice(0, caret)).length, national.length));
+  });
+  phoneEl.addEventListener('focus', () => {
+    if (leadNationalDigits(phoneEl.value)) return;
+    phoneEl.value = leadFormatPhone('');
+    setTimeout(() => {
+      if (document.activeElement === phoneEl && !leadNationalDigits(phoneEl.value)) phoneEl.setSelectionRange(4, 4);
+    }, 0);
+  });
+
+  // Валидация на blur; повторная проверка по input — только если поле уже в ошибке
+  nameEl.addEventListener('blur', validName);
+  nameEl.addEventListener('input', () => { if (nameEl.classList.contains('invalid')) validName(); });
+  phoneEl.addEventListener('blur', validPhone);
+  consentEl.addEventListener('change', validConsent);
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    // honeypot: бот заполнил скрытое поле — делаем вид, что всё ок
+    if (document.getElementById('lead-hp').value) { openLeadOk(); form.reset(); phoneEl.value = leadFormatPhone(''); return; }
+
+    const okName = validName(), okPhone = validPhone(), okConsent = validConsent();
+    if (!okName || !okPhone || !okConsent) {
+      setStatus('err', (!okName ? errName : !okPhone ? errPhone : errConsent).textContent);
+      (!okName ? nameEl : !okPhone ? phoneEl : consentEl).focus();
+      return;
+    }
+
+    const name = nameEl.value.trim();
+    const message = document.getElementById('lead-message').value.trim();
+    const btn = document.getElementById('lead-submit-btn') || form.querySelector('button[type="submit"]');
+    const orig = btn.textContent;
+    btn.disabled = true;
+    btn.classList.add('is-loading');
+    btn.setAttribute('aria-busy', 'true');
+    form.setAttribute('aria-busy', 'true');
+    setStatus('', '');
+    try {
+      const res = await fetch('/api/lead.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, phone: phoneEl.value, message, consent: true, cart_items: (typeof cart !== 'undefined' && cart.length ? cart.map(i => ({ type: i.typeText, profile: i.profText, glass: i.glassText, hardware: i.hwText, width: parseInt(i.width), height: parseInt(i.height), price: i.price })) : null) })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        openLeadOk();
+        form.reset();
+        phoneEl.value = leadFormatPhone('');
+        clearCart();
+        const fp = document.getElementById('form-order-preview');
+        if (fp) { fp.style.display = 'none'; fp.replaceChildren(); }
+        clrErr(nameEl, errName); clrErr(phoneEl, errPhone);
+        if (consentLabel) consentLabel.classList.remove('invalid');
+        if (errConsent) { errConsent.classList.remove('show'); errConsent.textContent = ''; }
+        if (window.ym) ym(0, 'reachGoal', 'lead'); // цель Яндекс.Метрики (активна, когда счётчик подключён)
+      } else {
+        setStatus('err', data.error || 'Не удалось отправить заявку. Позвоните нам напрямую.');
+      }
+    } catch (err) {
+      setStatus('err', 'Не удалось отправить заявку. Позвоните нам напрямую.');
+    } finally {
+      btn.disabled = false;
+      btn.classList.remove('is-loading');
+      btn.removeAttribute('aria-busy');
+      form.removeAttribute('aria-busy');
+      btn.textContent = orig;
+    }
+  });
+})();
+
+// ===== Навигация: тень хедера, scroll-spy, бренд → наверх, появление секций =====
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const header = document.querySelector('.site-header');
+
+  // Тень хедера + липкая мобильная CTA-панель при прокрутке
+  const mcta = document.getElementById('mobile-cta');
+  const contactSec = document.getElementById('contact');
+  const onScroll = () => {
+    if (header) header.classList.toggle('scrolled', window.scrollY > 8);
+    if (mcta) {
+      // показываем после скролла, но прячем, когда секция контактов входит в кадр
+      // (там уже есть форма и кнопки — дублировать не нужно)
+      const contactTop = contactSec ? contactSec.getBoundingClientRect().top : Infinity;
+      const showMcta = window.scrollY > 500 && contactTop > window.innerHeight * 0.55;
+      mcta.classList.toggle('show', showMcta);
+      document.body.classList.toggle('mobile-cta-pad', showMcta && window.innerWidth <= 767);
+    }
+  };
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
+
+  // Клик по бренду (лого) — всегда в самый верх страницы
+  document.querySelectorAll('a.brand[href="#hero"]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+      if (history.replaceState) history.replaceState(null, '', location.pathname);
+    });
+  });
+
+  // Scroll-spy: подсветка активного пункта меню при прокрутке
+  let scrollSpyObserver = null;
+  window._initScrollSpy = function () {
+    if (scrollSpyObserver) scrollSpyObserver.disconnect();
+    const navLinks = [...document.querySelectorAll('.nav-link')].filter(a => getComputedStyle(a).display !== 'none');
+    const sections = ['constructor', 'gallery', 'reviews', 'news', 'contact']
+      .map(id => document.getElementById(id))
+      .filter(el => el && getComputedStyle(el).display !== 'none');
+    if (!('IntersectionObserver' in window) || !sections.length || !navLinks.length) return;
+    scrollSpyObserver = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id));
+        }
+      });
+    }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+    sections.forEach(s => scrollSpyObserver.observe(s));
+  };
+  window._initScrollSpy();
+
+  // Плавное появление секций при прокрутке (с уважением к prefers-reduced-motion)
+  if (!reduce && 'IntersectionObserver' in window) {
+    const sel = ['#constructor .sec-head', '#constructor .grid', '#gallery .sec-head', '.gallery-grid',
+      '#reviews .sec-head', '#news .sec-head', '.news-grid', '#contact .lead-copy', '#contact .form-card'];
+    const targets = sel.flatMap(s => [...document.querySelectorAll(s)]);
+    targets.forEach(el => el.classList.add('reveal'));
+    const io = new IntersectionObserver((entries, obs) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); obs.unobserve(e.target); } });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.06 });
+    targets.forEach(el => io.observe(el));
+  }
+})();

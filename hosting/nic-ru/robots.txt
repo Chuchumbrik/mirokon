@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /landing.html
+Disallow: /design-preview.html
+Disallow: /install.php
+Disallow: /api/
+Disallow: /includes/
+Disallow: /sql/
+Disallow: /config.local.php
+
+Sitemap: https://mirokon-neo.ru/sitemap.xml

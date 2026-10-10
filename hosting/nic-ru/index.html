@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Окна под ключ в Москве и МО — установка пластиковых окон | Mirokon</title>
+  <meta name="description" content="Установка и замена пластиковых окон под ключ в Москве и Московской области. Премиальные профили, гарантия 5 лет, монтаж за 1 день. Бесплатный замер и точный расчёт.">
+  <link rel="canonical" href="https://mirokon-neo.ru/">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#1E40AF">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Mirokon">
+  <meta property="og:title" content="Окна под ключ в Москве и МО — Mirokon">
+  <meta property="og:description" content="Премиальные пластиковые окна и аккуратный монтаж под ключ. Гарантия 5 лет, замер бесплатно.">
+  <meta property="og:url" content="https://mirokon-neo.ru/">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:image" content="https://mirokon-neo.ru/og-image.svg">
+  <meta name="twitter:card" content="summary_large_image">
+  <!-- Schema.org LocalBusiness. ВНИМАНИЕ: telephone / openingHours / address — заглушки, заменить перед публичным релизом. -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "@id": "https://mirokon-neo.ru/#business",
+    "name": "Mirokon",
+    "description": "Установка и замена пластиковых окон под ключ в Москве и Московской области.",
+    "url": "https://mirokon-neo.ru/",
+    "image": "https://mirokon-neo.ru/og-image.svg",
+    "telephone": "+7-926-495-24-60",
+    "areaServed": [
+      { "@type": "City", "name": "Москва" },
+      { "@type": "AdministrativeArea", "name": "Московская область" }
+    ],
+    "address": {
+      "@type": "PostalAddress",
+      "addressRegion": "Москва и Московская область",
+      "addressCountry": "RU"
+    },
+    "openingHours": "Mo-Su 09:00-21:00"
+  }
+  </script>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>
+<script src="/mirokon-db.js" defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.4/dist/purify.min.js" defer></script>
+<script src="/pricing-defaults.js" defer></script>
+<script src="/app.js" defer></script>
+</head>
+<body class="min-h-screen">
+  <a href="#main" class="skip-link">Перейти к содержимому</a>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container mx-auto px-4 flex justify-between items-center" style="height:76px;position:relative">
+      <a href="#hero" class="brand" id="site-brand">MIRO<b>KON</b></a>
+      <nav class="hidden md:flex" aria-label="Основная навигация" style="gap:36px">
+        <a href="#constructor" class="nav-link">Конструктор</a>
+        <a href="#gallery" class="nav-link">Примеры работ</a>
+        <a href="#reviews" class="nav-link">Отзывы</a>
+        <a href="#news" class="nav-link">Новости</a>
+      </nav>
+      <a href="#contact" onclick="scrollToForm()" class="btn-ds btn-ds-primary hidden md:inline-flex" data-nav-section="contact">Заказать звонок</a>
+      <button id="menu-btn" onclick="toggleMenu()" aria-label="Меню" aria-expanded="false" aria-controls="mobile-nav" class="md:hidden btn-ds btn-ds-secondary" style="padding:10px 14px">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+      </button>
+      <nav id="mobile-nav" class="mobile-nav" aria-label="Мобильная навигация">
+        <a href="#constructor" class="nav-link" onclick="closeMenu()">Конструктор</a>
+        <a href="#gallery" class="nav-link" onclick="closeMenu()">Примеры работ</a>
+        <a href="#reviews" class="nav-link" onclick="closeMenu()">Отзывы</a>
+        <a href="#news" class="nav-link" onclick="closeMenu()">Новости</a>
+        <a href="#contact" class="btn-ds btn-ds-primary" data-nav-section="contact" onclick="closeMenu();scrollToForm()">Заказать звонок</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+  <!-- Hero -->
+  <section id="hero" class="hero-ds">
+    <div class="container mx-auto px-4">
+      <div class="hero-grid">
+        <div>
+          <span class="eyebrow" id="hero-eyebrow">● Москва и Московская область</span>
+          <h1><span id="hero-title-before">Окна, которые</span> <span class="em" id="hero-title-em">служат десятилетия</span></h1>
+          <p class="hero-lead" id="hero-lead">Премиальные пластиковые окна и аккуратный монтаж под ключ. Точно, чисто, с гарантией.</p>
+          <div class="cta-row">
+            <a href="#constructor" class="btn-ds btn-ds-primary" data-nav-section="constructor">Рассчитать стоимость
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </a>
+            <a href="#gallery" class="btn-ds btn-ds-secondary" data-nav-section="gallery">Примеры работ</a>
+          </div>
+          <div class="trust-row" id="hero-chips">
+            <span class="chip-ds"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6l8-4z"/></svg> <span class="chip-txt">Гарантия 5 лет</span></span>
+            <span class="chip-ds"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4M7 3h10l4 4v12a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg> <span class="chip-txt">Договор</span></span>
+            <span class="chip-ds"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6v6l4 2M12 22a10 10 0 100-20 10 10 0 000 20z"/></svg> <span class="chip-txt">Монтаж за 1 день</span></span>
+          </div>
+          <div class="hero-stats" id="hero-stats">
+            <div class="hs"><span class="hs-n">1500+</span><span class="hs-l">окон установлено</span></div>
+            <div class="hs"><span class="hs-n">8 лет</span><span class="hs-l">на рынке</span></div>
+            <div class="hs"><span class="hs-n">★ 4.9</span><span class="hs-l">рейтинг клиентов</span></div>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="glass-card">
+            <svg viewBox="0 0 420 320" width="100%" role="img" aria-label="Современное окно Mirokon">
+              <defs>
+                <linearGradient id="heroGlass" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#EAF2FF"/><stop offset="0.5" stop-color="#D7E8FF"/><stop offset="1" stop-color="#F4F9FF"/>
+                </linearGradient>
+                <linearGradient id="heroSky" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#cfe4ff"/><stop offset="1" stop-color="#eef6ff"/>
+                </linearGradient>
+              </defs>
+              <rect x="24" y="20" width="372" height="280" rx="14" fill="#fff" stroke="#cbd5e1" stroke-width="6"/>
+              <rect x="40" y="36" width="166" height="248" rx="6" fill="url(#heroSky)" stroke="#94a3b8" stroke-width="3"/>
+              <rect x="214" y="36" width="166" height="248" rx="6" fill="url(#heroGlass)" stroke="#94a3b8" stroke-width="3"/>
+              <path d="M70 60 L150 250" stroke="#fff" stroke-width="10" opacity="0.5" stroke-linecap="round"/>
+              <path d="M240 56 L330 250" stroke="#fff" stroke-width="14" opacity="0.55" stroke-linecap="round"/>
+              <rect x="200" y="150" width="10" height="34" rx="5" fill="#1E40AF"/>
+            </svg>
+          </div>
+          <div class="price-tag">
+            <div class="n" id="hero-price-from">от 12 000 ₽</div>
+            <div class="l">ориентировочно · под ключ</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Constructor -->
+  <section id="constructor" class="ctor py-24" data-section="constructor">
+    <div class="container mx-auto px-4">
+      <div class="sec-head" id="copy-constructor">
+        <h2 class="text-4xl font-bold">Конструктор окон</h2>
+        <p>Подберите параметры и узнайте ориентировочную стоимость за минуту.</p>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+        <!-- Preview -->
+        <div>
+          <div class="ctor-card text-center">
+            <svg id="window-svg" width="100%" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" style="max-height:340px"></svg>
+          </div>
+          <div id="total-price" class="ctor-price">49 000 ₽</div>
+          <p class="ctor-disc">Ориентировочная стоимость. Точная цена — после бесплатного выезда замерщика.</p>
+          <div id="ctor-informer" class="ctor-informer" style="display:none">🛈 Стоимость аналогичного объекта. Точный расчёт — после бесплатного замера за 24 часа: зависит от вашей конфигурации, профиля и актуальных цен на материалы.</div>
+          <a href="#contact" onclick="ctaOrder()" class="btn-ds btn-ds-primary" data-nav-section="contact" style="margin-top:18px">Оформить заявку
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+        <!-- Controls -->
+        <div class="space-y-6">
+          <div class="field">
+            <label for="window-type">Тип конструкции</label>
+            <select id="window-type" class="ctor-select">
+              <option value="single-turn">Одностворчатое поворотное</option>
+              <option value="single-deaf">Одностворчатое глухое</option>
+              <option value="double-deaf-turn">Двустворчатое (глухое + поворотное)</option>
+              <option value="double-turn">Двустворчатое поворотное</option>
+              <option value="triple">Трёхстворчатое</option>
+              <option value="balcony">Балконный блок</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="profile">Оконная система</label>
+            <select id="profile" class="ctor-select">
+              <option value="rehau-delight" data-price="800">REHAU Delight</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="glass">Стеклопакет</label>
+            <select id="glass" class="ctor-select">
+              <option value="24mm" data-price="200">24 мм (1-камерный)</option>
+              <option value="32mm" data-price="350">32 мм (2-камерный)</option>
+              <option value="40mm" data-price="500">40 мм (2-камерный low-e)</option>
+              <option value="44mm" data-price="650">44 мм (3-камерный)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="hardware">Фурнитура</label>
+            <select id="hardware" class="ctor-select">
+              <option value="propilot" data-price="300">ProPilot</option>
+              <option value="roto" data-price="450">Roto</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="width">Ширина — <span class="val" id="width-val">1400</span> мм</label>
+            <input type="range" id="width" min="800" max="2000" value="1400" step="10" class="ctor-range">
+            <div class="range-scale"><span>800 мм</span><span>2000 мм</span></div>
+          </div>
+          <div class="field">
+            <label for="height">Высота — <span class="val" id="height-val">1400</span> мм</label>
+            <input type="range" id="height" min="600" max="2400" value="1400" step="10" class="ctor-range">
+            <div class="range-scale"><span>600 мм</span><span>2400 мм</span></div>
+          </div>
+          <div id="ctor-edit-banner" class="ctor-edit-banner" style="display:none">
+            <span>Позиция <strong id="ctor-edit-num">1</strong> в редактировании — изменения не сохранены</span>
+            <button type="button" onclick="cancelEdit()" class="btn-ds btn-ds-secondary" style="padding:8px 16px;font-size:.85rem">Отменить</button>
+          </div>
+          <div id="ctor-submit-prompt" class="ctor-prompt-banner" style="display:none" role="alertdialog" aria-modal="false" aria-labelledby="ctor-prompt-text">
+            <p id="ctor-prompt-text" class="ctor-prompt-text"></p>
+            <div class="ctor-prompt-actions">
+              <button type="button" id="ctor-prompt-yes" class="btn-ds btn-ds-primary" style="padding:8px 16px;font-size:.85rem"></button>
+              <button type="button" id="ctor-prompt-no" class="btn-ds btn-ds-secondary" style="padding:8px 16px;font-size:.85rem"></button>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4 pt-2">
+            <button id="ctor-add-btn" onclick="addToCart()" class="btn-ds btn-ds-primary" style="justify-content:center">+ Добавить в список</button>
+            <button onclick="resetCalc()" class="btn-ds btn-ds-secondary" style="justify-content:center">Сбросить</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Корзина позиций -->
+      <div id="cart-section" style="display:none;margin-top:40px;padding-top:32px;border-top:2px dashed var(--border)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="font-family:'Montserrat';font-weight:700;font-size:1.1rem;color:var(--ink)">
+            Список позиций<span id="cart-count" class="cart-badge"></span>
+          </div>
+          <button onclick="clearCart()" class="cart-clear-btn">Очистить всё</button>
+        </div>
+        <div id="cart-items"></div>
+        <div id="cart-total" class="cart-total-row"></div>
+        <button onclick="submitCart()" class="btn-ds btn-ds-primary">
+          Отправить заявку
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gallery -->
+  <section id="gallery" class="gallery-sec py-24" data-section="gallery">
+    <div class="container mx-auto px-4">
+      <div class="sec-head" id="copy-gallery">
+        <h2 class="text-4xl font-bold">Примеры работ</h2>
+        <p>Остекление квартир, домов и балконов в Москве и области.</p>
+      </div>
+
+      <div class="gallery-filters" id="gallery-filters" role="tablist" aria-label="Фильтр по категориям"></div>
+
+      <!-- переиспользуемая иллюстрация окна -->
+      <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="win-illus" viewBox="0 0 200 150">
+        <rect x="20" y="12" width="160" height="118" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="5"/>
+        <rect x="30" y="22" width="68" height="98" rx="3" fill="#cfe4ff" stroke="#94a3b8" stroke-width="3"/>
+        <rect x="102" y="22" width="68" height="98" rx="3" fill="#eaf3ff" stroke="#94a3b8" stroke-width="3"/>
+        <path d="M40 34 L80 108" stroke="#fff" stroke-width="6" opacity="0.6" stroke-linecap="round"/>
+        <path d="M112 32 L150 108" stroke="#fff" stroke-width="8" opacity="0.6" stroke-linecap="round"/>
+        <rect x="96" y="60" width="8" height="26" rx="4" fill="#1E40AF"/>
+        <rect x="20" y="130" width="160" height="9" rx="3" fill="#cbd5e1"/>
+      </symbol></svg>
+
+      <div class="gallery-grid" id="gallery-grid"></div>
+      <p class="gallery-empty" id="gallery-empty" style="display:none">Скоро здесь появятся примеры наших работ.</p>
+      <div class="section-error" id="gallery-error" style="display:none" role="alert"></div>
+    </div>
+  </section>
+
+  <!-- Reviews -->
+  <section id="reviews" class="reviews-sec py-24" data-section="reviews">
+    <div class="container mx-auto px-4">
+      <div class="sec-head" style="margin-bottom:28px" id="copy-reviews">
+        <h2 class="text-4xl font-bold">Отзывы клиентов</h2>
+        <p>Нам доверяют остекление квартир, домов и балконов в Москве и области.</p>
+      </div>
+      <div class="reviews-agg" id="reviews-agg" style="display:none" aria-live="polite"></div>
+      <div style="text-align:center;margin-bottom:24px">
+        <button onclick="openReviewModal()" class="btn-ds btn-ds-secondary">Оставить отзыв</button>
+      </div>
+      <div class="swiper mySwiper" id="reviews-swiper">
+        <div class="swiper-wrapper" id="reviews-wrapper">
+          <div class="swiper-slide"><div class="review-card sk"><div class="sk-line sk-w40"></div><div class="sk-line"></div><div class="sk-line sk-w80"></div><div class="sk-auth"><div class="sk-av"></div><div class="sk-line sk-w50"></div></div></div></div>
+          <div class="swiper-slide"><div class="review-card sk"><div class="sk-line sk-w40"></div><div class="sk-line"></div><div class="sk-line sk-w80"></div><div class="sk-auth"><div class="sk-av"></div><div class="sk-line sk-w50"></div></div></div></div>
+          <div class="swiper-slide"><div class="review-card sk"><div class="sk-line sk-w40"></div><div class="sk-line"></div><div class="sk-line sk-w80"></div><div class="sk-auth"><div class="sk-av"></div><div class="sk-line sk-w50"></div></div></div></div>
+        </div>
+        <div class="swiper-pagination"></div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+      </div>
+      <p class="gallery-empty" id="reviews-empty" style="display:none;margin-top:8px">Здесь скоро появятся отзывы наших клиентов.</p>
+      <div class="section-error" id="reviews-error" style="display:none;margin-top:8px" role="alert"></div>
+      <p class="text-center" style="color:var(--muted);font-size:.9rem;margin-top:8px">Публикуем только проверенные отзывы после модерации.</p>
+    </div>
+  </section>
+
+  <!-- News -->
+  <section id="news" class="news-sec py-24" data-section="news">
+    <div class="container mx-auto px-4">
+      <div class="sec-head" id="copy-news">
+        <h2 class="text-4xl font-bold">Новости</h2>
+        <p>Коротко о компании, материалах и сервисе.</p>
+      </div>
+      <div class="news-grid" id="news-grid">
+        <article class="news-card sk"><div class="sk-line sk-w30"></div><div class="sk-line sk-w70"></div><div class="sk-line"></div></article>
+        <article class="news-card sk"><div class="sk-line sk-w30"></div><div class="sk-line sk-w70"></div><div class="sk-line"></div></article>
+        <article class="news-card sk"><div class="sk-line sk-w30"></div><div class="sk-line sk-w70"></div><div class="sk-line"></div></article>
+      </div>
+      <p class="gallery-empty" id="news-empty" style="display:none;margin-top:0">Новостей пока нет — скоро здесь появятся обновления.</p>
+      <div class="section-error" id="news-error" style="display:none;margin-top:0" role="alert"></div>
+    </div>
+  </section>
+
+  <!-- Contact Form -->
+  <section id="contact" class="lead-section py-24" data-section="contact">
+    <div class="container mx-auto px-4">
+      <div class="lead-grid">
+        <div class="lead-copy" id="copy-contact">
+          <h2>Бесплатный замер и точный расчёт</h2>
+          <p>Оставьте заявку — перезвоним в течение 24 часов, ответим на вопросы и рассчитаем стоимость без обязательств.</p>
+          <a href="tel:+79264952460" class="lead-phone" id="contact-phone">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/></svg>
+            +7 (926) 495-24-60
+          </a>
+          <p class="lead-hours" id="contact-hours" style="display:none"></p>
+          <div>
+            <a href="https://wa.me/79264952460?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5!%20%D0%A5%D0%BE%D1%87%D1%83%20%D1%80%D0%B0%D1%81%D1%81%D1%87%D0%B8%D1%82%D0%B0%D1%82%D1%8C%20%D0%BE%D0%BA%D0%BD%D0%B0" target="_blank" rel="noopener" class="wa-btn" id="contact-wa">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.946C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.86 9.86 0 001.523 5.273l-.999 3.648 3.748-.969zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.149-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.71.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+              Написать в WhatsApp
+            </a>
+          </div>
+          <div class="lead-trust">
+            <span class="chip-ds"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6l8-4z"/></svg> Гарантия 5 лет</span>
+            <span class="chip-ds"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4M7 3h10l4 4v12a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg> Договор</span>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <div id="form-order-preview" style="display:none"></div>
+          <form id="lead-form" class="space-y-4" novalidate>
+            <div class="field">
+              <label for="lead-name">Ваше имя <span class="req" aria-hidden="true">*</span></label>
+              <input type="text" id="lead-name" name="name" placeholder="Анна" autocomplete="name" aria-describedby="err-name" required>
+              <div class="field-error" id="err-name" role="alert"></div>
+            </div>
+            <div class="field">
+              <label for="lead-phone">Телефон <span class="req" aria-hidden="true">*</span></label>
+              <input type="tel" id="lead-phone" name="phone" inputmode="tel" autocomplete="tel" value="+7 (___) ___-__-__" aria-describedby="err-phone" required>
+              <div class="field-error" id="err-phone" role="alert"></div>
+            </div>
+            <div class="field">
+              <label for="lead-message">Комментарий <span style="color:var(--muted);font-weight:400">(необязательно)</span></label>
+              <textarea id="lead-message" name="message" rows="3" placeholder="Размеры окон или адрес замера"></textarea>
+            </div>
+            <!-- honeypot для ботов -->
+            <input type="text" name="hp" id="lead-hp" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <label class="consent" id="lead-consent-label">
+              <input type="checkbox" id="lead-consent" required>
+              <span>Я согласен на обработку <a href="/privacy.html" target="_blank" rel="noopener">персональных данных</a> <span class="req" aria-hidden="true">*</span></span>
+            </label>
+            <div class="field-error" id="err-consent" role="alert"></div>
+            <button type="submit" id="lead-submit-btn" class="btn-ds btn-ds-primary" style="width:100%;justify-content:center">Отправить заявку</button>
+            <div class="form-status" id="lead-status" role="status" aria-live="polite"></div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+  </main>
+
+<!-- Work detail (кейс) -->
+<div id="work-detail" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="wd-title">
+  <div class="wd-card" id="wd-card">
+    <button onclick="closeWork()" class="modal-close" aria-label="Закрыть" style="z-index:2">&times;</button>
+    <div class="wd-grid">
+      <div class="wd-main">
+        <div class="wd-hero"><img id="wd-hero" alt=""></div>
+        <div class="wd-thumbs" id="wd-thumbs"></div>
+        <div class="wd-info">
+          <span class="gallery-cat wd-cat" id="wd-cat"></span>
+          <h2 id="wd-title" class="wd-title">Работа</h2>
+          <p id="wd-desc" class="wd-desc"></p>
+          <ul class="wd-scope" id="wd-scope"></ul>
+          <div class="wd-meta" id="wd-meta"></div>
+          <div class="wd-cta">
+            <div class="wd-price" id="wd-price"></div>
+            <button class="btn-ds btn-ds-primary" id="wd-calc" type="button">Рассчитать для моей квартиры
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <aside class="wd-rail">
+        <div class="wd-rail-title">Другие работы</div>
+        <div class="wd-rail-list" id="wd-rail"></div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+
+<!-- Review Modal -->
+<div id="review-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="review-modal-title" aria-describedby="review-modal-desc">
+  <div class="modal-card">
+    <button onclick="closeReviewModal()" class="modal-close" aria-label="Закрыть">&times;</button>
+    <h2 id="review-modal-title" class="modal-title">Оставить отзыв</h2>
+    <p class="sub" id="review-modal-desc">Поделитесь опытом — после модерации отзыв появится на сайте.</p>
+    <form id="review-form" class="space-y-4" novalidate>
+      <div class="field">
+        <label for="r-name">Ваше имя</label>
+        <input type="text" id="r-name" placeholder="Как к вас зовут" autocomplete="name" required aria-describedby="review-modal-desc">
+      </div>
+      <div class="field">
+        <label for="r-city">Город <span class="lbl-opt">(необязательно)</span></label>
+        <input type="text" id="r-city" placeholder="Москва" autocomplete="address-level2">
+      </div>
+      <div class="field">
+        <span class="field-label" id="r-rating-label">Оценка</span>
+        <div class="rating" role="radiogroup" aria-labelledby="r-rating-label">
+        <span class="star" data-rating="1" role="radio" aria-label="1 звезда" tabindex="0">★</span>
+        <span class="star" data-rating="2" role="radio" aria-label="2 звезды" tabindex="0">★</span>
+        <span class="star" data-rating="3" role="radio" aria-label="3 звезды" tabindex="0">★</span>
+        <span class="star" data-rating="4" role="radio" aria-label="4 звезды" tabindex="0">★</span>
+        <span class="star" data-rating="5" role="radio" aria-label="5 звёзд" tabindex="0">★</span>
+        </div>
+      </div>
+      <input type="hidden" id="r-rating" value="5">
+      <div class="field">
+        <label for="r-text">Текст отзыва</label>
+        <textarea id="r-text" rows="4" placeholder="Расскажите о вашем опыте установки окон…" required></textarea>
+      </div>
+      <button type="submit" class="btn-ds btn-ds-primary" style="width:100%;justify-content:center">Отправить на модерацию</button>
+      <div class="form-status" id="review-status" role="status" aria-live="polite"></div>
+    </form>
+  </div>
+</div>
+
+<!-- News detail modal -->
+<div id="news-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="news-modal-title">
+  <div class="modal-card news-modal-card">
+    <button onclick="closeNewsModal()" class="modal-close" aria-label="Закрыть">&times;</button>
+    <div id="news-modal-img" class="news-modal-img" style="display:none"></div>
+    <span class="news-date" id="news-modal-date"></span>
+    <h2 id="news-modal-title" class="modal-title"></h2>
+    <div id="news-modal-body" class="news-modal-body"></div>
+  </div>
+</div>
+
+<div id="lead-ok" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="lead-ok-title">
+  <div class="modal-card">
+    <button type="button" onclick="closeLeadOk()" class="modal-close" aria-label="Закрыть">&times;</button>
+    <h2 id="lead-ok-title" class="modal-title">Заявка принята</h2>
+    <p class="sub" id="lead-ok-sub">Мы свяжемся с вами в течение 24 часов.</p>
+    <button type="button" class="btn-ds btn-ds-primary" style="width:100%;justify-content:center" onclick="closeLeadOk()">Хорошо</button>
+  </div>
+</div>
+  <footer class="site-footer">
+    <div class="container mx-auto px-4">
+      <div class="footer-grid">
+        <div class="footer-about">
+          <a href="#hero" class="brand" id="footer-brand">MIRO<b>KON</b></a>
+          <p id="footer-about">Премиальные пластиковые окна и аккуратный монтаж под ключ в Москве и Московской области.</p>
+          <a href="tel:+79264952460" class="footer-phone" id="footer-phone">+7 (926) 495-24-60</a>
+        </div>
+        <div class="footer-col">
+          <p class="footer-col-title">Разделы</p>
+          <a href="#constructor" data-nav-section="constructor">Конструктор</a>
+          <a href="#gallery" data-nav-section="gallery">Примеры работ</a>
+          <a href="#reviews" data-nav-section="reviews">Отзывы</a>
+          <a href="#news" data-nav-section="news">Новости</a>
+        </div>
+        <div class="footer-col">
+          <p class="footer-col-title">Контакты</p>
+          <a href="tel:+79264952460" id="footer-phone-2">+7 (926) 495-24-60</a>
+          <span id="footer-hours" style="display:none"></span>
+          <div class="footer-social">
+            <a href="https://wa.me/79264952460" target="_blank" rel="noopener" id="footer-wa" aria-label="WhatsApp"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.946C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.86 9.86 0 001.523 5.273l-.999 3.648 3.748-.969zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.149-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.71.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg></a>
+            <a href="https://t.me/mirokon_bot" target="_blank" rel="noopener" id="footer-tg" aria-label="Telegram"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg></a>
+            <a href="https://vk.com/club230835061" target="_blank" rel="noopener" id="footer-vk" aria-label="VK"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M15.684 0H8.316C1.592 0 0 1.592 0 8.316v7.368C0 22.408 1.592 24 8.316 24h7.368C22.408 24 24 22.408 24 15.684V8.316C24 1.592 22.391 0 15.684 0zm3.692 17.123h-1.744c-.66 0-.862-.525-2.049-1.727-1.033-1-1.49-1.135-1.744-1.135-.356 0-.458.102-.458.593v1.575c0 .424-.135.678-1.253.678-1.846 0-3.896-1.118-5.335-3.202C4.624 10.857 4.03 8.57 4.03 8.096c0-.254.102-.491.593-.491h1.744c.44 0 .61.203.78.677.863 2.49 2.303 4.675 2.896 4.675.22 0 .322-.102.322-.66V9.721c-.068-1.186-.695-1.287-.695-1.71 0-.203.17-.407.44-.407h2.744c.373 0 .508.203.508.643v3.473c0 .372.17.508.271.508.22 0 .407-.136.813-.542 1.254-1.406 2.151-3.574 2.151-3.574.119-.254.322-.491.763-.491h1.744c.525 0 .644.27.525.643-.22 1.017-2.354 4.031-2.354 4.031-.186.305-.254.44 0 .78.186.254.796.779 1.203 1.253.745.847 1.32 1.558 1.473 2.049.17.49-.085.744-.576.744z"/></svg></a>
+          </div>
+          <span id="footer-social-extra" style="display:contents"></span>
+          <a href="#contact" data-nav-section="contact">Заказать звонок</a>
+          <a href="/privacy.html" target="_blank" rel="noopener">Политика конфиденциальности</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p class="footer-legal">ИП Сидорин Виктор Анатольевич · ИНН 331401180536<br>601525, Россия, Владимирская область, деревня Перово, улица Центральная, дом 11</p>
+        <div class="footer-bottom-row">
+          <span id="footer-copyright">© 2026 Mirokon</span>
+          <a href="/privacy.html">Политика конфиденциальности</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Липкая мобильная CTA-панель (появляется при скролле, только мобилка) -->
+  <div class="mobile-cta" id="mobile-cta">
+    <a href="tel:+79264952460" class="mc-btn mc-call" id="mobile-call" aria-label="Позвонить">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/></svg>
+      Позвонить
+    </a>
+    <a href="https://wa.me/79264952460" target="_blank" rel="noopener" class="mc-btn mc-wa" id="mobile-wa" aria-label="WhatsApp">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.946C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.86 9.86 0 001.523 5.273l-.999 3.648 3.748-.969zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.149-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.71.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+      WhatsApp
+    </a>
+    <a href="#contact" onclick="scrollToForm()" class="mc-btn mc-lead" data-nav-section="contact" aria-label="Оставить заявку">Заявка</a>
+  </div>
+</body>
+</html>
